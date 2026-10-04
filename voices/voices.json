@@ -14,21 +14,26 @@
   },
   "beaver": {
     "name": "Archie",
-    "description": "A confident, optimistic builder and engineer beaver. Warm, steady, mid-range voice, calm and capable, not loud. Sounds like someone who knows exactly what he is doing and enjoys the work. Friendly, with a slight smile in the voice.",
+    "description": "A calm, clear, trustworthy builder and engineer. Smooth mid-low pitch, never squeaky or shrill. Soft-spoken and relaxed volume, steady pace, crisp clear articulation. Quietly confident and optimistic, reassuring, sounds like an expert who knows exactly what he is talking about. Warm and friendly.",
     "previews": [
       {
         "n": 1,
         "file": "voices/previews/beaver-1.mp3",
-        "generated_voice_id": "PuvRsQk7opRM6nMwvSLS"
+        "generated_voice_id": "gUpj9bED6BXsCZWEUu6K"
       },
       {
         "n": 2,
         "file": "voices/previews/beaver-2.mp3",
-        "generated_voice_id": "ctCblmYWvs6Hj2Y4mvC0"
+        "generated_voice_id": "5FG9MQRpxs3CEhoo8fM5"
       },
       {
         "n": 3,
         "file": "voices/previews/beaver-3.mp3",
+        "generated_voice_id": "OxCfhOX2lknhM1xSap8N"
+      },
+      {
+        "n": 4,
+        "file": "voices/previews/beaver-4-previous-pick.mp3",
         "generated_voice_id": "qjo483caefs7BgFZzbgJ"
       }
     ]
