@@ -198,6 +198,7 @@ Every lane file has the same six parts. The orchestrator fills them in from this
 
 ### Lane J — Hook into the app (Codex GPT-6 Sol medium) — two parts
 - **J1, Wave 3 (15 min):** `src/main/chipCore.ts` exports `createChipCore(config)`. It builds bus → clock → backboard → presence → jobs → mood → nudges → history → orchestrator and returns `{ bus, orchestrator, presence, nudges, dispose }`. `chip-cli` switches to it, so the app later gets the exact object that was tested.
+> **Note (Oct 4, app shell plan ✅ S5):** the app shell owns the Electron main entry (`src/main/index.ts`) and preload, so J2 shrinks to a small `RealCore` adapter + a one-line swap. This lane gets rewritten after Melvin's Chip work lands. See `docs/app-shell/00-APP-SHELL-SPEC.md` §18.
 - **J2, at the integration checkpoint (25 min, needs Shafeen's app shell):**
   - `main/index.ts` constructs: bus → clock → backboard → presence → jobs → mood → nudges → history → orchestrator.
   - IPC handlers per `ARCHITECTURE §3.4` (`sendMessage`, `sendVoice` (placeholder until Shafeen's STT), `wakeAgent`, `setDoNotDisturb`, `demoFireNudge`).
