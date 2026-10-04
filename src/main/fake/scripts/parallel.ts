@@ -1,0 +1,1 @@
+export { parallel } from './index';

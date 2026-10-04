@@ -9,6 +9,7 @@ node_modules/
 dist/
 out/
 build/
+release/
 *.log
 
 # ADE runtime data
@@ -24,6 +25,10 @@ pending-events.jsonl
 Thumbs.db
 .vscode/
 .idea/
+
+# Local Electron smoke captures
+tests/e2e/screenshots/
+test-results/
 
 # Git worktrees for parallel lanes (never commit)
 .worktrees/
