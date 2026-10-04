@@ -163,6 +163,8 @@ export const OverlayUiLayer: OverlayUiComponent = (props) => {
   };
   const beginDrag = (key: string, initialOffset: { x: number; y: number }, setOffset: (point: { x: number; y: number }) => void) => (event: ReactPointerEvent<HTMLElement>) => {
     if (event.button !== 0) return;
+    // Pointer capture would retarget the click away from header buttons (×), so they never fire.
+    if ((event.target as HTMLElement).closest('button')) return;
     const target = event.currentTarget;
     const startX = event.clientX; const startY = event.clientY;
     const original = target.getBoundingClientRect();
