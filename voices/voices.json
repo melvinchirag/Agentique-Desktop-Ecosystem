@@ -46,21 +46,26 @@
   },
   "workspace": {
     "name": "Pixel",
-    "description": "A friendly, crisp, clever, upbeat assistant character. A little techy and precise, bright and helpful.",
+    "description": "A small, cute, very friendly helper character. Warm, sweet, bright and cheerful voice with a gentle smile in it, light and a little bouncy. Clever and upbeat, clear and easy to understand, slightly techy and tidy. Kind and welcoming, never robotic, never shrill.",
     "previews": [
       {
         "n": 1,
         "file": "voices/previews/workspace-1.mp3",
-        "generated_voice_id": "ET5k5kKUJ9YLJG9y41cw"
+        "generated_voice_id": "mBJzqSzxIZxesLiWKznM"
       },
       {
         "n": 2,
         "file": "voices/previews/workspace-2.mp3",
-        "generated_voice_id": "MpNtNhPN0UGZenLJtk5v"
+        "generated_voice_id": "iADSfDC7zlny4a5T7w5W"
       },
       {
         "n": 3,
         "file": "voices/previews/workspace-3.mp3",
+        "generated_voice_id": "NtsYvGcHBRVh0mLANqjS"
+      },
+      {
+        "n": 4,
+        "file": "voices/previews/workspace-4-previous-pick.mp3",
         "generated_voice_id": "0Xb1aNdkJjlSexCzUrQc"
       }
     ]
