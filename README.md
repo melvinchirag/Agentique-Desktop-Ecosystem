@@ -20,6 +20,7 @@ Tracks: **Ideation Matrix**, **VentureWell Innovation**. MLH: **Backboard**, **E
 | Doc | What |
 |---|---|
 | [`VISION.md`](VISION.md) | The vision contract: north star, principles, demo |
+| [`docs/PROMPTS.md`](docs/PROMPTS.md) | **Copy-paste prompts: each person's AI starts from here** |
 | [`docs/DECISIONS.md`](docs/DECISIONS.md) | **Every build decision in one log** |
 | [`docs/README.md`](docs/README.md) | Plan overview, scope, timeline, risks |
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | System design + locked shared contracts |

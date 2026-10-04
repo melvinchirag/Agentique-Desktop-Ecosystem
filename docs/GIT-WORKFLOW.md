@@ -58,7 +58,7 @@ main  ← only Chanuth merges here (contracts + docs first; the app once it exis
 
 | Situation | Rule |
 |---|---|
-| **Shared contracts** (`src/shared/*`, `src/main/runtime/types.ts`) | Go to `main` **first**, through a quick PR that Chanuth approves (Melvin's Wave 0). Everyone then rebases onto `main`. Nobody edits them on their own branch. |
+| **Shared contracts** (`src/shared/*`, `src/main/runtime/types.ts`) | Go to `main` **first**, through a quick PR from branch `contracts/shared` that Chanuth approves (Melvin's Wave 0). Everyone then rebases onto `main`. Nobody edits them on their own branch. |
 | **Melvin needs Shafeen's sponsor kit before the app exists** | Melvin merges `origin/chip/sponsors` into `chip/logic` locally (`git merge origin/chip/sponsors`) once Shafeen posts "sponsor kit ready". Owned paths don't overlap, so there are no conflicts. |
 | **Merge conflicts** | Resolve in favor of the file's owner (paths listed in each plan). If unsure, ask Chanuth. |
 | **Secrets** | Never commit `.env`, keys, or connection strings. `.gitignore` covers `.env*`, `voice-cache/`, `node_modules/`, `dist/`, `out/`. |
