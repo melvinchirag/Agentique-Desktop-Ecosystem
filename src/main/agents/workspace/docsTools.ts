@@ -71,6 +71,7 @@ export function createDocsTools(services: WorkspaceToolServices): ToolDefinition
     description: 'Create a new private Google Doc using headings, paragraphs, lists, bold, and https links.',
     parameters: object({ title: string(200), body_markdown: string(60_000) }, ['title', 'body_markdown']),
     risk: 'draft',
+    preview: (input: { title?: string }) => `Create private Google Doc '${String(input.title ?? '').slice(0, 100)}'`,
     execute: async (input: { title: string; body_markdown: string }, ctx) => {
       const google = services.google(); if (!google) return fail('NOT_CONNECTED');
       if (!services.registerDoc) return fail('UNAVAILABLE');

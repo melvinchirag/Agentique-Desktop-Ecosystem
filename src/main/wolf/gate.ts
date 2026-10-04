@@ -22,6 +22,12 @@ export interface WardenGateOptions {
 const blockedParts = new Set(['.git', 'node_modules', '$recycle.bin', 'appdata', 'desktop.ini', 'thumbs.db']);
 const reserved = /^(con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\..*)?$/i;
 class InvalidPathError extends Error {}
+interface ResolvedRoot { root: string; lower: string; prefix: string; trash: boolean }
+interface ReviewPaths {
+  roots?: ResolvedRoot[];
+  lexical: Map<string, string>;
+  real: Map<string, string>;
+}
 const stable = (value: unknown, seen = new WeakSet<object>()): string => {
   if (value === null || typeof value !== 'object') return JSON.stringify(value) ?? 'undefined';
   if (seen.has(value)) throw new Error('cyclic arguments');
@@ -34,10 +40,8 @@ const stable = (value: unknown, seen = new WeakSet<object>()): string => {
 };
 
 export function callKey(tool: string, args: unknown): string { return `${tool}:${stable(args)}`; }
-function within(candidate: string, root: string): boolean {
-  const c = path.normalize(candidate).toLowerCase();
-  const r = path.normalize(root).toLowerCase();
-  return c === r || c.startsWith(r.endsWith(path.sep) ? r : `${r}${path.sep}`);
+function within(lowerCandidate: string, root: ResolvedRoot): boolean {
+  return lowerCandidate === root.lower || lowerCandidate.startsWith(root.prefix);
 }
 
 export class WardenGateImpl implements WardenGate {
@@ -83,11 +87,15 @@ export class WardenGateImpl implements WardenGate {
       const previouslyDenied = this.denied.get(request.jobId)?.has(key) ?? false;
       const count = this.denyCounts.get(request.jobId) ?? 0;
       loop = previouslyDenied || count >= 3;
+      // This cache belongs to one synchronous review only: every later call probes
+      // the filesystem again, including roots that may have become junctions.
+      let paths: ReviewPaths | undefined;
+      const pathState = (): ReviewPaths => paths ??= { lexical: new Map(), real: new Map() };
       decision = evaluate(request, {
         tool, inspection,
-        pathAllowed: (input, writing, name) => this.pathAllowed(input, writing, name),
-        exists: input => (this.options.exists ?? fs.existsSync)(this.resolvePath(input)),
-        fileSize: input => (this.options.fileSize ?? (p => fs.statSync(p).size))(this.resolvePath(input)),
+        pathAllowed: (input, writing, name) => this.pathAllowed(input, writing, name, pathState()),
+        exists: input => (this.options.exists ?? fs.existsSync)(this.resolvePath(input, pathState())),
+        fileSize: input => (this.options.fileSize ?? (p => fs.statSync(p).size))(this.resolvePath(input, pathState())),
         tainted: this.taintedTasks.has(request.taskId),
         priorDeniedOrDeclined: previouslyDenied,
         denialCount: count,
@@ -123,7 +131,9 @@ export class WardenGateImpl implements WardenGate {
     return this.review({ ...input, callId, tool, args, risk: 'read', jobKind: 'normal' });
   }
 
-  private nearestRealpath(target: string): string {
+  private nearestRealpath(target: string, state: ReviewPaths): string {
+    const cached = state.real.get(target);
+    if (cached !== undefined) return cached;
     const exists = this.options.exists ?? fs.existsSync;
     const realpath = this.options.realpath ?? fs.realpathSync.native;
     let current = target;
@@ -134,17 +144,29 @@ export class WardenGateImpl implements WardenGate {
       missing.unshift(path.basename(current));
       current = parent;
     }
-    return path.join(realpath(current), ...missing);
+    const resolved = missing.length ? path.join(realpath(current), ...missing) : path.normalize(realpath(current));
+    state.real.set(target, resolved);
+    return resolved;
   }
 
-  private roots(): { root: string; trash: boolean }[] {
-    const roots = this.options.settings.allowedFolders.map(root => ({ root: this.nearestRealpath(path.resolve(root)), trash: false }));
-    const documents = this.options.documentsRoot ?? this.options.settings.allowedFolders.find(root => path.basename(root).toLowerCase() === 'documents');
-    if (documents) roots.push({ root: this.nearestRealpath(path.join(documents, 'ADE Trash')), trash: true });
+  private roots(state: ReviewPaths): ResolvedRoot[] {
+    if (state.roots) return state.roots;
+    const makeRoot = (input: string, trash: boolean): ResolvedRoot => {
+      const root = this.nearestRealpath(input, state);
+      const lower = root.toLowerCase();
+      return { root, lower, prefix: lower.endsWith(path.sep) ? lower : `${lower}${path.sep}`, trash };
+    };
+    const allowed = this.options.settings.allowedFolders;
+    const roots = allowed.map(root => makeRoot(path.resolve(root), false));
+    const documents = this.options.documentsRoot ?? allowed.find(root => path.basename(root).toLowerCase() === 'documents');
+    if (documents) roots.push(makeRoot(path.join(documents, 'ADE Trash'), true));
+    state.roots = roots;
     return roots;
   }
 
-  private resolvePath(input: string): string {
+  private resolvePath(input: string, state: ReviewPaths): string {
+    const cached = state.lexical.get(input);
+    if (cached !== undefined) return cached;
     if (typeof input !== 'string' || !input.trim()) throw new InvalidPathError('Invalid path');
     const raw = input.trim();
     const win = raw.replace(/\//g, '\\');
@@ -152,26 +174,33 @@ export class WardenGateImpl implements WardenGate {
       throw new InvalidPathError('Invalid Windows path');
     if (/[<>"|?*\x00-\x1f]/.test(win) || win.split('\\').some(part => reserved.test(part.replace(/[ .]+$/, '')) || /[ .]$/.test(part)))
       throw new InvalidPathError('Invalid path component');
-    if (path.isAbsolute(raw) || path.win32.isAbsolute(win)) return path.resolve(raw);
+    if (path.isAbsolute(raw) || path.win32.isAbsolute(win)) {
+      const resolved = path.resolve(raw);
+      state.lexical.set(input, resolved);
+      return resolved;
+    }
     const parts = win.split('\\');
-    const root = this.roots().find(item => path.basename(item.root).toLowerCase() === parts[0]?.toLowerCase());
+    const root = this.roots(state).find(item => path.basename(item.root).toLowerCase() === parts[0]?.toLowerCase());
     if (!root) throw new InvalidPathError('Unknown named root');
-    return path.resolve(root.root, ...parts.slice(1));
+    const resolved = path.resolve(root.root, ...parts.slice(1));
+    state.lexical.set(input, resolved);
+    return resolved;
   }
 
-  private pathAllowed(input: string, writing: boolean, tool: string): boolean {
+  private pathAllowed(input: string, writing: boolean, tool: string, state: ReviewPaths): boolean {
     try {
-      const target = this.nearestRealpath(this.resolvePath(input));
-      const roots = this.roots();
-      const root = roots.find(item => within(target, item.root));
+      const lexical = this.resolvePath(input, state);
+      const target = this.nearestRealpath(lexical, state);
+      const lowerTarget = target.toLowerCase();
+      const roots = this.roots(state);
+      const root = roots.find(item => within(lowerTarget, item));
       if (!root) return false;
       // Protected names stay protected even if Settings mistakenly lists one as an allowed root.
       // Inspect the full resolved path as well as the lexical path (junction targets can differ).
-      const lexical = this.resolvePath(input);
       if ([target, lexical].some(value => value.split(path.sep).some(part => blockedParts.has(part.toLowerCase())))) return false;
-      if (path.relative(root.root, target).split(path.sep).some(part => part.startsWith('.'))) return false;
+      if (target.slice(root.root.length).split(path.sep).some(part => part.startsWith('.'))) return false;
       const trash = roots.find(item => item.trash);
-      if (trash && within(target, trash.root) && tool !== 'fs_trash' && tool !== 'fs_undo' && writing) return false;
+      if (trash && within(lowerTarget, trash) && tool !== 'fs_trash' && tool !== 'fs_undo' && writing) return false;
       return true;
     } catch (error) {
       if (error instanceof InvalidPathError) return false;

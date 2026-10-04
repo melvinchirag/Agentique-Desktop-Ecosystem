@@ -20,7 +20,7 @@ export interface AgentRuntimeDeps {
   bus: Bus;
   llm: LlmClient;
   jobs: JobScheduler;
-  gate: WardenGate;
+  gate?: WardenGate;
   approvals: Approvals;
   settings: () => AdeSettings;
   agents: RegisteredSpecialist[];
@@ -116,14 +116,17 @@ export class AgentRuntime implements SpecialistRunner {
         const say = await this.deps.screen.screen(parsed.say, source);
         const summary = await this.deps.screen.screen(parsed.summary, source);
         if (say.flagged || summary.flagged) {
-          parsed.say = 'Result needs review.';
+          parsed.say = 'Done, but Warden flagged something in it.';
           parsed.bubble = 'Review needed';
         }
         parsed.summary = summary.wrapped;
       }
       return { ok: true, ...parsed, artifacts };
     } catch (error) {
-      return this.failure(errorText(error), artifacts);
+      // A failed screen must never leak an unchecked model instruction through the result.
+      return this.deps.screen
+        ? { ok: false, say: 'Done, but Warden flagged something in it.', bubble: 'Review needed', summary: 'Result could not be screened.', artifacts }
+        : this.failure(errorText(error), artifacts);
     }
   }
 
@@ -156,7 +159,6 @@ export class AgentRuntime implements SpecialistRunner {
     const { bus, gate, approvals, jobs } = this.deps;
     const tool = def.tools.find((candidate) => candidate.name === call.function.name);
     const help = call.function.name === 'ask_teammate' && ctx.kind === 'normal';
-    if (!tool && !help) return output({ error: 'UNKNOWN_TOOL' });
     let args: unknown;
     try { args = JSON.parse(call.function.arguments); }
     catch { return output({ error: 'INVALID_ARGUMENTS' }); }
@@ -175,32 +177,56 @@ export class AgentRuntime implements SpecialistRunner {
         return output({ ok: result.ok, summary: result.summary });
       } catch (error) { return output({ error: errorText(error) }); }
     }
-    const selected = tool as ToolDefinition;
-    let risk = selected.risk;
-    try { risk = selected.riskFor?.(input) ?? risk; }
-    catch (error) { return output({ error: errorText(error) }); }
+    const selected = tool as ToolDefinition | undefined;
+    let risk = selected?.risk ?? (call.function.name.split('_').some((part) =>
+      ['send', 'forward', 'post', 'publish', 'share', 'purchase', 'pay', 'transfer', 'invite'].includes(part)) ? 'external' : 'read');
+    try { if (selected?.riskFor) risk = this.higherRisk(risk, selected.riskFor(input)); }
+    catch { risk = 'destructive'; }
     bus.emit({ type: 'tool.request', agentId, taskId: ctx.taskId, callId: call.id,
-      tool: selected.name, args: auditArgs(input), risk });
+      tool: call.function.name, args: auditArgs(input), risk });
     const finish = (ok: boolean, summary: string, result: unknown): string => {
       bus.emit({ type: 'tool.result', agentId, taskId: ctx.taskId, callId: call.id, ok, summary });
       return output(result);
     };
+    // Local async preflight gives synchronous Warden inspection authoritative
+    // journal metadata (notably for undo immediately after an app restart).
+    if (selected && 'prepareInspection' in selected) {
+      try {
+        await (selected as ToolDefinition & { prepareInspection: (args: Record<string, unknown>) => Promise<void> }).prepareInspection(input);
+      } catch {
+        const reason = 'The safety check failed, so this action was blocked.';
+        bus.emit({ type: 'wolf.alert', agentId: 'wolf', taskId: ctx.taskId, source: 'gate', reason });
+        bus.emit({ type: 'wolf.verdict', agentId: 'wolf', taskId: ctx.taskId,
+          callId: call.id, verdict: 'deny', rule: 'W0', reason });
+        return finish(false, 'Blocked by Warden (W0)', { error: 'DENIED_BY_WOLF', rule: 'W0', reason });
+      }
+    }
+    let verdict: 'allow' | 'ask' | 'deny';
     try {
-      // Warden owns verdict events; Approvals owns the ref-counted clock pause/resume.
-      const verdict = gate.review({ agentId, taskId: ctx.taskId, callId: call.id, tool: selected.name,
-        risk, jobId: ctx.jobId, jobKind: ctx.kind, args: input });
-      if (verdict === 'deny') {
-        const detail = gate.explain?.(call.id);
-        return finish(false, `Blocked by Warden${detail?.rule ? ` (${detail.rule})` : ''}`,
-          { error: 'DENIED_BY_WOLF', ...detail });
-      }
-      if (verdict === 'ask') {
-        const title = `${AGENTS[agentId].displayName} needs your OK`;
-        const preview = selected.preview?.(input) ?? selected.description;
-        const decision = await approvals.request({ callId: call.id, jobId: ctx.jobId, taskId: ctx.taskId,
-          agentId, title, preview, signal: ctx.signal });
-        if (!decision.approved) return finish(false, 'User declined.', { error: 'USER_DECLINED' });
-      }
+      verdict = gate?.review({ agentId, taskId: ctx.taskId, callId: call.id, tool: call.function.name,
+        risk, jobId: ctx.jobId, jobKind: ctx.kind, args: input }) ?? (risk === 'read' ? 'allow' : 'deny');
+    } catch {
+      verdict = 'deny';
+    }
+    if (verdict === 'deny') {
+      const detail = gate?.explain?.(call.id);
+      return finish(false, `Blocked by Warden${detail?.rule ? ` (${detail.rule})` : ''}`,
+        { error: 'DENIED_BY_WOLF', ...detail });
+    }
+    if (!tool && !help) return finish(false, 'Unknown tool.', { error: 'UNKNOWN_TOOL' });
+    if (verdict === 'ask') {
+      const askingJob = ctx.kind === 'help' ? jobs.list().find((job) =>
+        job.kind === 'normal' && job.agent === jobs.list().find((current) => current.jobId === ctx.jobId)?.requestedBy
+        && job.parentTaskId === ctx.taskId && job.state === 'running') : undefined;
+      const title = askingJob
+        ? `${AGENTS[agentId].displayName} (helping ${AGENTS[askingJob.agent].displayName}) needs your OK`
+        : `${AGENTS[agentId].displayName} needs your OK`;
+      const decision = await approvals.request({ callId: call.id, jobId: ctx.jobId, taskId: ctx.taskId,
+        agentId, title, preview: selected?.preview?.(input) ?? selected?.description ?? 'Ask a teammate', signal: ctx.signal });
+      if (!decision.approved) return finish(false, 'User declined.', { error: 'USER_DECLINED' });
+    }
+    if (!selected) return finish(false, 'Unknown tool.', { error: 'UNKNOWN_TOOL' });
+    try {
       if (ctx.signal.aborted) return finish(false, 'Cancelled.', { error: 'CANCELLED' });
       const toolCtx: ToolContext = {
         agentId, taskId: ctx.taskId, jobId: ctx.jobId, sessionId: bus.sessionId, threadId, signal: ctx.signal,
@@ -214,6 +240,11 @@ export class AgentRuntime implements SpecialistRunner {
     } catch (error) {
       return finish(false, `${selected.name} failed.`, { error: errorText(error) });
     }
+  }
+
+  private higherRisk(a: ToolDefinition['risk'], b: ToolDefinition['risk']): ToolDefinition['risk'] {
+    const order: ToolDefinition['risk'][] = ['read', 'draft', 'write', 'destructive', 'external'];
+    return order[Math.max(order.indexOf(a), order.indexOf(b))];
   }
 }
 

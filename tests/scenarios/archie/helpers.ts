@@ -1,5 +1,4 @@
-import { mkdtemp, readdir, rm, utimes } from 'node:fs/promises';
-import os from 'node:os';
+import { mkdir, mkdtemp, readdir, rm, utimes } from 'node:fs/promises';
 import path from 'node:path';
 import { createChipCore } from '../../../src/main/chipCore';
 import { FileIndex } from '../../../src/main/connectors/fs/fileIndex';
@@ -12,6 +11,8 @@ import { FakeSpecialists } from '../../../src/main/testing/fakeSpecialists';
 import { makeTestSettings } from '../../../src/main/testing/settings';
 import { makeSandbox } from '../../fixtures/makeSandbox';
 import { AskingWardenGate, ScriptedApprovals, type Decision } from './approvals';
+import type { ArchieContext } from '../../../src/main/chipCore';
+import type { Approvals } from '../../../src/main/runtime/types';
 
 export type DocumentCall =
   | { kind: 'upload'; threadId: string; path: string }
@@ -29,9 +30,18 @@ async function age(dir: string, timestamp: number, fresh: string): Promise<void>
 /** Every Archie scenario gets a disposable fixture, two independent scripted brains, and the real Chip-to-job route. */
 export async function makeArchieScenario(
   archieScript: FakeLlmStep[], decisions: Decision[] = [],
-  restart?: { parent: string; fixture: Awaited<ReturnType<typeof makeSandbox>>; clock: FakeClock },
+  restart?: { parent: string; fixture: Awaited<ReturnType<typeof makeSandbox>>; clock: FakeClock; mode?: 'standin' | 'real' },
+  mode: 'standin' | 'real' = restart?.mode ?? 'standin',
 ) {
-  const parent = restart?.parent ?? await mkdtemp(path.join(os.tmpdir(), 'ade-archie-i-'));
+  // The fixture lives only under this workspace-owned temporary directory. Windows' OS temp
+  // is inside AppData, which the real Warden correctly protects even for test requests.
+  const fixtureBase = path.resolve('integration/.warden-fixture-temp');
+  if (!restart) await mkdir(fixtureBase, { recursive: true });
+  const parent = restart?.parent ?? await mkdtemp(path.join(fixtureBase, 'ade-archie-i-'));
+  const relativeParent = path.relative(fixtureBase, parent);
+  if (!relativeParent.startsWith('ade-archie-i-') || relativeParent.includes(path.sep) || relativeParent.startsWith('..')) {
+    throw new Error('Fixture parent is outside the workspace temporary directory');
+  }
   const clock = restart?.clock ?? new FakeClock(Date.UTC(2026, 9, 4, 12));
   const fixture = restart?.fixture ?? await makeSandbox(parent, clock.now());
   if (!restart) await age(fixture.root, clock.now() - 24 * 60 * 60_000, fixture.freshFile);
@@ -45,11 +55,15 @@ export async function makeArchieScenario(
   const archieLlm = new FakeLlm(archieScript);
   const chipLlm = new FakeLlm();
   const fake = new FakeSpecialists({ clock });
-  let approvals!: ScriptedApprovals;
+  let approvals!: { requests: Array<{ callId: string; preview: string }> };
+  let realApprovals: Approvals | undefined;
+  const realRequests: Array<{ callId: string; preview: string }> = [];
+  let decisionIndex = 0;
   const core = createChipCore({
     llm: chipLlm, plannerLlm: new FakeLlm(), runner: fake, calendar: new FakeCalendar(clock),
     settings: () => makeTestSettings({ allowedFolders: [...safe.allowedRoots] }), chipAssistantId: 'chip-test',
     clock, startNudges: false,
+    ...(mode === 'real' ? { warden: { documentsRoot: fixture.documents } } : {}),
     archie: {
       llm: archieLlm, assistantId: 'archie-test', safe, index, journal, shell, startSweep: false,
       documents: {
@@ -64,10 +78,25 @@ export async function makeArchieScenario(
           return { status: documentId === 'fixture-document' ? 'indexed' : 'error', chunks: 1 };
         },
       },
-      gate: ({ bus }) => new AskingWardenGate({ bus }),
-      approvals: (ctx) => (approvals = new ScriptedApprovals(ctx, decisions)),
+      ...(mode === 'standin' ? {
+        gate: ({ bus }: ArchieContext) => new AskingWardenGate({ bus }),
+        approvals: (ctx: ArchieContext) => (approvals = new ScriptedApprovals(ctx, decisions)),
+      } : {}),
     },
   });
+  if (mode === 'real') {
+    if (!core.warden || !core.archie || core.archie.gate !== core.warden.gate || core.archie.approvals !== core.warden.approvals) {
+      throw new Error('Real Warden was not wired into Archie');
+    }
+    approvals = { requests: realRequests };
+    realApprovals = core.warden.approvals;
+    core.bus.subscribe((event) => {
+      if (event.type !== 'approval.request') return;
+      realRequests.push({ callId: event.callId, preview: event.preview });
+      const decision = decisions[decisionIndex++] ?? 'approve';
+      if (decision !== 'hold') queueMicrotask(() => realApprovals?.resolve(event.callId, decision === 'approve'));
+    });
+  }
   const run = async (request: string, task = request) => {
     chipLlm.push(
       requiresAction([toolCall('report_user_mood', { mood: 'calm', intensity: 0.3, reason: 'plain words' }),
@@ -87,7 +116,7 @@ export async function makeArchieScenario(
     return result;
   };
   return {
-    parent, fixture, clock, safe, index, journal, journalPath, shell, documentCalls, core, approvals, archieLlm, chipLlm, fake, run,
+    parent, fixture, clock, safe, index, journal, journalPath, shell, documentCalls, core, approvals, realApprovals, mode, archieLlm, chipLlm, fake, run,
     async cleanup() { await core.dispose(); index.stopWatching(); await rm(parent, { recursive: true, force: true }); },
   };
 }
