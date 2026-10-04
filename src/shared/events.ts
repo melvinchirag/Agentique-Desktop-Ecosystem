@@ -30,6 +30,6 @@ export type BiomeEvent = Base & (
   | { type: 'artifact';         kind: ArtifactKind; title: string; data: unknown; openUrl?: string }
 );
 
-export type ArtifactKind = 'email_draft' | 'email_digest' | 'calendar_event' | 'file_plan' | 'research_brief' | 'social_post' | 'day_plan';
+export type ArtifactKind = 'email_draft' | 'email_digest' | 'calendar_event' | 'file_plan' | 'file_note' | 'research_brief' | 'social_post' | 'day_plan';
 
 export type BiomeEventType = BiomeEvent['type'];
