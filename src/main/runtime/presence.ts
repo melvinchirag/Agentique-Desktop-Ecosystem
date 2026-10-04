@@ -18,7 +18,7 @@ interface AgentTimers {
   busyCount: number;
 }
 
-export function createPresenceManager(deps: PresenceDeps): PresenceManager {
+export function createPresenceManager(deps: PresenceDeps): PresenceManager & { dock(id: AgentId): void } {
   const states = new Map<AgentId, Presence>();
   const timers = new Map<AgentId, AgentTimers>();
   const listeners = new Set<(id: AgentId, p: Presence) => void>();
@@ -140,6 +140,13 @@ export function createPresenceManager(deps: PresenceDeps): PresenceManager {
         return returning;
       }
       return Promise.resolve();
+    },
+
+    dock(id): void {
+      if (!installed(id) || id === 'chipmunk') return;
+      clear(id, 'sleep');
+      clear(id, 'dock');
+      change(id, 'docked', 'user');
     },
 
     onChange(cb): void { listeners.add(cb); },
