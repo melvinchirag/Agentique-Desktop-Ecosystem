@@ -29,6 +29,8 @@ SELECT time_bucket('5 minutes', ts) AS bucket, agent_id,
        count(*) FILTER (WHERE type = 'tool.result') AS actions
 FROM biome_events GROUP BY bucket, agent_id
 WITH NO DATA;
+-- Real-time: also include rows newer than the last refresh, so today's numbers show at once.
+ALTER MATERIALIZED VIEW agent_activity_5m SET (timescaledb.materialized_only = false);
 SELECT add_continuous_aggregate_policy('agent_activity_5m',
   start_offset => INTERVAL '1 day', end_offset => INTERVAL '1 minute',
   schedule_interval => INTERVAL '1 minute', if_not_exists => TRUE);
@@ -39,6 +41,8 @@ SELECT time_bucket('1 day', ts) AS day, payload->>'mood' AS mood,
        count(*) AS times, avg((payload->>'intensity')::float) AS avg_intensity
 FROM biome_events WHERE type = 'user.mood' GROUP BY day, mood
 WITH NO DATA;
+-- Real-time: also include rows newer than the last refresh, so today's numbers show at once.
+ALTER MATERIALIZED VIEW mood_daily SET (timescaledb.materialized_only = false);
 SELECT add_continuous_aggregate_policy('mood_daily',
   start_offset => INTERVAL '7 days', end_offset => INTERVAL '1 minute',
   schedule_interval => INTERVAL '5 minutes', if_not_exists => TRUE);
@@ -50,6 +54,8 @@ SELECT time_bucket('1 day', ts) AS day, payload->>'to' AS agent,
        count(*) FILTER (WHERE payload->>'state' = 'failed') AS failed
 FROM biome_events WHERE type = 'job.update' GROUP BY day, agent
 WITH NO DATA;
+-- Real-time: also include rows newer than the last refresh, so today's numbers show at once.
+ALTER MATERIALIZED VIEW job_stats_daily SET (timescaledb.materialized_only = false);
 SELECT add_continuous_aggregate_policy('job_stats_daily',
   start_offset => INTERVAL '7 days', end_offset => INTERVAL '1 minute',
   schedule_interval => INTERVAL '5 minutes', if_not_exists => TRUE);
