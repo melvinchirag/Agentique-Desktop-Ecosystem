@@ -9,6 +9,7 @@ import { ChatTab } from './ChatTab';
 import { MemoriesTab } from './MemoriesTab';
 import { PulseTab } from './PulseTab';
 import { AuditTab } from './AuditTab';
+import { TimelineTab } from './TimelineTab';
 import { SettingsPanel } from './SettingsPanel';
 import { MarketplacePanel } from './MarketplacePanel';
 import { OnboardingModal, isOnboarded } from './OnboardingModal';
@@ -100,6 +101,7 @@ export const HubApp: HubAppComponent = ({ store, api, shell }) => {
 
   const mainTabs: { key: HubTab; label: string }[] = [
     { key: 'chat', label: 'Chat' },
+    { key: 'timeline', label: 'Timeline' },
     { key: 'memories', label: 'Memories' },
     { key: 'pulse', label: 'Pulse' },
     { key: 'audit', label: 'Audit' },
@@ -153,11 +155,13 @@ export const HubApp: HubAppComponent = ({ store, api, shell }) => {
             {activeTab === 'memories' && (
               <MemoriesTab
                 api={api}
+                store={store}
                 selectedAgentId={selectedMemoryAgent}
                 onSelectAgent={setSelectedMemoryAgent}
               />
             )}
             {activeTab === 'pulse' && <PulseTab api={api} />}
+            {activeTab === 'timeline' && <TimelineTab api={api} shell={shell} />}
             {activeTab === 'audit' && <AuditTab api={api} shell={shell} />}
 
             {/* Overlays / Full panels */}

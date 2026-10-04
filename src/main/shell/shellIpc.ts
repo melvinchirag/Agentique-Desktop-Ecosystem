@@ -11,7 +11,7 @@ export const isRects = (value: unknown): value is Rect[] => Array.isArray(value)
   rect.width >= 0 && rect.height >= 0,
 );
 export const isAgentId = (value: unknown): value is AgentId => typeof value === 'string' && Object.hasOwn(AGENTS, value);
-const HUB_TABS: readonly HubTab[] = ['chat', 'memories', 'pulse', 'audit', 'settings', 'marketplace'];
+const HUB_TABS: readonly HubTab[] = ['chat', 'timeline', 'memories', 'pulse', 'audit', 'settings', 'marketplace'];
 export const isHubTab = (value: unknown): value is HubTab => HUB_TABS.includes(value as HubTab);
 export const isTaskId = (value: unknown): value is string => typeof value === 'string' && value.length > 0 && value.length <= 200;
 

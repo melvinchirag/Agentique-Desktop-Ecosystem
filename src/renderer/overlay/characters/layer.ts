@@ -250,11 +250,13 @@ export class CharacterController implements CharacterLayer {
     a.serial++; a.slot.cancel(); a.motion = null; const serial = a.serial;
     await this.play(id, 'Takeoff', { once: true });
     if (a.serial !== serial || this.animals.get(id) !== a) return;
+    void this.play(id, 'Fly');
     await this.begin(a, { from: this.point(a), to: { x: a.x + 100, y: -a.height - 20 }, duration: 0.9, fromScale: 1, toScale: 1, arc: -80, hide: true, restore: null });
   }
   async flyIn(id: AgentId, x: number): Promise<void> {
     const a = this.animals.get(id); if (!a) return;
     a.y = -a.height - 20; a.x = x - 100; a.hidden = false;
+    void this.play(id, 'Glide');
     const arrival = this.begin(a, { from: this.point(a), to: { x, y: this.layout.groundY }, duration: 0.9, fromScale: 1, toScale: 1, arc: -70, hide: false, restore: null, ground: 'arrival' });
     const serial = a.serial;
     await arrival;

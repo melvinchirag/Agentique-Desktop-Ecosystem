@@ -38,6 +38,7 @@ interface Opts {
   /** Pretend today's daily check-in already happened so the rule nudge doesn't mix into the test. */
   seedDaily?: boolean;
   store?: MemoryNudgeStore;
+  plans?: { completionToday(): Promise<{ text: string }> };
 }
 
 function setup(opts: Opts = {}) {
@@ -61,6 +62,7 @@ function setup(opts: Opts = {}) {
     isUserBusy: () => flags.busy,
     isDoNotDisturb: () => flags.dnd,
     newId: () => `n${++n}`,
+    plans: opts.plans,
   });
   const batches: Nudge[][] = [];
   engine.onDue((b) => batches.push(b));
@@ -423,6 +425,14 @@ describe('fireNextNow', () => {
 
 describe('rule nudges', () => {
   const rules = (t: ReturnType<typeof setup>) => t.store.all.filter((n) => n.source === 'rule' && n.state !== 'answered');
+
+  it('includes Swarm completion in the evening wrap-up', async () => {
+    const t = setup({ start: at(19), plans: { completionToday: async () => ({ text: '3 of 4 done' }) } });
+    t.engine.start();
+    await t.clock.advanceAsync(0);
+    await t.clock.advanceAsync(HOUR);
+    expect(t.batches.flat().find(n => n.kind === 'evening')?.question).toContain('3 of 4 done');
+  });
 
   it('started at 09:00: daily now, evening at 20:00, weekly next Sunday 18:00', async () => {
     const t = setup({ start: at(9), seedDaily: false });
