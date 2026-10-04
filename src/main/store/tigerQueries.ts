@@ -1,8 +1,10 @@
 import type { BiomeEvent } from '../../shared/events';
+import type { AgentId } from '../../shared/agents';
+import type { PulseResponse, WardenAuditRow } from '../../renderer/hub/responses';
 import type { TigerQueries as TigerQueriesContract } from '../runtime/types';
 import { fromRow, redact, type Db } from './tiger';
 import { pixelToday } from './tigerDrafts';
-import { WARDEN_AUDIT_SQL, wardenToday } from './tigerWarden';
+import { WARDEN_AUDIT_SQL, mapWardenAuditRow, wardenToday } from './tigerWarden';
 
 const EVENT_COLUMNS = 'ts, id, session_id, task_id, agent_id, type, payload';
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -27,13 +29,13 @@ export class TigerQueries implements TigerQueriesContract {
   }
 
   /** Warden's latest verdicts, alerts, and approvals, each with the animal that asked and the tool it wanted. */
-  async wardenAudit(limit: number): Promise<object[]> {
+  async wardenAudit(limit: number): Promise<WardenAuditRow[]> {
     const n = Math.min(Math.max(1, Math.floor(limit) || 50), 200);
-    return this.rows('wardenAudit', WARDEN_AUDIT_SQL, [n]);
+    return (await this.rows('wardenAudit', WARDEN_AUDIT_SQL, [n])).map(mapWardenAuditRow);
   }
 
   /** Mood this week, jobs per animal this week, activity over the last day, Warden's counts for today, and Pixel's draft counts. */
-  async pulse(): Promise<object> {
+  async pulse(): Promise<PulseResponse> {
     const [mood, jobs, activity, warden, pixel] = await Promise.all([
       this.rows('pulse.mood', `SELECT day, mood, times::int AS times, round(avg_intensity::numeric, 2)::float AS avg_intensity
                                FROM mood_daily WHERE day >= now() - INTERVAL '7 days' ORDER BY day, times DESC`),
@@ -44,7 +46,19 @@ export class TigerQueries implements TigerQueriesContract {
       wardenToday(this.db, this.log),
       pixelToday(this.db, this.log),
     ]);
-    return { mood, jobs, activity, warden, pixel };
+    const moodWeek = mood.map((row) => ({
+      day: new Date(row.day).toISOString().slice(0, 10),
+      mood: String(row.mood ?? ''),
+      score: Number(row.avg_intensity) || 0,
+    }));
+    const jobsPerAgent: PulseResponse['jobsPerAgent'] = {};
+    for (const row of jobs) {
+      if (row.agent) jobsPerAgent[row.agent as AgentId] = Number(row.done) || 0;
+    }
+    return {
+      moodWeek, jobsPerAgent, wardenBlocks: warden.denied, wardenAsks: warden.asked,
+      mood, jobs, activity, warden, pixel,
+    };
   }
 
   private async rows(what: string, sql: string, params: unknown[] = []): Promise<Record<string, any>[]> {
