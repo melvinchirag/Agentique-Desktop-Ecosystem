@@ -51,7 +51,8 @@ function heuristic(text: string): { score: number; reasons: string[] } {
   add('external_forward', 0.8, /\b(?:send|forward|email|reply)\s+(?:this|all|every|these)\b[^\n]{0,160}?\bto\s+[\w.+-]+@[\w.-]+\.[a-z]{2,}\b/i);
   add('tool_command', 0.7, /\b(?:fs_trash|gmail_[a-z_]+|delete everything|move all files)\b/i);
   add('hidden_html', 0.7, /(?:display\s*:\s*none|color\s*:\s*(?:white|#fff(?:fff)?|rgb\(\s*255\s*,\s*255\s*,\s*255\s*\))|visibility\s*:\s*hidden)/i);
-  add('exfil_link', 0.75, /!?\[[^\]]*\]\(https?:\/\/[^\s)]+\?[^\s)]+\)/i);
+  // Only images auto-load (the exfil vector); plain citation links like ?utm_source=… are normal search output.
+  add('exfil_link', 0.75, /!\[[^\]]*\]\(https?:\/\/[^\s)]+\?[^\s)]+\)/i);
   add('base64_blob', 0.7, /(?:[A-Za-z0-9+/]{4}){51,}(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?/);
   add('credential_bait', 0.35, /\b(?:password|token|api[ -]?key|2fa code)\b.{0,60}\b(?:send|share|enter|reveal|provide)\b|\b(?:send|share|enter|reveal|provide)\b.{0,60}\b(?:password|token|api[ -]?key|2fa code)\b/i);
   add('instruction_request', 0.4, /\b(?:please|must|you should)\s+(?:delete|forward|send|move|reveal)\b/i);
