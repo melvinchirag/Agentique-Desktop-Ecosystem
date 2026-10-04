@@ -65,25 +65,10 @@
         "n": 1,
         "file": "voices/previews/eagle-1.mp3",
         "generated_voice_id": "6V1eEH0eoRC1jILQ5VL2"
-      },
-      {
-        "n": 2,
-        "file": "voices/previews/eagle-2.mp3",
-        "generated_voice_id": "EL3Ta7APF7uF4R1sW1XZ"
-      },
-      {
-        "n": 3,
-        "file": "voices/previews/eagle-3.mp3",
-        "generated_voice_id": "AgmTtf4tKba0Ljb3miXI"
-      },
-      {
-        "n": 4,
-        "file": "voices/previews/eagle-4-current-voice.mp3",
-        "generated_voice_id": "JovNvGHQidOs4NzD0uFO"
       }
     ],
-    "voice_id": "JovNvGHQidOs4NzD0uFO",
-    "picked": 4
+    "voice_id": "6V1eEH0eoRC1jILQ5VL2",
+    "picked": 1
   },
   "ants": {
     "name": "Swarm",
