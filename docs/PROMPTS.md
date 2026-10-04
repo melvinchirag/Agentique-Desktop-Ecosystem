@@ -510,3 +510,16 @@ Build PIXEL graphics in the ADE repo. Pixel concept is done; do not make concept
 
 ## Prompts for later agents
 Each new agent plan (Scout, Swarm, then extras) adds its own prompt sections here.
+
+---
+
+## Shafeen — Scout sponsor tech (quick)
+*Paste into: Codex (GPT-6 Sol, medium), repo root.*
+
+```text
+git switch main && git pull && git switch -c eagle/sponsors
+Read docs/agents/05-scout-SPONSOR-QUICK-SHAFEEN.md and do lanes E1, E2, E3 exactly as written (small, fast).
+Reuse what exists (eagle assistant, EL_VOICE_EAGLE, eagle SFX, research_log table); never create duplicates.
+Never edit src/shared/* or src/main/runtime/types.ts. Never commit .env or keys.
+Run npx tsc --noEmit and npm test (fewer workers if it times out). Commit, push eagle/sponsors, open a PR into main.
+```
