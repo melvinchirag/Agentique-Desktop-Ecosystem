@@ -90,11 +90,12 @@ export class BackboardClient implements LlmClient {
     return toLlmResponse(raw);
   }
 
-  /** Every tool call of the previous response must get an output. */
-  async submitToolOutputs(threadId: string, outputs: { tool_call_id: string; output: string }[], signal?: AbortSignal, model?: ModelChoice): Promise<LlmResponse> {
-    const choice = model ?? this.resolveDefaultModel();
+  /**
+   * Every tool call of the previous response must get an output.
+   * Confirmed live: this endpoint rejects llm_provider/model_name (422 extra_forbidden); the run keeps the model from send().
+   */
+  async submitToolOutputs(threadId: string, outputs: { tool_call_id: string; output: string }[], signal?: AbortSignal, _model?: ModelChoice): Promise<LlmResponse> {
     const body: Record<string, unknown> = { thread_id: threadId, tool_outputs: outputs };
-    if (choice) { body.llm_provider = choice.llm_provider; body.model_name = choice.model_name; }
     const raw = await this.request('/threads/tool-outputs', { method: 'POST', body, signal, retry: true });
     return toLlmResponse(raw);
   }
