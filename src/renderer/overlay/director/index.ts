@@ -322,7 +322,7 @@ export const createAnimationDirector: CreateAnimationDirector = (deps: DirectorD
         });
         break;
       case 'approval.request':
-        queue(['wolf'], () => ui.showApproval({ callId: e.callId, title: e.title, preview: e.preview, nearAgent: 'wolf' }));
+        ui.showApproval({ callId: e.callId, title: e.title, preview: e.preview, nearAgent: 'wolf' });
         break;
       case 'approval.resolve':
         queue(['wolf'], async () => {
