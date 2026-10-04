@@ -3,8 +3,12 @@ import type { AgentId } from '../../src/shared/agents';
 import type { BiomeEvent } from '../../src/shared/events';
 import type { AdeSettings } from '../../src/shared/ipc';
 import { FakeClock } from '../../src/main/runtime/clock';
+import { createChipCore } from '../../src/main/chipCore';
+import { FakeCalendar } from '../../src/main/testing/fakeCalendar';
+import { makeTestSettings } from '../../src/main/testing/settings';
+import { MemoryNudgeStore } from '../../src/main/runtime/nudgeStore';
 import type { CalendarSource, LlmClient, LlmResponse, SpecialistId } from '../../src/main/runtime/types';
-import { buildOfflineChip, type OfflineChip } from '../../src/main/testing/offlineChip';
+import type { OfflineChip } from '../../src/main/testing/offlineChip';
 import {
   completed, FakeLlm, type FakeLlmCall, type FakeLlmStep, FakeSpecialists, requiresAction, toolCall,
 } from '../../src/main/testing';
@@ -70,12 +74,27 @@ export function makeRig(o: RigOptions = {}) {
   const clock = new FakeClock(o.start ?? new Date(2026, 9, 4, 12, 0));
   const llm = o.llm ?? new FakeLlm(o.script ?? []);
   const specialists = new FakeSpecialists({ clock, delayMs: o.delayMs ?? 3 * SEC });
-  const chip = buildOfflineChip({
-    clock, llm, specialists, startNudges: o.startNudges ?? false,
-    ...(o.settings ? { settings: o.settings } : {}),
-    ...(o.calendar ? { calendar: o.calendar } : {}),
-    ...(o.plannerLlm ? { plannerLlm: o.plannerLlm } : {}),
+  let currentSettings = o.settings ?? makeTestSettings();
+  const settings = () => currentSettings;
+  const nudgeStore = new MemoryNudgeStore();
+  const noNudgesPlanner: LlmClient = {
+    async send() { return completed('{"nudges":[]}'); },
+    async submitToolOutputs() { throw new Error('Unexpected nudge planner tool'); },
+  };
+  const core = createChipCore({
+    clock, llm, runner: specialists, calendar: o.calendar ?? new FakeCalendar(clock),
+    plannerLlm: o.plannerLlm ?? noNudgesPlanner, nudgeStore, settings,
+    chipAssistantId: 'chip-asst', timeZone: 'America/Detroit', startNudges: o.startNudges ?? false,
+    warden: {},
   });
+  if (!core.warden) throw new Error('Chip scenario requires the real Warden');
+  const chip: OfflineChip = {
+    bus: core.bus, clock: core.clock, llm, specialists, jobs: core.jobs, presence: core.presence,
+    mood: core.mood, nudges: core.nudges, nudgeStore, history: core.history,
+    orchestrator: core.orchestrator, settings,
+    setSettings(patch) { currentSettings = makeTestSettings({ ...currentSettings, ...patch }); },
+    events: () => core.bus.recent(), dispose() { void core.dispose(); },
+  };
   rigs.push(chip);
 
   const startedAt = clock.now();

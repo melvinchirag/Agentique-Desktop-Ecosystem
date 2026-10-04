@@ -21,6 +21,8 @@ const approvals = (): Approvals => ({ request: async () => ({ approved: false, h
 describe('Swarm plan', () => {
   it('accepts a numbered JSON block for Chip and rejects malformed plans', () => {
     expect(parsePlanSummary(`\`\`\`json\n${JSON.stringify({ steps })}\n\`\`\``)).toEqual(steps);
+    expect(parsePlanSummary(`<untrusted source="summary:Swarm">${JSON.stringify({ steps })}</untrusted>`)).toEqual(steps);
+    expect(parsePlanSummary(`<untrusted source="summary:Swarm" flagged="true">${JSON.stringify({ steps })}</untrusted>`)).toBeNull();
     expect(parsePlan({ steps: steps.slice(0, 1) })).toBeNull();
     expect(parsePlan({ steps: [...steps, ...steps, ...steps].slice(0, 7) })).toBeNull();
     expect(parsePlan({ steps: [{ ...steps[0], n: 2 }, steps[1]] })).toBeNull();

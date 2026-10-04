@@ -1,0 +1,1560 @@
+[
+  {
+    "id": "X-001",
+    "agentId": "beaver",
+    "tool": "fs_list",
+    "risk": "read",
+    "args": {
+      "path": "Downloads/report.txt"
+    },
+    "inspect": {},
+    "jobKind": "normal",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "deny",
+      "rule": "W0"
+    },
+    "setup": {
+      "throwAt": "registry"
+    }
+  },
+  {
+    "id": "X-002",
+    "agentId": "beaver",
+    "tool": "fs_read_text",
+    "risk": "read",
+    "args": {
+      "path": "Downloads/report.txt"
+    },
+    "inspect": {},
+    "jobKind": "normal",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "deny",
+      "rule": "W0"
+    },
+    "setup": {
+      "throwAt": "realpath"
+    }
+  },
+  {
+    "id": "X-003",
+    "agentId": "beaver",
+    "tool": "fs_move",
+    "risk": "write",
+    "args": {
+      "path": "Downloads/report.txt"
+    },
+    "inspect": {},
+    "jobKind": "normal",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "deny",
+      "rule": "W0"
+    },
+    "setup": {
+      "throwAt": "inspect"
+    }
+  },
+  {
+    "id": "X-004",
+    "agentId": "beaver",
+    "tool": "fs_search",
+    "risk": "read",
+    "args": {
+      "path": "Downloads/report.txt"
+    },
+    "inspect": {},
+    "jobKind": "normal",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "deny",
+      "rule": "W0"
+    },
+    "setup": {
+      "throwAt": "riskFor"
+    }
+  },
+  {
+    "id": "X-005",
+    "agentId": "workspace",
+    "tool": "gmail_create_draft",
+    "risk": "external",
+    "args": {
+      "recipients": [
+        "friend@example.test"
+      ]
+    },
+    "inspect": {},
+    "jobKind": "normal",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "deny",
+      "rule": "W1"
+    }
+  },
+  {
+    "id": "X-006",
+    "agentId": "workspace",
+    "tool": "gmail_send",
+    "risk": "read",
+    "args": {
+      "recipients": [
+        "friend@example.test"
+      ]
+    },
+    "inspect": {},
+    "jobKind": "normal",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "deny",
+      "rule": "W1"
+    },
+    "setup": {
+      "registered": false
+    }
+  },
+  {
+    "id": "X-007",
+    "agentId": "butterfly",
+    "tool": "social_post",
+    "risk": "draft",
+    "args": {},
+    "inspect": {},
+    "jobKind": "normal",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "deny",
+      "rule": "W1"
+    }
+  },
+  {
+    "id": "X-008",
+    "agentId": "workspace",
+    "tool": "bank_transfer",
+    "risk": "read",
+    "args": {},
+    "inspect": {},
+    "jobKind": "normal",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "deny",
+      "rule": "W1"
+    }
+  },
+  {
+    "id": "X-009",
+    "agentId": "beaver",
+    "tool": "fs_list",
+    "risk": "read",
+    "args": {
+      "path": "Downloads"
+    },
+    "inspect": {},
+    "jobKind": "normal",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "allow",
+      "rule": "W2"
+    }
+  },
+  {
+    "id": "X-010",
+    "agentId": "beaver",
+    "tool": "fs_propose_plan",
+    "risk": "read",
+    "args": {
+      "folder": "Downloads"
+    },
+    "inspect": {},
+    "jobKind": "normal",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "allow",
+      "rule": "W2"
+    },
+    "note": "propose is not the post segment"
+  },
+  {
+    "id": "X-011",
+    "agentId": "workspace",
+    "tool": "gmail_create_draft",
+    "risk": "draft",
+    "args": {
+      "recipients": [
+        "friend@example.test"
+      ],
+      "subject": "Hello"
+    },
+    "inspect": {},
+    "jobKind": "normal",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "allow",
+      "rule": "W2"
+    }
+  },
+  {
+    "id": "X-012",
+    "agentId": "beaver",
+    "tool": "fs_read_text",
+    "risk": "read",
+    "args": {
+      "file": "Documents/notes.txt"
+    },
+    "inspect": {},
+    "jobKind": "normal",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "allow",
+      "rule": "W2"
+    }
+  },
+  {
+    "id": "X-013",
+    "agentId": "eagle",
+    "tool": "web_open",
+    "risk": "read",
+    "args": {
+      "url": "https://example.test/article"
+    },
+    "inspect": {},
+    "jobKind": "normal",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "allow",
+      "rule": "W2"
+    }
+  },
+  {
+    "id": "X-014",
+    "agentId": "beaver",
+    "tool": "fs_move",
+    "risk": "write",
+    "args": {
+      "from": "Downloads/a.txt",
+      "to_folder": "Documents"
+    },
+    "inspect": {},
+    "jobKind": "normal",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "ask",
+      "rule": "W3"
+    }
+  },
+  {
+    "id": "X-015",
+    "agentId": "beaver",
+    "tool": "fs_rename",
+    "risk": "write",
+    "args": {
+      "path": "Desktop/a.txt",
+      "new_name": "b.txt"
+    },
+    "inspect": {},
+    "jobKind": "normal",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "ask",
+      "rule": "W3"
+    }
+  },
+  {
+    "id": "X-016",
+    "agentId": "beaver",
+    "tool": "fs_mkdir",
+    "risk": "write",
+    "args": {
+      "path": "Documents/New Folder"
+    },
+    "inspect": {
+      "writesPaths": [
+        "Documents/New Folder"
+      ]
+    },
+    "jobKind": "normal",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "ask",
+      "rule": "W3"
+    }
+  },
+  {
+    "id": "X-017",
+    "agentId": "workspace",
+    "tool": "cal_create_event",
+    "risk": "write",
+    "args": {
+      "title": "Study session"
+    },
+    "inspect": {},
+    "jobKind": "normal",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "ask",
+      "rule": "W3"
+    }
+  },
+  {
+    "id": "X-018",
+    "agentId": "beaver",
+    "tool": "fs_apply_plan",
+    "risk": "write",
+    "args": {},
+    "inspect": {
+      "count": 25,
+      "paths": [
+        "Downloads/a.txt"
+      ],
+      "writesPaths": [
+        "Documents/a.txt"
+      ]
+    },
+    "jobKind": "normal",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "ask",
+      "rule": "W3"
+    },
+    "note": "Boundary: exactly 25 is W3, not W6"
+  },
+  {
+    "id": "X-019",
+    "agentId": "beaver",
+    "tool": "fs_trash",
+    "risk": "destructive",
+    "args": {
+      "paths": [
+        "Downloads/a.txt"
+      ]
+    },
+    "inspect": {
+      "writesPaths": [
+        "Documents/ADE Trash/batch/a.txt"
+      ]
+    },
+    "jobKind": "normal",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "ask",
+      "rule": "W4"
+    }
+  },
+  {
+    "id": "X-020",
+    "agentId": "beaver",
+    "tool": "fs_trash",
+    "risk": "destructive",
+    "args": {
+      "paths": [
+        "Desktop/old.txt"
+      ]
+    },
+    "inspect": {},
+    "jobKind": "normal",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "ask",
+      "rule": "W4"
+    }
+  },
+  {
+    "id": "X-021",
+    "agentId": "beaver",
+    "tool": "fs_permanent_delete",
+    "risk": "destructive",
+    "args": {
+      "path": "Downloads/a.txt"
+    },
+    "inspect": {},
+    "jobKind": "normal",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "deny",
+      "rule": "W4"
+    }
+  },
+  {
+    "id": "X-022",
+    "agentId": "workspace",
+    "tool": "cal_erase_event",
+    "risk": "destructive",
+    "args": {
+      "event_id": "evt-1"
+    },
+    "inspect": {},
+    "jobKind": "normal",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "deny",
+      "rule": "W4"
+    }
+  },
+  {
+    "id": "X-023",
+    "agentId": "beaver",
+    "tool": "fs_read_text",
+    "risk": "read",
+    "args": {
+      "path": "Downloads2/secret.txt"
+    },
+    "inspect": {},
+    "jobKind": "normal",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "deny",
+      "rule": "W5"
+    },
+    "note": "Separator boundary"
+  },
+  {
+    "id": "X-024",
+    "agentId": "beaver",
+    "tool": "fs_read_text",
+    "risk": "read",
+    "args": {
+      "path": "Downloads/.git/config"
+    },
+    "inspect": {},
+    "jobKind": "normal",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "deny",
+      "rule": "W5"
+    }
+  },
+  {
+    "id": "X-025",
+    "agentId": "beaver",
+    "tool": "fs_move",
+    "risk": "write",
+    "args": {
+      "from": "Downloads/a.txt",
+      "to_folder": "Documents/ADE Trash/batch"
+    },
+    "inspect": {
+      "writesPaths": [
+        "Documents/ADE Trash/batch/a.txt"
+      ]
+    },
+    "jobKind": "normal",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "deny",
+      "rule": "W5"
+    }
+  },
+  {
+    "id": "X-026",
+    "agentId": "beaver",
+    "tool": "fs_read_text",
+    "risk": "read",
+    "args": {
+      "path": "Documents/node_modules/pkg/index.js"
+    },
+    "inspect": {},
+    "jobKind": "normal",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "deny",
+      "rule": "W5"
+    }
+  },
+  {
+    "id": "X-027",
+    "agentId": "beaver",
+    "tool": "fs_open",
+    "risk": "read",
+    "args": {
+      "path": "Desktop/desktop.ini"
+    },
+    "inspect": {},
+    "jobKind": "normal",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "deny",
+      "rule": "W5"
+    }
+  },
+  {
+    "id": "X-028",
+    "agentId": "beaver",
+    "tool": "fs_read_text",
+    "risk": "read",
+    "args": {
+      "path": "AppData/Roaming/config.txt"
+    },
+    "inspect": {},
+    "jobKind": "normal",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "deny",
+      "rule": "W5"
+    }
+  },
+  {
+    "id": "X-029",
+    "agentId": "beaver",
+    "tool": "fs_apply_plan",
+    "risk": "write",
+    "args": {},
+    "inspect": {
+      "count": 26,
+      "paths": [
+        "Downloads/a.txt"
+      ],
+      "writesPaths": [
+        "Documents/a.txt"
+      ]
+    },
+    "jobKind": "normal",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "ask",
+      "rule": "W6"
+    }
+  },
+  {
+    "id": "X-030",
+    "agentId": "beaver",
+    "tool": "fs_trash",
+    "risk": "destructive",
+    "args": {},
+    "inspect": {
+      "count": 30,
+      "paths": [
+        "Downloads/a.txt"
+      ],
+      "writesPaths": [
+        "Documents/ADE Trash/batch/a.txt"
+      ]
+    },
+    "jobKind": "normal",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "ask",
+      "rule": "W6"
+    }
+  },
+  {
+    "id": "X-031",
+    "agentId": "beaver",
+    "tool": "fs_apply_plan",
+    "risk": "write",
+    "args": {},
+    "inspect": {
+      "count": 40,
+      "paths": [
+        "Desktop/a.txt"
+      ],
+      "writesPaths": [
+        "Documents/a.txt"
+      ]
+    },
+    "jobKind": "normal",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "ask",
+      "rule": "W6"
+    }
+  },
+  {
+    "id": "X-032",
+    "agentId": "beaver",
+    "tool": "fs_apply_plan",
+    "risk": "write",
+    "args": {},
+    "inspect": {
+      "count": 27,
+      "paths": [
+        "Downloads/a.txt"
+      ],
+      "writesPaths": [
+        "Documents/a.txt"
+      ]
+    },
+    "jobKind": "normal",
+    "tainted": true,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "ask",
+      "rule": "W6"
+    },
+    "note": "W6 outranks W16"
+  },
+  {
+    "id": "X-033",
+    "agentId": "beaver",
+    "tool": "fs_open",
+    "risk": "read",
+    "args": {
+      "path": "Downloads/setup.exe"
+    },
+    "inspect": {},
+    "jobKind": "normal",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "deny",
+      "rule": "W7"
+    }
+  },
+  {
+    "id": "X-034",
+    "agentId": "beaver",
+    "tool": "fs_open",
+    "risk": "read",
+    "args": {
+      "path": "Downloads/setup.ps1"
+    },
+    "inspect": {},
+    "jobKind": "normal",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "deny",
+      "rule": "W7"
+    }
+  },
+  {
+    "id": "X-035",
+    "agentId": "beaver",
+    "tool": "fs_open",
+    "risk": "read",
+    "args": {
+      "path": "Downloads/setup.lnk"
+    },
+    "inspect": {},
+    "jobKind": "normal",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "deny",
+      "rule": "W7"
+    }
+  },
+  {
+    "id": "X-036",
+    "agentId": "beaver",
+    "tool": "fs_open",
+    "risk": "read",
+    "args": {
+      "path": "Downloads/setup.jar"
+    },
+    "inspect": {},
+    "jobKind": "normal",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "deny",
+      "rule": "W7"
+    }
+  },
+  {
+    "id": "X-037",
+    "agentId": "workspace",
+    "tool": "cal_create_event",
+    "risk": "write",
+    "args": {
+      "title": "Study",
+      "attendees": [
+        "friend@example.test"
+      ]
+    },
+    "inspect": {},
+    "jobKind": "normal",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "ask",
+      "rule": "W8"
+    }
+  },
+  {
+    "id": "X-038",
+    "agentId": "workspace",
+    "tool": "cal_update_event",
+    "risk": "write",
+    "args": {},
+    "inspect": {
+      "hasAttendees": true
+    },
+    "jobKind": "normal",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "ask",
+      "rule": "W8"
+    }
+  },
+  {
+    "id": "X-039",
+    "agentId": "workspace",
+    "tool": "cal_create_event",
+    "risk": "write",
+    "args": {
+      "attendees": [
+        "a@example.test",
+        "b@example.test"
+      ]
+    },
+    "inspect": {},
+    "jobKind": "normal",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "ask",
+      "rule": "W8"
+    }
+  },
+  {
+    "id": "X-040",
+    "agentId": "workspace",
+    "tool": "cal_create_event",
+    "risk": "write",
+    "args": {},
+    "inspect": {
+      "hasAttendees": true
+    },
+    "jobKind": "normal",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "ask",
+      "rule": "W8"
+    },
+    "note": "Inspection source"
+  },
+  {
+    "id": "X-041",
+    "agentId": "beaver",
+    "tool": "fs_move",
+    "risk": "write",
+    "args": {
+      "from": "Downloads/a.txt",
+      "to_folder": "Documents"
+    },
+    "inspect": {},
+    "jobKind": "normal",
+    "tainted": false,
+    "priorDenied": true,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "deny",
+      "rule": "W9"
+    }
+  },
+  {
+    "id": "X-042",
+    "agentId": "beaver",
+    "tool": "fs_trash",
+    "risk": "destructive",
+    "args": {
+      "paths": [
+        "Desktop/a.txt"
+      ]
+    },
+    "inspect": {},
+    "jobKind": "normal",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": true,
+    "expect": {
+      "verdict": "deny",
+      "rule": "W9"
+    }
+  },
+  {
+    "id": "X-043",
+    "agentId": "beaver",
+    "tool": "fs_rename",
+    "risk": "write",
+    "args": {
+      "path": "Downloads/a.txt",
+      "new_name": "b.txt"
+    },
+    "inspect": {},
+    "jobKind": "normal",
+    "tainted": false,
+    "priorDenied": true,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "deny",
+      "rule": "W9"
+    }
+  },
+  {
+    "id": "X-044",
+    "agentId": "beaver",
+    "tool": "fs_mkdir",
+    "risk": "write",
+    "args": {
+      "path": "Desktop/New"
+    },
+    "inspect": {},
+    "jobKind": "normal",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": true,
+    "expect": {
+      "verdict": "deny",
+      "rule": "W9"
+    }
+  },
+  {
+    "id": "X-045",
+    "agentId": "beaver",
+    "tool": "fs_unknown",
+    "risk": "read",
+    "args": {},
+    "inspect": {},
+    "jobKind": "normal",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "deny",
+      "rule": "W10"
+    },
+    "setup": {
+      "registered": false
+    }
+  },
+  {
+    "id": "X-046",
+    "agentId": "workspace",
+    "tool": "fs_read_text",
+    "risk": "read",
+    "args": {
+      "path": "Downloads/a.txt"
+    },
+    "inspect": {},
+    "jobKind": "normal",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "deny",
+      "rule": "W10"
+    },
+    "setup": {
+      "registered": false
+    }
+  },
+  {
+    "id": "X-047",
+    "agentId": "beaver",
+    "tool": "ask_teammate",
+    "risk": "read",
+    "args": {
+      "agentId": "eagle",
+      "request": "Research"
+    },
+    "inspect": {},
+    "jobKind": "help",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "deny",
+      "rule": "W10"
+    }
+  },
+  {
+    "id": "X-048",
+    "agentId": "beaver",
+    "tool": "web_open",
+    "risk": "read",
+    "args": {
+      "url": "https://example.test"
+    },
+    "inspect": {},
+    "jobKind": "normal",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "deny",
+      "rule": "W10"
+    },
+    "setup": {
+      "registered": false
+    }
+  },
+  {
+    "id": "X-049",
+    "agentId": "beaver",
+    "tool": "fs_undo",
+    "risk": "write",
+    "args": {
+      "batch_id": "batch-1"
+    },
+    "inspect": {
+      "count": 37,
+      "paths": [
+        "Documents/ADE Trash/batch-1/a.txt"
+      ],
+      "writesPaths": [
+        "Downloads/a.txt"
+      ]
+    },
+    "jobKind": "normal",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "allow",
+      "rule": "W11"
+    }
+  },
+  {
+    "id": "X-050",
+    "agentId": "beaver",
+    "tool": "fs_undo",
+    "risk": "write",
+    "args": {
+      "batch_id": "batch-2"
+    },
+    "inspect": {
+      "count": 1,
+      "paths": [
+        "Documents/ADE Trash/batch-2/b.txt"
+      ],
+      "writesPaths": [
+        "Desktop/b.txt"
+      ]
+    },
+    "jobKind": "normal",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "allow",
+      "rule": "W11"
+    }
+  },
+  {
+    "id": "X-051",
+    "agentId": "beaver",
+    "tool": "fs_undo",
+    "risk": "write",
+    "args": {
+      "batch_id": "batch-3"
+    },
+    "inspect": {
+      "count": 26,
+      "paths": [
+        "Documents/ADE Trash/batch-3/c.txt"
+      ],
+      "writesPaths": [
+        "Documents/c.txt"
+      ]
+    },
+    "jobKind": "normal",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "allow",
+      "rule": "W11"
+    }
+  },
+  {
+    "id": "X-052",
+    "agentId": "beaver",
+    "tool": "fs_undo",
+    "risk": "write",
+    "args": {
+      "batch_id": "batch-4"
+    },
+    "inspect": {
+      "count": 2,
+      "paths": [
+        "Documents/ADE Trash/batch-4/d.txt"
+      ],
+      "writesPaths": [
+        "Downloads/d.txt"
+      ]
+    },
+    "jobKind": "normal",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "allow",
+      "rule": "W11"
+    }
+  },
+  {
+    "id": "X-053",
+    "agentId": "eagle",
+    "tool": "web_open",
+    "risk": "read",
+    "args": {
+      "url": "javascript:alert(1)"
+    },
+    "inspect": {},
+    "jobKind": "normal",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "deny",
+      "rule": "W12"
+    }
+  },
+  {
+    "id": "X-054",
+    "agentId": "eagle",
+    "tool": "web_open",
+    "risk": "read",
+    "args": {
+      "url": "https://example.test/setup.exe"
+    },
+    "inspect": {},
+    "jobKind": "normal",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "deny",
+      "rule": "W12"
+    }
+  },
+  {
+    "id": "X-055",
+    "agentId": "eagle",
+    "tool": "web_open",
+    "risk": "read",
+    "args": {
+      "url": "file:///Downloads/a.txt"
+    },
+    "inspect": {},
+    "jobKind": "normal",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "deny",
+      "rule": "W12"
+    }
+  },
+  {
+    "id": "X-056",
+    "agentId": "eagle",
+    "tool": "web_open",
+    "risk": "read",
+    "args": {
+      "url": "https://example.test/download.zip"
+    },
+    "inspect": {},
+    "jobKind": "normal",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "deny",
+      "rule": "W12"
+    }
+  },
+  {
+    "id": "X-057",
+    "agentId": "workspace",
+    "tool": "gmail_create_draft",
+    "risk": "draft",
+    "args": {},
+    "inspect": {
+      "attachments": [
+        "Downloads/setup.exe"
+      ]
+    },
+    "jobKind": "normal",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "deny",
+      "rule": "W13"
+    }
+  },
+  {
+    "id": "X-058",
+    "agentId": "workspace",
+    "tool": "gmail_create_draft",
+    "risk": "draft",
+    "args": {},
+    "inspect": {
+      "attachments": [
+        "Desktop/run.ps1"
+      ]
+    },
+    "jobKind": "normal",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "deny",
+      "rule": "W13"
+    }
+  },
+  {
+    "id": "X-059",
+    "agentId": "workspace",
+    "tool": "gmail_create_draft",
+    "risk": "draft",
+    "args": {},
+    "inspect": {
+      "attachments": [
+        "Documents/tool.jar"
+      ]
+    },
+    "jobKind": "normal",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "deny",
+      "rule": "W13"
+    }
+  },
+  {
+    "id": "X-060",
+    "agentId": "workspace",
+    "tool": "gmail_create_draft",
+    "risk": "draft",
+    "args": {},
+    "inspect": {
+      "attachments": [
+        "Downloads/shortcut.lnk"
+      ]
+    },
+    "jobKind": "normal",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "deny",
+      "rule": "W13"
+    }
+  },
+  {
+    "id": "X-061",
+    "agentId": "beaver",
+    "tool": "fs_trash",
+    "risk": "destructive",
+    "args": {
+      "paths": [
+        "Downloads/a.txt"
+      ]
+    },
+    "inspect": {},
+    "jobKind": "help",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "deny",
+      "rule": "W14"
+    }
+  },
+  {
+    "id": "X-062",
+    "agentId": "beaver",
+    "tool": "fs_permanent_delete",
+    "risk": "destructive",
+    "args": {
+      "path": "Desktop/a.txt"
+    },
+    "inspect": {},
+    "jobKind": "help",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "deny",
+      "rule": "W14"
+    }
+  },
+  {
+    "id": "X-063",
+    "agentId": "workspace",
+    "tool": "cal_erase_event",
+    "risk": "destructive",
+    "args": {},
+    "inspect": {},
+    "jobKind": "help",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "deny",
+      "rule": "W14"
+    }
+  },
+  {
+    "id": "X-064",
+    "agentId": "beaver",
+    "tool": "fs_trash",
+    "risk": "destructive",
+    "args": {},
+    "inspect": {
+      "count": 26,
+      "paths": [
+        "Downloads/a.txt"
+      ]
+    },
+    "jobKind": "help",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "deny",
+      "rule": "W14"
+    }
+  },
+  {
+    "id": "X-065",
+    "agentId": "beaver",
+    "tool": "fs_move",
+    "risk": "write",
+    "args": {
+      "from": "Downloads/a.txt",
+      "to_folder": "Documents"
+    },
+    "inspect": {},
+    "jobKind": "normal",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "ask",
+      "rule": "W3"
+    },
+    "covers": [
+      "W15"
+    ],
+    "queue": {
+      "jobId": "job-a",
+      "position": 1,
+      "visibleCards": 0
+    },
+    "note": "W15 queue case; verdict remains W3"
+  },
+  {
+    "id": "X-066",
+    "agentId": "beaver",
+    "tool": "fs_rename",
+    "risk": "write",
+    "args": {
+      "path": "Desktop/a.txt",
+      "new_name": "b.txt"
+    },
+    "inspect": {},
+    "jobKind": "normal",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "ask",
+      "rule": "W3"
+    },
+    "covers": [
+      "W15"
+    ],
+    "queue": {
+      "jobId": "job-a",
+      "position": 2,
+      "visibleCards": 1
+    },
+    "note": "Second card for same job waits"
+  },
+  {
+    "id": "X-067",
+    "agentId": "beaver",
+    "tool": "fs_mkdir",
+    "risk": "write",
+    "args": {
+      "path": "Documents/New"
+    },
+    "inspect": {},
+    "jobKind": "normal",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "ask",
+      "rule": "W3"
+    },
+    "covers": [
+      "W15"
+    ],
+    "queue": {
+      "jobId": "job-b",
+      "position": 4,
+      "visibleCards": 3
+    },
+    "note": "Fourth global card waits"
+  },
+  {
+    "id": "X-068",
+    "agentId": "beaver",
+    "tool": "fs_trash",
+    "risk": "destructive",
+    "args": {
+      "paths": [
+        "Downloads/a.txt"
+      ]
+    },
+    "inspect": {},
+    "jobKind": "normal",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "ask",
+      "rule": "W4"
+    },
+    "covers": [
+      "W15"
+    ],
+    "queue": {
+      "jobId": "job-c",
+      "position": 3,
+      "visibleCards": 2
+    },
+    "note": "Third global card may show"
+  },
+  {
+    "id": "X-069",
+    "agentId": "workspace",
+    "tool": "gmail_create_draft",
+    "risk": "draft",
+    "args": {
+      "subject": "Draft"
+    },
+    "inspect": {},
+    "jobKind": "normal",
+    "tainted": true,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "ask",
+      "rule": "W16"
+    }
+  },
+  {
+    "id": "X-070",
+    "agentId": "beaver",
+    "tool": "fs_undo",
+    "risk": "write",
+    "args": {
+      "batch_id": "batch-1"
+    },
+    "inspect": {
+      "count": 37,
+      "paths": [
+        "Documents/ADE Trash/batch-1/a.txt"
+      ],
+      "writesPaths": [
+        "Downloads/a.txt"
+      ]
+    },
+    "jobKind": "normal",
+    "tainted": true,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "ask",
+      "rule": "W6"
+    },
+    "covers": [
+      "W16"
+    ],
+    "note": "Approved clarification: section 3 ask precedence gives W6 for a 37-file tainted undo; taint still prevents the W11 exemption."
+  },
+  {
+    "id": "X-071",
+    "agentId": "beaver",
+    "tool": "fs_move",
+    "risk": "write",
+    "args": {
+      "from": "Downloads/a.txt",
+      "to_folder": "Documents"
+    },
+    "inspect": {},
+    "jobKind": "normal",
+    "tainted": true,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "ask",
+      "rule": "W16"
+    }
+  },
+  {
+    "id": "X-072",
+    "agentId": "workspace",
+    "tool": "gmail_create_draft",
+    "risk": "draft",
+    "args": {
+      "subject": "Helper draft"
+    },
+    "inspect": {},
+    "jobKind": "help",
+    "tainted": true,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": {
+      "verdict": "ask",
+      "rule": "W16"
+    }
+  },
+  {
+    "id": "X-073",
+    "agentId": "workspace",
+    "tool": "gmail_create_draft",
+    "risk": "draft",
+    "args": { "subject": "Report" },
+    "inspect": { "attachments": ["Documents/report.pdf"] },
+    "jobKind": "normal",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": { "verdict": "allow", "rule": "W2" },
+    "covers": ["W13"],
+    "setup": { "fileBytes": { "Documents/report.pdf": 26214400 } },
+    "note": "Exactly 25 MiB total attachments is allowed"
+  },
+  {
+    "id": "X-074",
+    "agentId": "workspace",
+    "tool": "gmail_create_draft",
+    "risk": "draft",
+    "args": { "subject": "Report" },
+    "inspect": { "attachments": ["Documents/report.pdf"] },
+    "jobKind": "normal",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": { "verdict": "deny", "rule": "W13" },
+    "setup": { "fileBytes": { "Documents/report.pdf": 26214401 } },
+    "note": "One byte over 25 MiB total attachments is denied"
+  },
+  {
+    "id": "X-075",
+    "agentId": "workspace",
+    "tool": "gmail_create_draft",
+    "risk": "draft",
+    "args": { "subject": "Two reports" },
+    "inspect": { "attachments": ["Documents/a.pdf", "Documents/b.pdf"] },
+    "jobKind": "normal",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": { "verdict": "deny", "rule": "W13" },
+    "setup": { "fileBytes": { "Documents/a.pdf": 12582912, "Documents/b.pdf": 14680064 } },
+    "note": "Total of two attachments exceeds 25 MiB"
+  },
+  {
+    "id": "X-076",
+    "agentId": "beaver",
+    "tool": "fs_list",
+    "risk": "read",
+    "args": { "path": "Downloads" },
+    "inspect": {},
+    "jobKind": "normal",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": { "verdict": "ask", "rule": "W3" },
+    "setup": { "declaredRisk": "write" },
+    "note": "Declared tool risk outranks runtime read risk"
+  },
+  {
+    "id": "X-077",
+    "agentId": "beaver",
+    "tool": "fs_list",
+    "risk": "read",
+    "args": { "path": "Downloads" },
+    "inspect": {},
+    "jobKind": "normal",
+    "tainted": false,
+    "priorDenied": false,
+    "priorDeclined": false,
+    "expect": { "verdict": "ask", "rule": "W3" },
+    "setup": { "declaredRisk": "read", "riskFor": "write" },
+    "note": "Dynamic riskFor outranks declared and runtime read risk"
+  }
+]

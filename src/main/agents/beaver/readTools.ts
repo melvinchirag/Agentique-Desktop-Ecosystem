@@ -327,6 +327,22 @@ export function createReadToolBindings(deps: ReadToolDeps): BeaverBindings {
     if (!ctx.threadId) return { error: 'NO_THREAD', hint: 'No job thread to attach the file to.' } satisfies ToolError;
     if (!SUPPORTED_EXTENSIONS.has(path.extname(found.abs).toLowerCase())) return { error: 'UNSUPPORTED_TYPE', hint: 'Backboard cannot read this file type.' } satisfies ToolError;
     if (found.stat.size > MAX_FILE_BYTES) return { error: 'TOO_LARGE', hint: 'over 20 MB' } satisfies ToolError;
+    // Backboard reads uploads internally; inspect extractable text before upload.
+    if (screen && PLAIN_TEXT_EXTENSIONS.has(path.extname(found.abs).toLowerCase())) {
+      try {
+        const handle = await fs.open(found.abs, 'r');
+        let excerpt: string;
+        try {
+          const buffer = Buffer.alloc(Math.min(found.stat.size, 80_000));
+          const { bytesRead } = await handle.read(buffer, 0, buffer.length, 0);
+          excerpt = buffer.subarray(0, bytesRead).toString('utf8').slice(0, 20_000);
+        } finally { await handle.close(); }
+        if (excerpt.includes('\0')) return { error: 'UNSUPPORTED_TYPE', hint: 'The file is binary.' } satisfies ToolError;
+        await screen.screen(excerpt, { kind: 'doc', name: path.basename(found.abs), taskId: ctx.taskId, jobId: ctx.jobId });
+      } catch {
+        return { error: 'SCREEN_FAILED', hint: 'The file could not be checked, so it was not uploaded.' } satisfies ToolError;
+      }
+    }
     // Job thread only, never the assistant (SPONSORS §2.5).
     let documentId: string;
     try { ({ documentId } = await documents.uploadToThread(ctx.threadId, found.abs)); }

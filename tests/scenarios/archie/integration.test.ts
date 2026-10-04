@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs';
 import { mkdir, readFile, stat, utimes, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { LocalFileOpsJournal } from '../../../src/main/connectors/fs/localJournal';
 import { safePath } from '../../../src/main/connectors/fs/safePath';
 import { FakeClock } from '../../../src/main/runtime/clock';
@@ -10,9 +10,10 @@ import { doneStep, makeArchieScenario, toolStep } from './helpers';
 
 type Rig = Awaited<ReturnType<typeof makeArchieScenario>>;
 const rigs: Rig[] = [];
+let scenarioMode: 'standin' | 'real' = 'standin';
 afterEach(async () => { for (const rig of rigs.splice(0)) await rig.cleanup(); });
 async function setup(script: Parameters<typeof makeArchieScenario>[0], decisions: Parameters<typeof makeArchieScenario>[1] = []) {
-  const rig = await makeArchieScenario(script, decisions);
+  const rig = await makeArchieScenario(script, decisions, undefined, scenarioMode);
   rigs.push(rig);
   return rig;
 }
@@ -27,7 +28,8 @@ const planAndApply = [toolStep('fs_plan_organize', { path: 'Downloads', strategy
   (call: FakeLlmCall) => requiresAction([toolCall('fs_apply_plan', { plan_id: output(call).plan_id })]),
   doneStep('I organized your Downloads.', 'Downloads were organized.')];
 
-describe('Archie through Chip and AgentRuntime, isolated fixture only', () => {
+describe.each(['standin', 'real'] as const)('Archie through Chip and AgentRuntime, isolated fixture only (%s Warden)', (mode) => {
+  beforeEach(() => { scenarioMode = mode; });
   it('A1 rejects path escapes and accepts fixture paths', async () => {
     const r = await setup([]);
     expect(await safePath('Desktop/notes.txt', r.safe)).toMatchObject({ ok: true });
@@ -138,6 +140,18 @@ describe('Archie through Chip and AgentRuntime, isolated fixture only', () => {
     expect(second.core).not.toBe(first.core);
     expect(second.journal).not.toBe(first.journal);
     expect(await second.journal.lastBatch()).toBe(batch);
+    if (mode === 'real') {
+      // Journal hydration is asynchronous. A cold review fails closed with W0;
+      // the resumed undo must wait for the real inspection to load all 61 paths.
+      let verdict = 'deny';
+      for (let attempt = 0; attempt < 30 && verdict === 'deny'; attempt++) {
+        verdict = second.core.warden!.gate.review({ agentId: 'beaver', taskId: 'restart-probe',
+          jobId: `restart-probe-${attempt}`, callId: `restart-probe-${attempt}`, tool: 'fs_undo',
+          risk: 'write', jobKind: 'normal', args: { batch_id: batch } });
+        if (verdict === 'deny') await new Promise<void>((resolve) => setTimeout(resolve, 10));
+      }
+      expect(verdict).toBe('allow');
+    }
     expect((await second.run('undo')).ok).toBe(true);
     expect(toolOutputs(second)[0]).toMatchObject({ restored: 61 });
     expect(existsSync(path.join(second.fixture.downloads, 'fixture-01.pdf'))).toBe(true);
@@ -178,10 +192,12 @@ describe('Archie through Chip and AgentRuntime, isolated fixture only', () => {
     const r = await setup([toolStep('fs_open', { path: 'Downloads/setup.exe' }), doneStep('I cannot open that.'),
       toolStep('fs_move', { from: 'Windows/System32', to_folder: 'Documents' }), doneStep('That is outside allowed folders.')]);
     await r.run('open setup.exe');
-    expect(toolOutputs(r)[0]).toMatchObject({ error: 'BLOCKED_FILE_TYPE' });
+    expect(toolOutputs(r)[0]).toMatchObject(mode === 'real'
+      ? { error: 'DENIED_BY_WOLF', rule: 'W7' } : { error: 'BLOCKED_FILE_TYPE' });
     expect(r.shell.opened).toHaveLength(0);
     await r.run('move my Windows folder');
-    expect(toolOutputs(r).at(-1)).toMatchObject({ error: 'OUTSIDE_ALLOWED_FOLDERS' });
+    expect(toolOutputs(r).at(-1)).toMatchObject(mode === 'real'
+      ? { error: 'DENIED_BY_WOLF', rule: 'W5' } : { error: 'OUTSIDE_ALLOWED_FOLDERS' });
   });
 
   it('A13 leaves the fixture untouched when approval is declined', async () => {

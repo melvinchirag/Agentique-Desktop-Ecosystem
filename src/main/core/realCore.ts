@@ -5,6 +5,7 @@ import type { AgentId } from '../../shared/agents';
 import { AGENTS } from '../../shared/config';
 import type { BiomeEvent } from '../../shared/events';
 import type { AdeSettings } from '../../shared/ipc';
+import type { ToolDefinition } from '../../shared/tools';
 import { createChipCore } from '../chipCore';
 import { createPixelAgent } from '../agents/workspace';
 import { createCalendarTools, GoogleCalendarSource } from '../agents/workspace/calendarTools';
@@ -35,7 +36,7 @@ import { createAgentRuntime } from '../runtime/agentRuntime';
 import { createFakeCore } from '../fake';
 import { BackboardClient } from '../runtime/backboard';
 import { RealClock } from '../runtime/clock';
-import type { Approvals, SpecialistRunner, VoiceService } from '../runtime/types';
+import type { InjectionScreen, SpecialistRunner, VoiceService } from '../runtime/types';
 import { assistantIdsFromEnv, readEnvFile, voiceIdsFromEnv, type Env } from '../sponsors/env';
 import { BackboardMemoryApi } from '../sponsors/backboardMemory';
 import type { CoreAdapter } from '../shell/contracts';
@@ -44,11 +45,10 @@ import { TigerHistoryStore } from '../store/tigerHistory';
 import { TigerNudgeStore } from '../store/tigerNudges';
 import { TigerQueries } from '../store/tigerQueries';
 import { FakeCalendar } from '../testing/fakeCalendar';
-import { StubWardenGate } from '../testing/stubWarden';
+import { createWardenClassifier } from '../sponsors/wardenClassifier';
 import { handleStandInSendPost, StandInSpecialists } from './standInSpecialists';
 import { ElevenLabsVoice } from '../voice/elevenlabs';
-import { createApprovals } from './approvals';
-import { createInjectionScreen } from './injectionScreen';
+import { ShippedLines } from '../voice/cache';
 
 const ids = Object.keys(AGENTS) as AgentId[];
 const silent = () => new ArrayBuffer(0);
@@ -128,16 +128,19 @@ export function createRealCore(options: RealCoreOptions = {}): CoreAdapter {
   const queries = new TigerQueries(db);
   const memory = new BackboardMemoryApi(llm, assistantIds);
   const voiceIds = voiceIdsFromEnv(env);
+  const shippedLines = new ShippedLines(join(options.resourcesDir ?? join(process.cwd(), 'resources'), 'voice-lines'));
   const voice: VoiceService | undefined = env.ELEVENLABS_API_KEY
-    ? new ElevenLabsVoice({ apiKey: env.ELEVENLABS_API_KEY, voiceIds, voiceEnabled: () => settings.voiceEnabled })
+    ? new ElevenLabsVoice({ apiKey: env.ELEVENLABS_API_KEY, voiceIds, voiceEnabled: () => settings.voiceEnabled,
+      shipped: shippedLines })
     : undefined;
   const eventSink = new TigerEventSink({ db });
-  let alertBus: import('../runtime/types').Bus | undefined;
-  const injectionScreen = createInjectionScreen((source, reason) => alertBus?.emit({
-    type: 'wolf.alert', agentId: 'wolf', taskId: source.taskId, source: source.name, reason,
-  }));
+  let activeScreen: InjectionScreen | undefined;
+  const injectionScreen: InjectionScreen = { screen: (text, source) => {
+    if (!activeScreen) throw new Error('Warden screen is unavailable');
+    return activeScreen.screen(text, source);
+  } };
   const standIns = new StandInSpecialists(clock);
-  let sharedApprovals: Approvals | undefined;
+  let pixelTools: readonly ToolDefinition[] | undefined;
   const runner: SpecialistRunner = standIns;
   const documentsRoot = options.documentsRoot ?? join(homedir(), 'Documents');
   const safe = { allowedRoots: settings.allowedFolders, documentsRoot };
@@ -161,32 +164,27 @@ export function createRealCore(options: RealCoreOptions = {}): CoreAdapter {
   const liveCalendar = new GoogleCalendarSource(() => settings.googleEmail ? google : undefined, injectionScreen, () => clock.now());
   const registry = new PixelRegistry();
   const styleStore = new StyleStore(memory, memory);
-  const gate = ({ bus }: { bus: import('../runtime/types').Bus }) => new StubWardenGate(bus);
-  const approvals = ({ bus, clock, jobs }: import('../chipCore').ArchieContext) =>
-    sharedApprovals ??= createApprovals(bus, clock, jobs);
   const core = createChipCore({
     llm, runner, calendar: { listEvents: (from, to) => settings.googleEmail ? liveCalendar.listEvents(from, to) : fakeCalendar.listEvents(from, to) }, settings: () => settings,
     chipAssistantId: assistantIds.chipmunk!, clock, eventSink,
     nudgeStore: new TigerNudgeStore(db), history: new TigerHistoryStore(db, () => clock.now()),
+    warden: { registry: agentId => agentId === 'workspace' ? pixelTools : undefined,
+      classifier: env.BB_ASSISTANT_WARDEN_SCREEN
+        ? createWardenClassifier({ llm, assistantId: env.BB_ASSISTANT_WARDEN_SCREEN }) : undefined },
     ...(assistantIds.beaver && options.fsShell ? { archie: {
-      llm, assistantId: assistantIds.beaver, gate, approvals, safe, index,
+      llm, assistantId: assistantIds.beaver, safe, index,
       journal: new LocalFileOpsJournal(join(adeDataDir(), 'archie-file-ops.jsonl')),
       shell: options.fsShell, documents, screen: injectionScreen,
     } } : {}),
     ...(assistantIds.eagle && options.openExternal ? { eagle: {
       llm, assistantId: assistantIds.eagle, openExternal: options.openExternal, documentsRoot,
-      gate, approvals, screen: injectionScreen,
+      screen: injectionScreen,
     } } : {}),
     ...(assistantIds.ants ? { ants: {
       llm, assistantId: assistantIds.ants,
-      gate: ({ bus }: { bus: import('../runtime/types').Bus }) => new StubWardenGate(bus),
-      approvals: () => ({
-        request: async () => ({ approved: false as const, how: 'cancelled' as const }),
-        resolve: () => {}, cancelForJobs: () => {}, pending: () => [], dispose: () => {},
-      }),
     } } : {}),
   });
-  alertBus = core.bus;
+  activeScreen = core.warden!.screen;
   standIns.connect(core.bus);
   // Pixel joins ChipCore's registry; Archie and Scout registered during core construction.
   if (google && assistantIds.workspace) {
@@ -203,9 +201,9 @@ export function createRealCore(options: RealCoreOptions = {}): CoreAdapter {
         ...createCalendarTools(services), ...createDriveTools(services), ...createDocsTools(services),
         ...createSheetsTools(services), ...createStyleTool(services),
       ]);
-      const pixelApprovals = approvals({ bus: core.bus, clock, jobs: core.jobs });
+      pixelTools = definition.tools;
       const pixelRuntime = createAgentRuntime({ bus: core.bus, llm, jobs: core.jobs,
-        gate: gate({ bus: core.bus }), approvals: pixelApprovals,
+        gate: core.warden!.gate, approvals: core.warden!.approvals,
         settings: () => settings, agents: [{ definition, assistantId: assistantIds.workspace }], screen: injectionScreen });
       core.registerSpecialist('workspace', pixelRuntime);
     } catch (error) { console.error('[core] Pixel construction failed; using stand-in', error); }
@@ -236,12 +234,17 @@ export function createRealCore(options: RealCoreOptions = {}): CoreAdapter {
       if (text && !handleStandInSendPost(core.bus, text, 'voice')) core.orchestrator.submitUserMessage(text, { source: 'voice', voiceCues: cues });
     },
     speak: async (agentId, text, mood) => {
-      if (!settings.voiceEnabled || !voice || !voiceIds[agentId]) return silent();
+      if (!settings.voiceEnabled) return silent();
+      if (agentId === 'wolf') {
+        const shipped = shippedLines.get(agentId, text);
+        if (shipped) return shipped.audio;
+      }
+      if (!voice) return silent();
       try { return (await voice.speak(agentId, text, mood)).audio; }
       catch { return silent(); }
     },
     resolveApproval: async (callId, approved) => {
-      sharedApprovals?.resolve(callId, approved);
+      core.warden?.approvals.resolve(callId, approved);
     },
     wakeAgent: agentId => core.presence.wake(agentId, 'user'),
     sleepAgent: async agentId => { core.presence.dock(agentId); },
@@ -274,6 +277,6 @@ export function createRealCore(options: RealCoreOptions = {}): CoreAdapter {
     deleteMemory: (agentId, id) => memory.remove(agentId, id),
     getPulse: () => queries.pulse(),
     getWardenAudit: limit => queries.wardenAudit(limit),
-    dispose: () => { sharedApprovals?.dispose(); index.stopWatching(); void core.dispose().then(() => eventSink.dispose()).then(() => db.end()); },
+    dispose: () => { index.stopWatching(); void core.dispose().then(() => eventSink.dispose()).then(() => db.end()); },
   };
 }
