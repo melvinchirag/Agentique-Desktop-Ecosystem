@@ -19,7 +19,7 @@ import { createOrchestrator } from './runtime/orchestrator';
 import { createPresenceManager } from './runtime/presence';
 import type {
   Approvals, Bus, CalendarSource, Clock, DocumentsApi, EventSink, FileOpsJournal, HistoryStore, InjectionScreen, JobScheduler,
-  LlmClient, MoodEngine, NudgeEngine, NudgeStore, Orchestrator, SpecialistRunner, TimerHandle, WardenGate,
+  LlmClient, MoodEngine, NudgeEngine, NudgeStore, Orchestrator, SpecialistId, SpecialistRunner, TimerHandle, WardenGate,
 } from './runtime/types';
 
 /**
@@ -31,9 +31,7 @@ import type {
 export interface ArchieContext { bus: Bus; clock: Clock; jobs: JobScheduler }
 
 /**
- * Real Archie (Archie spec §14). When present, jobs for `beaver` run in a real AgentRuntime; every other animal
- * still goes to `ChipCoreConfig.runner`. Warden does not exist yet, so the caller supplies the gate and approvals
- * (a stub today; real Warden replaces both).
+ * Real Archie wiring. Warden's gate and approval service are supplied by the app.
  */
 export interface ArchieWiring {
   llm: LlmClient;                    // Archie's OWN Backboard client; never Chip's (a scripted FakeLlm in tests)
@@ -65,8 +63,8 @@ const SAFE_SWEEP_ERRORS = new Set(['INVALID_BATCH_ID', 'TRASH_LOCATION_CHANGED',
 export interface ChipCoreConfig {
   llm: LlmClient;                    // Chip's brain: BackboardClient (live) or FakeLlm (tests)
   plannerLlm?: LlmClient;            // the nudge planner's client; default: `llm`
-  runner: SpecialistRunner;          // FakeSpecialists today; the real AgentRuntime later
-  calendar: CalendarSource;          // FakeCalendar today; Pixel's Google connector later
+  runner: SpecialistRunner;          // fallback for specialists without a registered runtime
+  calendar: CalendarSource;
   settings: () => AdeSettings;
   chipAssistantId: string;
   clock?: Clock;                     // default new RealClock()
@@ -96,6 +94,8 @@ export interface ChipCore {
     sweep(): Promise<SweepResult>;
   };
   eagle?: { runtime: SpecialistRunner; gate: WardenGate; approvals: Approvals };
+  /** One live specialist registry; a missing entry uses the configured stand-in runner. */
+  registerSpecialist(agentId: SpecialistId, runtime: SpecialistRunner): void;
   /** Stops every engine and timer, unsubscribes, then flushes the event sink (if any). Safe to call twice. */
   dispose(): Promise<void>;
 }
@@ -129,10 +129,11 @@ export function createChipCore(config: ChipCoreConfig): ChipCore {
   // Circular wiring: the runtime needs `jobs` (ask_teammate), and `jobs` needs a runner. A lazy runner breaks the cycle.
   let archieRuntime: SpecialistRunner | undefined;
   let eagleRuntime: SpecialistRunner | undefined;
+  const specialists: Partial<Record<SpecialistId, SpecialistRunner>> = {};
   const routedRunner: SpecialistRunner = {
     run: (agentId, task, ctx) => {
-      if (agentId === 'beaver' && archieRuntime) return archieRuntime.run(agentId, task, ctx);
-      if (agentId === 'eagle' && eagleRuntime) return eagleRuntime.run(agentId, task, ctx);
+      const registered = specialists[agentId];
+      if (registered) return registered.run(agentId, task, ctx);
       return runner.run(agentId, task, ctx);
     },
   };
@@ -159,6 +160,7 @@ export function createChipCore(config: ChipCoreConfig): ChipCore {
   let sweepInFlight: Promise<SweepResult> | undefined;
   let disposed = false;
   if (config.archie) {
+    try {
     const a = config.archie;
     const journal = createCompositeJournal(a.journal, a.tigerJournal);
     archieJournal = journal;
@@ -216,6 +218,7 @@ export function createChipCore(config: ChipCoreConfig): ChipCore {
       return run;
     };
     archie = { runtime: archieRuntime, gate, approvals, sweep };
+    specialists.beaver = archieRuntime;
 
     if (a.startSweep !== false) {
       const every = a.sweepEveryMs !== undefined && Number.isFinite(a.sweepEveryMs) && a.sweepEveryMs > 0
@@ -232,10 +235,12 @@ export function createChipCore(config: ChipCoreConfig): ChipCore {
       void sweep().catch(onFailure);
       tick();
     }
+    } catch (error) { console.error('[chipCore] Archie construction failed; using fallback', error); }
   }
 
   let eagle: ChipCore['eagle'];
   if (config.eagle) {
+    try {
     const e = config.eagle;
     const gate = e.gate({ bus, clock, jobs });
     const approvals = e.approvals({ bus, clock, jobs });
@@ -252,6 +257,8 @@ export function createChipCore(config: ChipCoreConfig): ChipCore {
       },
     };
     eagle = { runtime: eagleRuntime, gate, approvals };
+    specialists.eagle = eagleRuntime;
+    } catch (error) { console.error('[chipCore] Scout construction failed; using fallback', error); }
   }
 
   presence.start();
@@ -286,6 +293,7 @@ export function createChipCore(config: ChipCoreConfig): ChipCore {
     setUserTalking: (on) => { userTalking = on; },
     setDoNotDisturb: (on) => { doNotDisturb = on; },
     isUserBusy,
+    registerSpecialist: (agentId, runtime) => { specialists[agentId] = runtime; },
     ...(archie ? { archie } : {}), ...(eagle ? { eagle } : {}),
     dispose,
   };

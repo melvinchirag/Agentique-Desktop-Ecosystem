@@ -90,6 +90,12 @@ export class GoogleAuthService {
     return this.refresh(stored);
   }
 
+  async forceRefreshAccessToken(): Promise<string> {
+    const stored = await this.deps.store.load();
+    if (!stored) throw new GoogleAuthError('NOT_CONNECTED');
+    return this.refresh(stored, this.accessToken ?? undefined);
+  }
+
   /** Fetch an authenticated Google URL, retrying one 401 after a shared refresh. */
   async authorizedFetch(url: string, init: RequestInit = {}, requiredScopes: readonly string[] = GOOGLE_SCOPES): Promise<Response> {
     const firstToken = await this.getAccessToken(requiredScopes);

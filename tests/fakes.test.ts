@@ -174,11 +174,12 @@ describe('StubWardenGate', () => {
     expect(bus.recent()[0]).toMatchObject({ type: 'wolf.verdict', agentId: 'wolf', taskId: 't1', callId: 'c1', verdict: 'deny', rule: 'W1' });
   });
 
-  it.each(['read', 'draft', 'write', 'destructive'] as const)('allows %s with rule W2', (risk) => {
+  it.each(['read', 'draft', 'write', 'destructive'] as const)('reviews %s with the stub rule', (risk) => {
     const bus = new EventBus({ clock: new FakeClock(0) });
     const gate = new StubWardenGate(bus);
-    expect(gate.review({ agentId: 'beaver', taskId: 't1', callId: 'c2', tool: 'fs_list', risk })).toBe('allow');
-    expect(bus.recent()[0]).toMatchObject({ type: 'wolf.verdict', agentId: 'wolf', verdict: 'allow', rule: 'W2' });
+    const ask = risk === 'write' || risk === 'destructive';
+    expect(gate.review({ agentId: 'beaver', taskId: 't1', callId: 'c2', tool: 'fs_list', risk })).toBe(ask ? 'ask' : 'allow');
+    expect(bus.recent()[0]).toMatchObject({ type: 'wolf.verdict', agentId: 'wolf', verdict: ask ? 'ask' : 'allow', rule: ask ? 'W3' : 'W2' });
   });
 });
 

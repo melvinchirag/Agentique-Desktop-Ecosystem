@@ -28,6 +28,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   const settings = store((state) => state.settings);
   const [newFolder, setNewFolder] = useState('');
   const [connectingGoogle, setConnectingGoogle] = useState(false);
+  const [googleError, setGoogleError] = useState('');
 
   const currentModels = settings?.models ?? ({} as Record<AgentId, ModelChoice>);
   const voiceEnabled = settings?.voiceEnabled ?? true;
@@ -92,14 +93,24 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
 
   const handleConnectGoogle = async () => {
     setConnectingGoogle(true);
+    setGoogleError('');
     try {
       const res = await api.connectGoogle();
       if (res?.email && settings) {
         store.getState().setSettings({ ...settings, googleEmail: res.email });
       }
+    } catch (error) {
+      setGoogleError(error instanceof Error ? error.message : 'Google connection failed.');
     } finally {
       setConnectingGoogle(false);
     }
+  };
+  const handleDisconnectGoogle = async () => {
+    try {
+      await api.disconnectGoogle();
+      if (settings) store.getState().setSettings({ ...settings, googleEmail: undefined });
+      setGoogleError('');
+    } catch (error) { setGoogleError(error instanceof Error ? error.message : 'Google disconnect failed.'); }
   };
 
   const agentIds = Object.keys(AGENTS) as AgentId[];
@@ -249,7 +260,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
             onChange={handleToggleDemoMode}
             aria-label="Demo mode"
           />
-          <span style={{ fontSize: 12 }}>Demo Mode (Faster timers, simulated scripts)</span>
+          <span style={{ fontSize: 12 }}>Demo Mode (30s sleep, 60s dock)</span>
         </label>
       </div>
 
@@ -269,7 +280,9 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
           >
             {connectingGoogle ? 'Connecting...' : googleEmail ? 'Reconnect' : 'Connect Google'}
           </button>
+          {googleEmail && <button type="button" className="hub-tray-btn" onClick={handleDisconnectGoogle} aria-label="Disconnect Google">Disconnect</button>}
         </div>
+        {googleError && <div role="alert" style={{ fontSize: 11, color: '#f29b9b', marginTop: 5 }}>{googleError}</div>}
       </div>
 
       {/* Asset Lab Button */}
