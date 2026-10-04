@@ -110,6 +110,14 @@ export function createRealCore(options: RealCoreOptions = {}): CoreAdapter {
         resolve: () => {}, cancelForJobs: () => {}, pending: () => [], dispose: () => {},
       }),
     } } : {}),
+    ...(assistantIds.ants ? { ants: {
+      llm, assistantId: assistantIds.ants,
+      gate: ({ bus }: { bus: import('../runtime/types').Bus }) => new StubWardenGate(bus),
+      approvals: () => ({
+        request: async () => ({ approved: false as const, how: 'cancelled' as const }),
+        resolve: () => {}, cancelForJobs: () => {}, pending: () => [], dispose: () => {},
+      }),
+    } } : {}),
   });
   runner.connect(core.bus);
 
