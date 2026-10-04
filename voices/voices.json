@@ -43,5 +43,26 @@
       "speed": 0.97,
       "note": "Archie speaks calmly; avoid exclamation marks in his lines. Team pick, Oct 4."
     }
+  },
+  "workspace": {
+    "name": "Pixel",
+    "description": "A friendly, crisp, clever, upbeat assistant character. A little techy and precise, bright and helpful.",
+    "previews": [
+      {
+        "n": 1,
+        "file": "voices/previews/workspace-1.mp3",
+        "generated_voice_id": "ET5k5kKUJ9YLJG9y41cw"
+      },
+      {
+        "n": 2,
+        "file": "voices/previews/workspace-2.mp3",
+        "generated_voice_id": "MpNtNhPN0UGZenLJtk5v"
+      },
+      {
+        "n": 3,
+        "file": "voices/previews/workspace-3.mp3",
+        "generated_voice_id": "0Xb1aNdkJjlSexCzUrQc"
+      }
+    ]
   }
 }
