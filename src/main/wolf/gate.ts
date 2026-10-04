@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { resolveBareFilename } from '../connectors/fs/resolveBareFilename';
 import type { AgentId } from '../../shared/agents';
 import type { AdeSettings } from '../../shared/ipc';
 import type { ToolDefinition } from '../../shared/tools';
@@ -181,8 +182,9 @@ export class WardenGateImpl implements WardenGate {
     }
     const parts = win.split('\\');
     const root = this.roots(state).find(item => path.basename(item.root).toLowerCase() === parts[0]?.toLowerCase());
-    if (!root) throw new InvalidPathError('Unknown named root');
-    const resolved = path.resolve(root.root, ...parts.slice(1));
+    const resolved = root ? path.resolve(root.root, ...parts.slice(1))
+      : resolveBareFilename(raw, this.roots(state).filter(item => !item.trash).map(item => item.root));
+    if (!resolved) throw new InvalidPathError('Unknown named root');
     state.lexical.set(input, resolved);
     return resolved;
   }
