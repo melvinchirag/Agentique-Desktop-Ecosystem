@@ -34,7 +34,7 @@ export interface DisplayLayout {
 
 export type PointerMode = 'forward' | 'poll';
 export type DemoHotkey = 'nudge' | 'assetLab' | 'hideAnimals';
-export type HubTab = 'chat' | 'memories' | 'pulse' | 'audit' | 'settings' | 'marketplace';
+export type HubTab = 'chat' | 'timeline' | 'memories' | 'pulse' | 'audit' | 'settings' | 'marketplace';
 
 // ── window.adeShell (preload) ─────────────────────────────
 

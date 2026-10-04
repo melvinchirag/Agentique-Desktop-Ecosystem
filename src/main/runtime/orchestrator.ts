@@ -254,6 +254,10 @@ export function createOrchestrator(deps: OrchestratorDeps, opts: OrchestratorOpt
       if (item.kind === 'user' && !turn.delegationSucceeded && unanswered()) {
         text = "[bubble: Try again]\nI couldn't finish that request. Please try again.";
       }
+      if (item.kind === 'result' && !turn.delegationSucceeded && unanswered()) {
+        text = `[bubble: Results ready]\n${item.finished.map(({ job, result }) =>
+          `${nameOf(job.agent)}: ${result.say || result.summary}`).join('\n')}`;
+      }
 
       // A delegated job has not returned yet. Never speak a speculative finding from this turn.
       if (item.kind === 'user' && turn.delegationSucceeded) text = '(silent)';

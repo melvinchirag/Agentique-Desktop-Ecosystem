@@ -9,6 +9,7 @@ export interface EagleToolDeps {
   documentsRoot: string;
   fs?: Pick<typeof nodeFs, 'mkdir' | 'writeFile'>;
   now?: () => Date;
+  recordBrief?: (title: string, path: string) => Promise<void>;
 }
 
 export function safeWebUrl(value: unknown): string | null {
@@ -57,6 +58,7 @@ export function createEagleTools(deps: EagleToolDeps): ToolDefinition[] {
         if (!target || typeof input.markdown !== 'string' || !input.markdown.trim()) return { error: 'INVALID_BRIEF' };
         await fs.mkdir(path.dirname(target), { recursive: true });
         await fs.writeFile(target, input.markdown, { encoding: 'utf8', flag: 'wx' });
+        await deps.recordBrief?.(input.title as string, target);
         ctx.emit({ type: 'artifact', agentId: 'eagle', taskId: ctx.taskId, kind: 'research_brief', title: input.title as string, data: { path: target } });
         return { path: target };
       },

@@ -115,6 +115,15 @@ export const createAnimationDirector: CreateAnimationDirector = (deps: DirectorD
     }
   }
 
+  async function landAway(id: AgentId): Promise<void> {
+    const a = agents[id];
+    if (!a.away) return;
+    await layer.flyIn(id, a.home); // flyIn plays Land at the home spot
+    a.away = false;
+    a.status = 'idle';
+    await loop(id);
+  }
+
   function handleEvent(e: BiomeEvent): void {
     const id = e.agentId;
     const a = agents[id];
@@ -140,8 +149,7 @@ export const createAnimationDirector: CreateAnimationDirector = (deps: DirectorD
             return;
           }
           if ((e.status === 'idle' || e.status === 'done') && a.away) {
-            await layer.flyIn(id, a.home);
-            a.away = false;
+            await landAway(id);
           }
           if (e.status === 'idle' || e.status === 'done') {
             if (a.bubble) { ui.clearBubble(id); a.bubble = null; }
@@ -202,6 +210,7 @@ export const createAnimationDirector: CreateAnimationDirector = (deps: DirectorD
         break;
       case 'agent.return':
         queue([id, 'chipmunk'], async () => {
+          await landAway(id);
           faceToward(id, agents.chipmunk.home);
           await layer.play('chipmunk', 'Happy', { once: true });
           await loop('chipmunk');
@@ -255,6 +264,9 @@ export const createAnimationDirector: CreateAnimationDirector = (deps: DirectorD
         });
         break;
       case 'job.update':
+        if (e.state === 'done' || e.state === 'failed' || e.state === 'cancelled') {
+          queue([e.to], () => landAway(e.to));
+        }
         if (e.state === 'running' && e.requestedBy !== 'chipmunk') {
           queue([e.requestedBy, e.to], async () => {
             await wakeTarget(e.requestedBy);

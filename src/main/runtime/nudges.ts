@@ -12,6 +12,7 @@ export interface NudgeDeps {
   isUserBusy: () => boolean;
   isDoNotDisturb?: () => boolean;
   newId?: () => string;
+  plans?: { completionToday(): Promise<{ text: string }> };
 }
 
 export const CHECK_EVERY_MS = 30_000;
@@ -270,7 +271,9 @@ class Engine implements NudgeEngine {
 
   private async fireBatch(nudges: Nudge[], now: Date): Promise<void> {
     this.batchTimes.push(now.getTime());
-    const batch = nudges.map((n) => ({ ...copy(n), state: 'fired' as const }));
+    const completion = nudges.some(n => n.kind === 'evening') ? await this.deps.plans?.completionToday() : undefined;
+    const batch = nudges.map((n) => ({ ...copy(n), state: 'fired' as const,
+      ...(n.kind === 'evening' && completion ? { question: `${completion.text}. ${n.question}` } : {}) }));
     for (const n of batch) {
       this.patch(n.id, { state: 'fired' });
       this.deps.bus.emit({ type: 'nudge.fire', agentId: 'chipmunk', nudgeId: n.id, kind: n.kind, about: n.about });

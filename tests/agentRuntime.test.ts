@@ -176,6 +176,11 @@ describe('AgentRuntime', () => {
 });
 
 describe('specialist output parser', () => {
+  it('preserves the full multiline answer when SUMMARY is missing', () => {
+    expect(parseSpecialistOutput('BUBBLE: Found\nSAY: First finding.\nSecond finding.', 'Scout'))
+      .toEqual({ bubble: 'Found', say: 'First finding.\nSecond finding.', summary: 'First finding.\nSecond finding.' });
+  });
+
   it('keeps a multiline summary', () => {
     expect(parseSpecialistOutput('BUBBLE: Sorted\nSAY: Done.\nSUMMARY: First line\nSecond line', 'Archie'))
       .toEqual({ bubble: 'Sorted', say: 'Done.', summary: 'First line\nSecond line' });

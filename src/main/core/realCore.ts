@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import type { AgentId } from '../../shared/agents';
 import { AGENTS } from '../../shared/config';
 import type { BiomeEvent } from '../../shared/events';
@@ -43,7 +44,8 @@ import { createTigerPool, TigerEventSink, adeDataDir } from '../store/tiger';
 import { TigerHistoryStore } from '../store/tigerHistory';
 import { TigerNudgeStore } from '../store/tigerNudges';
 import { TigerQueries } from '../store/tigerQueries';
-import { FakeCalendar } from '../testing/fakeCalendar';
+import { TigerPlanStore } from '../store/tigerPlans';
+import { TigerResearchStore } from '../store/tigerResearch';
 import { createWardenClassifier } from '../sponsors/wardenClassifier';
 import { handleStandInSendPost, StandInSpecialists } from './standInSpecialists';
 import { ElevenLabsVoice } from '../voice/elevenlabs';
@@ -121,24 +123,64 @@ export interface RealCoreOptions {
   fsShell?: FsShell;
   demoTimers?: boolean;
   onSettingsChanged?: (settings: AdeSettings) => void;
+  exePath?: string;
+  packaged?: boolean;
+  dataDir?: string;
+}
+
+export function loadRealCoreEnv(options: Pick<RealCoreOptions, 'exePath' | 'dataDir' | 'env' | 'envPaths'> = {}): { env: Env; baseDir: string } {
+  if (options.env) return { env: options.env, baseDir: process.cwd() };
+  const paths = [options.exePath && join(dirname(options.exePath), '.env'), ...(options.envPaths ?? []).slice().reverse(),
+    join(options.dataDir ?? adeDataDir(), '.env'), join(process.cwd(), '.env')].filter((path): path is string => !!path);
+  const found = [...new Set(paths)].filter(existsSync);
+  const env: Env = {};
+  let baseDir = found[0] ? dirname(found[0]) : process.cwd();
+  // Layer fallback files while keeping executable-side configuration highest priority.
+  for (const path of found.slice().reverse()) {
+    const values = readEnvFile(path);
+    Object.assign(env, values);
+    if (values.TIGER_CA_FILE) baseDir = dirname(path);
+  }
+  return { env: { ...env, ...process.env }, baseDir };
+}
+
+export function disconnectedCalendar() { return { listEvents: async () => [] }; }
+
+export function loadPersistedSettings(file: string, defaults: AdeSettings): AdeSettings {
+  try {
+    const saved = JSON.parse(readFileSync(file, 'utf8')) as Partial<AdeSettings>;
+    return { ...defaults, ...saved, models: { ...defaults.models, ...saved.models }, installed: { ...defaults.installed, ...saved.installed }, timers: { ...defaults.timers, ...saved.timers }, nudges: { ...defaults.nudges, ...saved.nudges }, googleEmail: undefined };
+  } catch { return defaults; }
+}
+
+export function savePersistedSettings(file: string, settings: AdeSettings): void {
+  mkdirSync(dirname(file), { recursive: true });
+  writeFileSync(file, JSON.stringify(settings), { mode: 0o600 });
 }
 
 /** Main-process adapter. registerCoreIpc forwards this bus to the overlay and Hub. */
 export function createRealCore(options: RealCoreOptions = {}): CoreAdapter {
   if (options.demoMode) return fallbackCore(options.resourcesDir, false);
-  const env = options.env ?? { ...readEnvFile(join(adeDataDir(), '.env')), ...readEnvFile(join(process.cwd(), '.env')),
-    ...Object.assign({}, ...(options.envPaths ?? []).map(readEnvFile)), ...process.env };
+  const { env, baseDir } = loadRealCoreEnv(options);
   if (missingRealCoreKeys(env).length) return fallbackCore(options.resourcesDir, true);
 
-  let settings = defaultSettings(options);
+  const settingsFile = join(options.dataDir ?? adeDataDir(), 'settings.json');
+  let settings = loadPersistedSettings(settingsFile, defaultSettings(options));
+  const persistSettings = () => {
+    try { savePersistedSettings(settingsFile, settings); }
+    catch (error) { console.warn('[core] Could not save settings', error); }
+    options.onSettingsChanged?.(settings);
+  };
   const clock = new RealClock();
   const assistantIds = assistantIdsFromEnv(env);
   const llm = new BackboardClient({ apiKey: env.BACKBOARD_API_KEY!, defaultModel: settings.models.chipmunk });
-  const db = createTigerPool(env, process.cwd());
+  const db = createTigerPool(env, baseDir);
+  const plans = new TigerPlanStore(db, () => clock.now());
+  const research = new TigerResearchStore(db);
   const queries = new TigerQueries(db);
   const memory = new BackboardMemoryApi(llm, assistantIds);
   const voiceIds = voiceIdsFromEnv(env);
-  const shippedLines = new ShippedLines(join(options.resourcesDir ?? join(process.cwd(), 'resources'), 'voice-lines'));
+  const shippedLines = new ShippedLines(join(options.resourcesDir ?? (options.packaged ? process.resourcesPath : join(process.cwd(), 'resources')), 'voice-lines'));
   const voice: VoiceService | undefined = env.ELEVENLABS_API_KEY
     ? new ElevenLabsVoice({ apiKey: env.ELEVENLABS_API_KEY, voiceIds, voiceEnabled: () => settings.voiceEnabled,
       shipped: shippedLines })
@@ -160,7 +202,7 @@ export function createRealCore(options: RealCoreOptions = {}): CoreAdapter {
   const googleAuth = env.GOOGLE_CLIENT_ID && googleStore && options.openExternal ? new GoogleAuthService({
     clientId: env.GOOGLE_CLIENT_ID, clientSecret: env.GOOGLE_CLIENT_SECRET, store: googleStore,
     fetch, openExternal: options.openExternal, clock,
-    onEmailChange: email => { settings = { ...settings, googleEmail: email }; options.onSettingsChanged?.(settings); },
+    onEmailChange: email => { settings = { ...settings, googleEmail: email }; persistSettings(); },
   }) : undefined;
   const googleHttp = googleAuth ? new GoogleHttp({
     getAccessToken: () => googleAuth.getAccessToken(), refreshAccessToken: () => googleAuth.forceRefreshAccessToken(),
@@ -170,14 +212,22 @@ export function createRealCore(options: RealCoreOptions = {}): CoreAdapter {
     drive: new DriveClient(googleHttp), docs: new DocsClient(googleHttp), sheets: new SheetsClient(googleHttp),
     whoAmI: async () => settings.googleEmail ?? '',
   } : undefined;
-  const fakeCalendar = new FakeCalendar(clock);
   const liveCalendar = new GoogleCalendarSource(() => settings.googleEmail ? google : undefined, injectionScreen, () => clock.now());
   const registry = new PixelRegistry();
   const styleStore = new StyleStore(memory, memory);
+  let styleLearning: Promise<{ sampled: number }> | undefined;
+  const learnStyleOnce = (): Promise<{ sampled: number }> => {
+    if (settings.styleLearnedAt) return Promise.resolve({ sampled: 0 });
+    if (!google || !settings.googleEmail || !assistantIds.workspace) return Promise.reject(new Error('Connect Google and configure Pixel first.'));
+    styleLearning ??= learnEmailStyle({ gmail: google.gmail, llm, assistantId: assistantIds.workspace, store: styleStore })
+      .then(result => { settings = { ...settings, styleLearnedAt: clock.now() }; persistSettings(); return { sampled: result.sampled }; })
+      .finally(() => { styleLearning = undefined; });
+    return styleLearning;
+  };
   const core = createChipCore({
-    llm, runner, calendar: { listEvents: (from, to) => settings.googleEmail ? liveCalendar.listEvents(from, to) : fakeCalendar.listEvents(from, to) }, settings: () => settings,
+    llm, runner, calendar: { listEvents: (from, to) => settings.googleEmail ? liveCalendar.listEvents(from, to) : disconnectedCalendar().listEvents() }, settings: () => settings,
     chipAssistantId: assistantIds.chipmunk!, clock, eventSink,
-    nudgeStore: new TigerNudgeStore(db), history: new TigerHistoryStore(db, () => clock.now()),
+    nudgeStore: new TigerNudgeStore(db), history: new TigerHistoryStore(db, () => clock.now(), undefined, research), plans,
     warden: { registry: agentId => agentId === 'workspace' ? pixelTools : undefined,
       classifier: env.BB_ASSISTANT_WARDEN_SCREEN
         ? createWardenClassifier({ llm, assistantId: env.BB_ASSISTANT_WARDEN_SCREEN }) : undefined },
@@ -188,10 +238,10 @@ export function createRealCore(options: RealCoreOptions = {}): CoreAdapter {
     } } : {}),
     ...(assistantIds.eagle && options.openExternal ? { eagle: {
       llm, assistantId: assistantIds.eagle, openExternal: options.openExternal, documentsRoot,
-      screen: injectionScreen,
+      screen: injectionScreen, recordBrief: (title, path) => research.record(title, [], path), recordFindings: (title, summary) => research.record(title, [summary]),
     } } : {}),
     ...(assistantIds.ants ? { ants: {
-      llm, assistantId: assistantIds.ants,
+      llm, assistantId: assistantIds.ants, appendItems: plan => plans.savePlan(plan.goal, plan.steps.map(step => step.task)).then(() => undefined),
     } } : {}),
   });
   activeScreen = core.warden!.screen;
@@ -222,7 +272,7 @@ export function createRealCore(options: RealCoreOptions = {}): CoreAdapter {
   if (googleAuth) void googleAuth.authorizedFetch('https://gmail.googleapis.com/gmail/v1/users/me/profile')
     .then(response => response.ok ? response.json() : undefined)
     .then(profile => { if (profile && typeof profile.emailAddress === 'string') {
-      settings = { ...settings, googleEmail: profile.emailAddress }; options.onSettingsChanged?.(settings);
+      settings = { ...settings, googleEmail: profile.emailAddress }; persistSettings();
     } })
     .catch(() => undefined);
 
@@ -245,10 +295,8 @@ export function createRealCore(options: RealCoreOptions = {}): CoreAdapter {
     },
     speak: async (agentId, text, mood) => {
       if (!settings.voiceEnabled) return silent();
-      if (agentId === 'wolf') {
-        const shipped = shippedLines.get(agentId, text);
-        if (shipped) return shipped.audio;
-      }
+      const shipped = shippedLines.get(agentId, text);
+      if (shipped) return shipped.audio;
       if (!voice) return silent();
       try { return (await voice.speak(agentId, text, mood)).audio; }
       catch { return silent(); }
@@ -271,14 +319,11 @@ export function createRealCore(options: RealCoreOptions = {}): CoreAdapter {
       safe.allowedRoots = settings.allowedFolders;
       if (patch.demoMode !== undefined || patch.timers) for (const id of ids) core.presence.touch(id);
       if (patch.allowedFolders) void index.build().catch(error => console.error('[core] Archie file index unavailable', error));
+      persistSettings();
     },
-    connectGoogle: async () => { if (!googleAuth) throw new Error('Google OAuth needs GOOGLE_CLIENT_ID and Electron safeStorage.'); return googleAuth.connect(); },
-    disconnectGoogle: async () => { await googleAuth?.disconnect(); settings = { ...settings, googleEmail: undefined }; },
-    learnEmailStyle: async () => {
-      if (!google || !settings.googleEmail || !assistantIds.workspace) throw new Error('Connect Google and configure Pixel first.');
-      const result = await learnEmailStyle({ gmail: google.gmail, llm, assistantId: assistantIds.workspace, store: styleStore });
-      return { sampled: result.sampled };
-    },
+    connectGoogle: async () => { if (!googleAuth) throw new Error('Google OAuth needs GOOGLE_CLIENT_ID and Electron safeStorage.'); const result = await googleAuth.connect(); settings = { ...settings, googleEmail: result.email }; persistSettings(); void learnStyleOnce().catch(error => console.warn('[core] Pixel style learning failed', error)); return result; },
+    disconnectGoogle: async () => { await googleAuth?.disconnect(); settings = { ...settings, googleEmail: undefined }; persistSettings(); },
+    learnEmailStyle: learnStyleOnce,
     getTimeline: (from, to) => queries.timeline(from, to),
     getTaskEvents: taskId => queries.taskEvents(taskId),
     getMemories: async agentId => (await memory.list(agentId)).map(row => ({ id: row.id, memory: row.content })),

@@ -98,6 +98,7 @@ if (!app.requestSingleInstanceLock()) {
     });
     const core = watchSettings(createRealCore({ demoMode, demoTimers: argv.includes('--demo-timers'), resourcesDir,
       envPaths: [join(app.getAppPath(), '.env'), join(dirname(process.execPath), '.env')],
+      exePath: app.getPath('exe'), packaged: app.isPackaged,
       desktopRoot: app.getPath('desktop'), documentsRoot: app.getPath('documents'), downloadsRoot: app.getPath('downloads'),
       safeStorage, fsShell: shell, openExternal: url => shell.openExternal(url), onSettingsChanged: onSettings }), onSettings);
     coreRef = core;

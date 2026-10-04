@@ -112,6 +112,7 @@ export class AgentRuntime implements SpecialistRunner {
       }
       if (response.status !== 'COMPLETED') return this.failure(`Backboard ${response.status ?? 'did not complete'}.`, artifacts);
       const parsed = parseSpecialistOutput(response.content, AGENTS[agentId].displayName);
+      if (!parsed.summary) return this.failure('Backboard completed without an answer.', artifacts);
       if (this.deps.screen) {
         const source = { kind: 'summary' as const, name: AGENTS[agentId].displayName, taskId: ctx.taskId, jobId: ctx.jobId };
         const say = await this.deps.screen.screen(parsed.say, source);

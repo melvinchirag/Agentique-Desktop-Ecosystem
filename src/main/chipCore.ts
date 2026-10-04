@@ -57,6 +57,7 @@ export interface EagleWiring extends EagleToolDeps {
   gate?: (ctx: ArchieContext) => WardenGate;
   approvals?: (ctx: ArchieContext) => Approvals;
   screen?: InjectionScreen;
+  recordFindings?: (title: string, summary: string) => Promise<void>;
 }
 
 export interface AntsWiring {
@@ -83,6 +84,7 @@ export interface ChipCoreConfig {
   sessionId?: string;                // passed to the EventBus
   nudgeStore?: NudgeStore;           // default new MemoryNudgeStore()   (Tiger: Shafeen's TigerNudgeStore)
   history?: HistoryStore;            // default new MemoryHistoryStore() (Tiger: TigerHistoryStore)
+  plans?: { completionToday(): Promise<{ text: string }> };
   eventSink?: EventSink;             // optional; subscribed to the bus (Tiger: TigerEventSink)
   timeZone?: string;                 // default: the system zone
   startNudges?: boolean;             // default true
@@ -174,7 +176,7 @@ export function createChipCore(config: ChipCoreConfig): ChipCore {
   const nudgeStore = config.nudgeStore ?? new MemoryNudgeStore();
   const nudges = createNudgeEngine({
     bus, clock, settings, store: nudgeStore, calendar, llm: config.plannerLlm ?? llm,
-    chipAssistantId, isUserBusy, isDoNotDisturb: () => doNotDisturb,
+    chipAssistantId, isUserBusy, isDoNotDisturb: () => doNotDisturb, plans: config.plans,
   });
 
   const history = config.history ?? new MemoryHistoryStore({ bus, clock });
@@ -288,8 +290,13 @@ export function createChipCore(config: ChipCoreConfig): ChipCore {
     eagleRuntime = {
       async run(agentId, task, runCtx) {
         bus.emit({ type: 'agent.status', agentId: 'eagle', taskId: runCtx.taskId, status: 'away', detail: 'Scanning the web…' });
-        try { return await runtime.run(agentId, task, runCtx); }
-        finally { bus.emit({ type: 'agent.status', agentId: 'eagle', taskId: runCtx.taskId, status: 'done' }); }
+        const result = await runtime.run(agentId, task, runCtx);
+        if (result.ok) {
+          try { await e.recordFindings?.(task, result.summary); }
+          catch (error) { console.error('[chipCore] Scout findings persistence failed', error); }
+        }
+        // The scheduler reports, returns, and clears away status even if reporting fails.
+        return result;
       },
     };
     eagle = { runtime: eagleRuntime, gate, approvals };
