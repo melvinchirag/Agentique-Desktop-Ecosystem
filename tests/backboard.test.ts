@@ -51,10 +51,13 @@ describe('BackboardClient.send', () => {
 
   it('returns tool calls and normalizes retrieved memories to texts', async () => {
     const { c } = client([{ json: { thread_id: 't9', status: 'REQUIRES_ACTION', content: null,
+      model_provider: 'openai', model_name: 'gpt-4o',
       tool_calls: [{ id: 'c1', type: 'function', function: { name: 'report_user_mood', arguments: '{"mood":"angry"}' } }],
       retrieved_memories: [{ id: 'm1', memory: 'likes peanut butter' }, 'plain text', { content: 'from content' }, { other: 1 }] } }]);
     const r = await c.send({ assistantId: 'a1', content: 'x' });
     expect(r.status).toBe('REQUIRES_ACTION');
+    expect(r.model_provider).toBe('openai');
+    expect(r.model_name).toBe('gpt-4o');
     expect(r.thread_id).toBe('t9');
     expect(r.tool_calls![0]!.function.name).toBe('report_user_mood');
     expect(r.retrieved_memories).toEqual(['likes peanut butter', 'plain text', 'from content']);
@@ -117,7 +120,21 @@ describe('BackboardClient other calls', () => {
     const { c, calls } = client([OK]);
     await c.submitToolOutputs('t1', [{ tool_call_id: 'c1', output: '{}' }, { tool_call_id: 'c2', output: 'ok' }]);
     expect(calls[0]!.url).toMatch(/\/threads\/tool-outputs$/);
-    expect(calls[0]!.body).toEqual({ thread_id: 't1', tool_outputs: [{ tool_call_id: 'c1', output: '{}' }, { tool_call_id: 'c2', output: 'ok' }] });
+    expect(calls[0]!.body).toEqual({ thread_id: 't1', tool_outputs: [{ tool_call_id: 'c1', output: '{}' }, { tool_call_id: 'c2', output: 'ok' }], llm_provider: 'google', model_name: 'gemini-2.5-flash' });
+  });
+
+  it('resolves current Settings for existing threads and tool continuations, with per-call overrides', async () => {
+    const f = fakeFetch([OK, OK, OK, OK]);
+    let selected = { llm_provider: 'google', model_name: 'gemini-2.5-flash' };
+    const c = new BackboardClient({ apiKey: 'test-key', fetch: f.fn, defaultModel: () => selected });
+    await c.send({ assistantId: 'chip', content: 'first' });
+    selected = { llm_provider: 'openai', model_name: 'gpt-4o' };
+    await c.send({ assistantId: 'chip', threadId: 't1', content: 'next' });
+    await c.submitToolOutputs('t1', [{ tool_call_id: 'c1', output: '{}' }]);
+    const override = { llm_provider: 'anthropic', model_name: 'claude-sonnet-4-20250514' };
+    await c.submitToolOutputs('t1', [], undefined, override);
+    expect(f.calls.map(call => ({ llm_provider: call.body.llm_provider, model_name: call.body.model_name })))
+      .toEqual([{ llm_provider: 'google', model_name: 'gemini-2.5-flash' }, selected, selected, override]);
   });
 
   it('listModels filters to tool-capable chat models with a limit', async () => {

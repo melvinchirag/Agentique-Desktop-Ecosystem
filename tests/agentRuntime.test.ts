@@ -18,7 +18,7 @@ function deferred<T>() {
   return { promise, resolve };
 }
 
-function setup(script: ConstructorParameters<typeof FakeLlm>[0], tools: ToolDefinition[] = []) {
+function setup(script: ConstructorParameters<typeof FakeLlm>[0], tools: ToolDefinition[] = [], settings = makeTestSettings()) {
   const llm = new FakeLlm(script);
   const bus = new EventBus({ clock: new FakeClock(), sessionId: 'session-1' });
   const gate: WardenGate = { review: vi.fn(() => 'allow' as const) };
@@ -32,7 +32,7 @@ function setup(script: ConstructorParameters<typeof FakeLlm>[0], tools: ToolDefi
   };
   const beaver: AgentDefinition = { id: 'beaver', systemPrompt: 'Be Archie.', tools, maxToolRounds: 8 };
   const eagle: AgentDefinition = { id: 'eagle', systemPrompt: 'Be Scout.', tools: [], maxToolRounds: 8, webSearch: true };
-  const runtime = new AgentRuntime({ bus, llm, jobs, gate, approvals, settings: () => makeTestSettings(), agents: [
+  const runtime = new AgentRuntime({ bus, llm, jobs, gate, approvals, settings: () => settings, agents: [
     { definition: beaver, assistantId: 'beaver-assistant' }, { definition: eagle, assistantId: 'eagle-assistant' },
   ] });
   return { runtime, llm, bus, gate, jobs, approvals };
@@ -44,6 +44,18 @@ const readTool = (name: string, execute: ToolDefinition['execute']): ToolDefinit
 const outputsOf = (llm: FakeLlm) => llm.calls.filter((call) => call.kind === 'toolOutputs');
 
 describe('AgentRuntime', () => {
+  it('reads the latest specialist model after a tool executes', async () => {
+    const settings = makeTestSettings();
+    const original = settings.models.beaver;
+    const selected = { llm_provider: 'openai', model_name: 'gpt-4o' };
+    const s = setup([requiresAction([toolCall('read', {})]), completed(done)], [
+      readTool('read', async () => { settings.models.beaver = selected; return { found: true }; }),
+    ], settings);
+    await s.runtime.run('beaver', 'read', context());
+    expect(s.llm.calls[0]).toMatchObject({ kind: 'send', params: { model: original } });
+    expect(outputsOf(s.llm)[0]).toMatchObject({ model: selected });
+  });
+
   it('creates fresh threads with model and memory chosen per job kind', async () => {
     const s = setup([completed(done, 't1'), completed(done, 't2')]);
     expect((await s.runtime.run('beaver', 'sort', context())).summary).toBe('Work complete.');
@@ -176,6 +188,11 @@ describe('AgentRuntime', () => {
 });
 
 describe('specialist output parser', () => {
+  it('removes leaked tool code and reasoning from specialist fields', () => {
+    expect(parseSpecialistOutput("```tool_code\nprint(default_api.search())\n```\nthought: Need to answer.\nBUBBLE: Found it\nSAY: Here it is.\nSUMMARY: Done.", 'Archie'))
+      .toEqual({ bubble: 'Found it', say: 'Here it is.', summary: 'Done.' });
+  });
+
   it('keeps a multiline summary', () => {
     expect(parseSpecialistOutput('BUBBLE: Sorted\nSAY: Done.\nSUMMARY: First line\nSecond line', 'Archie'))
       .toEqual({ bubble: 'Sorted', say: 'Done.', summary: 'First line\nSecond line' });

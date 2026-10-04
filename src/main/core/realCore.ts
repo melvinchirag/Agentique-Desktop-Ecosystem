@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { join } from 'node:path';
+import { loadModelPreferences, saveModelPreferences } from './modelPreferences';
 import { homedir } from 'node:os';
 import type { AgentId } from '../../shared/agents';
 import { AGENTS } from '../../shared/config';
@@ -67,7 +68,7 @@ export function missingRealCoreKeys(env: Env): string[] {
 }
 
 function defaultSettings(options: RealCoreOptions): AdeSettings {
-  const model = { llm_provider: 'google', model_name: 'gemini-2.5-flash' };
+  const model = { llm_provider: 'openai', model_name: 'gpt-4o' };
   return {
     models: Object.fromEntries(ids.map(id => [id, { ...model }])) as AdeSettings['models'],
     voiceEnabled: true, allowedFolders: [options.desktopRoot ?? join(homedir(), 'Desktop'), options.documentsRoot ?? join(homedir(), 'Documents'), options.downloadsRoot ?? join(homedir(), 'Downloads')], biome: 'forest', demoMode: !!options.demoTimers,
@@ -120,10 +121,16 @@ export function createRealCore(options: RealCoreOptions = {}): CoreAdapter {
   const env = options.env ?? { ...readEnvFile(join(adeDataDir(), '.env')), ...readEnvFile(join(process.cwd(), '.env')), ...process.env };
   if (missingRealCoreKeys(env).length) return fallbackCore(options.resourcesDir, true);
 
+  const modelPreferencesPath = join(adeDataDir(env), 'model-preferences.json');
   let settings = defaultSettings(options);
+  settings.models = { ...settings.models, ...loadModelPreferences(modelPreferencesPath) };
   const clock = new RealClock();
   const assistantIds = assistantIdsFromEnv(env);
-  const llm = new BackboardClient({ apiKey: env.BACKBOARD_API_KEY!, defaultModel: settings.models.chipmunk });
+  const llm = new BackboardClient({ apiKey: env.BACKBOARD_API_KEY!, defaultModel: assistantId => {
+    const agentId = assistantId && assistantId === env.BB_ASSISTANT_WARDEN_SCREEN
+      ? 'wolf' : (assistantId ? ids.find(id => assistantIds[id] === assistantId) : undefined) ?? 'chipmunk';
+    return settings.models[agentId];
+  } });
   const db = createTigerPool(env, process.cwd());
   const queries = new TigerQueries(db);
   const memory = new BackboardMemoryApi(llm, assistantIds);
@@ -255,6 +262,7 @@ export function createRealCore(options: RealCoreOptions = {}): CoreAdapter {
       settings = { ...settings, ...patch, models: { ...settings.models, ...patch.models },
         installed: { ...settings.installed, ...patch.installed },
         timers: { ...settings.timers, ...patch.timers }, nudges: { ...settings.nudges, ...patch.nudges } };
+      if (patch.models) saveModelPreferences(modelPreferencesPath, settings.models);
       if (patch.demoMode !== undefined) settings.timers = patch.demoMode
         ? { ...settings.timers, sleepAfterSec: 30, dockAfterSec: 60 }
         : { ...settings.timers, sleepAfterSec: 180, dockAfterSec: 600 };

@@ -1,10 +1,11 @@
 import type { AgentResult } from './types';
+import { sanitizeLlmText } from './sanitizeLlmText';
 
 type Speech = Pick<AgentResult, 'say' | 'bubble' | 'summary'>;
 
 /** The three labelled fields are required; malformed output falls back to a short first sentence. */
 export function parseSpecialistOutput(content: string | null | undefined, agentName: string): Speech {
-  const text = (content ?? '').trim();
+  const text = sanitizeLlmText(content);
   const fields: Partial<Record<'BUBBLE' | 'SAY' | 'SUMMARY', string>> = {};
   let current: keyof typeof fields | undefined;
   for (const line of text.split(/\r?\n/)) {
