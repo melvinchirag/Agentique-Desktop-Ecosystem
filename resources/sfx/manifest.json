@@ -62,8 +62,8 @@
   {
     "id": "wolf.poke",
     "file": "resources/sfx/wolf/poke.mp3",
-    "durationMs": 1257,
-    "prompt": "one short deep gruff wolf bark, a low woof huff from a large canine, close, no growl, no howl"
+    "durationMs": 2066,
+    "prompt": "a single short wild wolf howl, rising then falling awoo, lone timber wolf, clear, natural, not a dog, no barking"
   },
   {
     "id": "beaver.tail-slap",
