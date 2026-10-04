@@ -5,6 +5,7 @@ import type { BiomeEvent } from '../../shared/events';
 import type { DisplayLayout } from '../../main/shell/contracts';
 import { createEventPlayer } from '../../main/fake/eventPlayer';
 import { createMicRecorder, createPushToTalk, createSfxPlayer, createSpeechQueue } from '../audio';
+import { applyAudioSettings } from '../audio/settings';
 import { createHitRegistry } from '../shell/hitRegistry';
 import { createHubStore } from '../shell/hubStore';
 import type { CharacterLayer, OverlayUi } from '../shell/contracts';
@@ -44,16 +45,12 @@ function OverlayApp({ display }: { display: DisplayLayout }) {
     eventBuffer.splice(0).forEach(event => dispatch?.(event));
     const offLayout = window.adeShell.onLayoutChanged(next => director.setLayout(computeLayout(next)));
     const offSettings = window.adeShell.onSettingsChanged(settings => {
-      store.getState().setSettings(settings); speech.setVoiceEnabled(settings.voiceEnabled);
-      sfx.setEnabled(settings.voiceEnabled && settings.sfxEnabled !== false);
-      sfx.setAmbienceEnabled(settings.ambienceEnabled === true);
+      store.getState().setSettings(settings); applyAudioSettings(settings, speech, sfx);
     });
     const offInspect = window.adeShell.onInspectAgent(id => ui.openInspect(id));
     const offReplay = window.adeShell.onReplayTask(taskId => { void director.replay(taskId); });
     void window.ade.getSettings().then(settings => {
-      store.getState().setSettings(settings); speech.setVoiceEnabled(settings.voiceEnabled);
-      sfx.setEnabled(settings.voiceEnabled && settings.sfxEnabled !== false);
-      sfx.setAmbienceEnabled(settings.ambienceEnabled === true);
+      store.getState().setSettings(settings); applyAudioSettings(settings, speech, sfx);
     });
     const point = (event: PointerEvent | MouseEvent) => ({ x: event.clientX, y: event.clientY });
     const move = (event: MouseEvent) => hit.pointerMove(point(event));

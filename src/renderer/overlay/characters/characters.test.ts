@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
-import { AnimationClip, Box3, MeshStandardMaterial, Vector3 } from 'three';
+import { AnimationClip, Box3, Group, InstancedMesh, MeshStandardMaterial, Vector3 } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import type { HitRegistry } from '../../shell/contracts';
 import { cameraFor, projectBox, toOverlay, toWorld } from './coords';
-import { proceduralFor, resolveClip } from './clips';
+import { ClipPlayer, proceduralFor, resolveClip } from './clips';
 import { targetFps } from './fps';
 import { MotionSlot, travelDuration, tween } from './motion';
 import { MOOD, tintMaterial } from './mood';
@@ -57,9 +57,37 @@ describe('clips', () => {
     expect(resolveClip('Idle', {}, clips)).toBe(clips[1]);
     expect(resolveClip('work', { Work: 'Scribble' }, clips)).toBeNull();
   });
+  it('plays the SleepWalk to Fly fallback at half speed', () => {
+    const clip = new AnimationClip('Fly', 1, []);
+    const player = new ClipPlayer(new Group(), [clip], { SleepWalk: 'Fly' });
+    void player.play('SleepWalk');
+    expect(player.mixer.existingAction(clip)?.timeScale).toBe(0.5);
+    void player.play('Fly');
+    expect(player.mixer.existingAction(clip)?.timeScale).toBe(1);
+    player.dispose();
+  });
 });
 
 describe('character manifests', () => {
+  it('keeps a moving 12-ant placeholder without requesting an absent model', async () => {
+    const fetchManifest = vi.fn().mockResolvedValue({ ok: false });
+    vi.stubGlobal('fetch', fetchManifest);
+    const load = vi.spyOn(GLTFLoader.prototype, 'loadAsync');
+    const layout = { width: 1000, height: 600, groundY: 596, spots: {} as never, colonyX: 60, centerX: 500, hubX: 800, dockPoint: { x: 800, y: 40 } };
+    const layer = new CharacterController(layout, { set: vi.fn() } as unknown as HitRegistry, './characters', vi.fn());
+    try {
+      layer.spawn('ants', 60);
+      await vi.waitFor(() => expect(fetchManifest).toHaveBeenCalledTimes(2));
+      expect(fetchManifest).toHaveBeenNthCalledWith(2, './characters/ants/default/character.json');
+      expect(load).not.toHaveBeenCalled();
+      let swarm: InstancedMesh | undefined;
+      layer.scene.traverse(object => { if (object instanceof InstancedMesh) swarm = object; });
+      expect(swarm).toMatchObject({ count: 12 });
+      const before = swarm!.instanceMatrix.array.slice();
+      layer.frame(1 / 30);
+      expect(swarm!.instanceMatrix.array).not.toEqual(before);
+    } finally { layer.dispose(); load.mockRestore(); vi.unstubAllGlobals(); }
+  });
   it('loads the character folder manifest before its default variant', async () => {
     const fetchManifest = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ clipMap: { Work: 'Run' } }) });
     vi.stubGlobal('fetch', fetchManifest);

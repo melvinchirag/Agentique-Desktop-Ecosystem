@@ -9,6 +9,7 @@ const requested = {
   chipmunk: ['Idle', 'Walk', 'Run', 'Talk', 'TalkHappy', 'TalkScared', 'Listen', 'Think', 'Work', 'Happy', 'Celebrate', 'Greet', 'Scared', 'Nervous', 'Sad', 'Excited', 'Relief', 'Handoff', 'Nudge', 'Dizzy', 'Sleep', 'Yawn', 'WakeUp', 'SleepWalk'],
   wolf: ['Idle', 'Walk', 'Run', 'Talk', 'Think', 'Work', 'Scared', 'Nervous', 'Happy', 'Excited', 'Sad', 'Sit', 'Guard', 'Block', 'Howl', 'Handoff', 'Greet', 'Sleep', 'Yawn', 'WakeUp', 'SleepWalk'],
   beaver: ['Idle', 'Walk', 'Run', 'Talk', 'Think', 'Work', 'Carry', 'Handoff', 'Happy', 'Celebrate', 'Greet', 'Scared', 'Nervous', 'Sad', 'Excited', 'Relief', 'Listen', 'Dizzy', 'Sleep', 'Yawn', 'WakeUp', 'SleepWalk'],
+  eagle: ['Idle', 'Perch', 'Walk', 'Run', 'Fly', 'Glide', 'Talk', 'Think', 'Work', 'Listen', 'Happy', 'Celebrate', 'Greet', 'Scared', 'Nervous', 'Sad', 'Excited', 'Relief', 'Handoff', 'Nudge', 'Dizzy', 'Sleep', 'Yawn', 'WakeUp', 'SleepWalk', 'Takeoff', 'Land'],
 };
 
 describe('director state to shipped GLB clip mapping', () => {
