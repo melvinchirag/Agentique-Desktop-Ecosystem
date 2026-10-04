@@ -178,6 +178,13 @@ No call tested it (it would mean uploading very large files). The spec's own 20 
 
 ## A4. `[softly]` tag — verified
 `eleven_v4_turbo` accepted `[softly]` (200) and did not read it aloud (checked by transcribing the audio). How soft it sounds needs a human listen.
+
+## A5. Archie lanes T1 and B1 — verified against the real services
+- `BackboardDocuments.uploadToThread` + `waitIndexed`: the fixture PDF indexed in 3.7 to 7.2 s (8 chunks), and the late-work question was answered from it on the same thread.
+- Creating a thread: `POST /assistants/{assistant_id}/threads` with body `{}` → `{ thread_id }`.
+- `TigerFileOpsJournal`: three moves recorded, read back by batch in order, counted in `agent_activity` for `beaver`, then marked undone; `lastBatch()` no longer returned the undone batch.
+- `file_ops.id`, `job_id`, and `batch_id` were changed from UUID to text: a non-UUID id made the insert fail (`invalid input syntax for type uuid`).
+- A view cannot lose columns: once the newer `wolf_audit` (with `asking_agent`, `tool`, `how`) is in a database, the older definition fails with `cannot drop columns from view` and the migration stops there. Every branch that runs the migration needs the newer definition.
 # Warden (lane WW1) — verified 2026-10-04
 
 ## W-1. Classifier settings — verified

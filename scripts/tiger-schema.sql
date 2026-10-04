@@ -120,6 +120,12 @@ CREATE TABLE IF NOT EXISTS file_ops (
   from_path TEXT, to_path TEXT, batch_id UUID, undone BOOLEAN DEFAULT false
 );
 CREATE INDEX IF NOT EXISTS ix_file_ops_batch ON file_ops (batch_id, ts DESC);
+-- Archie's journal (02-archie-files.md §5): a 'swept' flag, and op may also be 'trash' or 'sweep' (op is free text).
+-- Ids come from the local journal and are not guaranteed to be UUIDs, so they are stored as text.
+ALTER TABLE file_ops ADD COLUMN IF NOT EXISTS swept BOOLEAN DEFAULT false;
+ALTER TABLE file_ops ALTER COLUMN id TYPE TEXT;
+ALTER TABLE file_ops ALTER COLUMN job_id TYPE TEXT;
+ALTER TABLE file_ops ALTER COLUMN batch_id TYPE TEXT;
 
 -- Swarm's plans (status: planned | done | moved | skipped)
 CREATE TABLE IF NOT EXISTS plan_items (
