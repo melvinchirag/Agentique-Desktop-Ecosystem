@@ -509,8 +509,11 @@ async function verifyLive(stack: Stack): Promise<void> {
   try {
     const greeting = await send('hi chip!');
     assert.equal(chip.jobs.list().length, 0, 'Small talk started a job');
-    assert(events.some((e) => e.type === 'tool.request' && e.taskId === greeting && e.tool === 'report_user_mood'), 'Chip did not call the mood tool');
-    assert(events.some((e) => e.type === 'user.mood' && e.taskId === greeting), 'Missing mood');
+    // Chip's own tools emit no tool.request events (those are for specialist tools going through Warden).
+    // A real mood read is a user.mood event the orchestrator did NOT synthesize: its fallback reasons are
+    // 'no mood reported' and 'voice cue ...'.
+    assert(events.some((e) => e.type === 'user.mood' && e.taskId === greeting
+      && !/^(no mood reported|voice cue)/.test(e.reason)), 'Chip did not call the mood tool (only the fallback mood was recorded)');
     assert(events.some((e) => e.type === 'agent.say' && e.taskId === greeting && e.priority === 'chip'
       && !/couldn't finish|foggy/i.test(e.text)), 'Missing successful small-talk reply');
     console.log('PASS C1: small talk, mood, speech, no jobs');

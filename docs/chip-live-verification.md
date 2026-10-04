@@ -60,3 +60,24 @@ CLI `agent.say` events establish speech intent, not audible ElevenLabs output. R
 Changes remain local and uncommitted. No branch switch, commit, push, or PR action was performed for this fix. Shared contracts and credentials were not modified. All test processes have exited.
 
 Repeat the same live command after integration, and follow `TESTING.md` for evidence, prerequisite checks, and honest pass/fail/blocked reporting.
+
+## Re-verification with the tightened checks (Claude Sonnet 5.5 session, Oct 4, ~06:00)
+
+Branch `chip/logic`, starting from `ea61a77`; Backboard live, Pixel and Scout fake, nudges disabled. A read-only audit had shown the original C1–C3 checks could pass wrongly, so they were tightened before this re-run. The earlier "two passes" above were produced by the looser checks and should be read with that in mind.
+
+| Run | Result | What it showed |
+|---|---|---|
+| 4 | **FAIL C1** | The model's first reply to a greeting had no tool call and no text. The corrective turn rescued the answer but removes the mood tool, so the mood was only the engine's fallback ("no mood reported"). A skipped mood read would give an angry user no reaction from the biome. |
+| 5 | **FAIL C1** | After the fix below, the mood tool *was* called (`calm 0.2 (greeting)`), yet C1 failed: the check looked for a `tool.request` event, which Chip's own tools never emit. That assertion could never pass. A verifier bug, not a Chip bug. |
+| 6 | PASS C1, C2, C3 | Real mood call each turn; real `delegate` calls; Pixel started while Scout was still running. |
+| 7 | PASS C1, C2, C3 | Same, in a fresh conversation. |
+
+Fixes made:
+1. The corrective turn keeps `report_user_mood` when mood has not yet been reported, and says so; it still drops it when mood was already reported (the earlier C3 failure was a model repeating the mood tool instead of acting). New unit test covers it.
+2. The C1 check now requires a `user.mood` event that is not the orchestrator's synthesized fallback (reasons `no mood reported` / `voice cue …`).
+
+Extra probe (not part of C1–C3): a live message in capitals ("THIS IS SO ANNOYING NOTHING WORKS!!") produced `user.mood angry 0.9` from the model, then Chip scared, Pixel nervous, Warden protective, Archie scared, Scout nervous in spec order (§15), and a calm spoken reply.
+
+Offline: 34 files, 286 tests; TypeScript clean. Event logs: `chip-live-verification-4.log` … `-7.log` (git-ignored).
+
+Still not covered: real Pixel/Scout, audible voice, Tiger persistence, desktop overlay. Runs 6 and 7 are two passes on one prompt; they do not guarantee every future model reply, which is why the corrective turn and the explicit failure line exist.

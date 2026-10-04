@@ -198,6 +198,18 @@ describe('orchestrator', () => {
     expect(t.chipSays('chip')).toHaveLength(0);
   });
 
+  it('recovery keeps the mood tool when the first reply skipped it, and the read is real', async () => {
+    const t = setup({ script: [completed('(silent)'), requiresAction([mood('happy', 0.6, 'greeting')]), completed('[bubble: Hi!]\nHey there!')] });
+    await t.user('hi chip!');
+    expect(t.sends()).toHaveLength(2);
+    expect(t.sends()[1]!.tools?.map((tool) => tool.function.name)).toContain('report_user_mood');
+    expect(t.sends()[1]!.content).toContain('call report_user_mood first');
+    const moods = t.ofType('user.mood');
+    expect(moods).toHaveLength(1);
+    expect(moods[0]).toMatchObject({ mood: 'happy', reason: 'greeting' });     // not the 'no mood reported' fallback
+    expect(t.chipSays('chip').at(-1)?.text).toBe('Hey there!');
+  });
+
   it.each(['(silent)', ''])('bounds recovery for an unanswered %j response and explains failure', async (answer) => {
     const t = setup({ script: [completed(answer), completed(answer)] });
     await t.user('check my email');

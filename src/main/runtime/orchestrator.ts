@@ -221,7 +221,13 @@ export function createOrchestrator(deps: OrchestratorDeps, opts: OrchestratorOpt
       // was attempted, so a recovery cannot repeat an already executed side effect.
       const unanswered = (): boolean => parseChipOutput(text).silent || !text.trim();
       if (item.kind === 'user' && !turn.actionAttempted && unanswered()) {
-        text = await converse(turn, `${content}\n[runtime_feedback]\nYou returned no answer without attempting an action. The user request is still pending. Mood reporting is already handled; do not repeat it. Call the appropriate tool now, or answer with the one clarification needed. Do not merely promise to act.`, 'Readonly', true);
+        // Mood is only dropped from the corrective turn when it was already reported (a model that
+        // repeats the mood tool instead of acting failed C3). If it was never reported, ask for it:
+        // a skipped mood read means an angry user would get no reaction from the biome.
+        const moodNote = turn.moodReported
+          ? 'Mood reporting is already handled; do not repeat it.'
+          : 'You have not reported the user\'s mood yet: call report_user_mood first, and in the SAME response also call the tool the request needs or answer it.';
+        text = await converse(turn, `${content}\n[runtime_feedback]\nYou returned no answer without attempting an action. The user request is still pending. ${moodNote} Call the appropriate tool now, or answer with the one clarification needed. Do not merely promise to act.`, 'Readonly', true);
       }
       // (silent) is only valid after a successful delegation; anything else must not leave the user hearing nothing.
       if (item.kind === 'user' && !turn.delegationSucceeded && unanswered()) {
@@ -365,7 +371,7 @@ export function createOrchestrator(deps: OrchestratorDeps, opts: OrchestratorOpt
       ...(chipThreadId !== undefined ? { threadId: chipThreadId } : {}),
       content,
       systemPrompt: chipSystemPrompt(),
-      tools: chipTools(installedSpecialists()).filter((tool) => !recovery || tool.function.name !== 'report_user_mood'),
+      tools: chipTools(installedSpecialists()).filter((tool) => !(recovery && turn.moodReported) || tool.function.name !== 'report_user_mood'),
       model: s.models.chipmunk,
       memory,
       timeoutMs: llmTimeoutMs,
