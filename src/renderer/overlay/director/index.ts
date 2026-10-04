@@ -204,9 +204,9 @@ export const createAnimationDirector: CreateAnimationDirector = (deps: DirectorD
         });
         break;
       case 'agent.say':
+        ui.showBubble(id, e.bubble, 'say');
+        a.bubble = null;
         queue([id], () => {
-          ui.showBubble(id, e.bubble, 'say');
-          a.bubble = null;
           const item: SpeechItem = { agentId: id, text: e.text, mood: a.mood, priority: e.priority };
           speechOwners.set(item, id);
           speech.enqueue(item);
