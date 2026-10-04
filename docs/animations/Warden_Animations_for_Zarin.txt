@@ -1,4 +1,13 @@
+> **FINAL PLAN (Oct 4)**
+> REQUIRED: Idle, Walk, Talk, Block, Growl, Sit. Every other clip is OPTIONAL.
+> Ship order: push the STATIC model first (the app animates static models procedurally), then add clips one at a time and push after each clip.
+> Everything else in this document is optional.
+
 =====================================================================
+
+┌─ FAST MODE (Oct 4): make ONLY these 6 essential clips — Idle, Walk,
+│ Talk, Block, Growl, Sit. Everything else is optional / done in code.
+└─ Every other clip below: OPTIONAL — skip for now.
   WARDEN THE WOLF - ANIMATION LIST FOR ZARIN
   ADE (Agentique Desktop Ecosystem) - Hack Dearborn 5
   (APPROVED Oct 4)
@@ -86,16 +95,16 @@ Where others have "Happy", Warden has "Proud".
      Slow, deliberate head movements, jaw moving, very few gestures.
      -> Whenever Warden speaks (his lines are short and serious).
 
-  4. Work  (LOOP, ~2 sec)
+  4. Work  (LOOP, ~2 sec)  OPTIONAL — skip for now
      "Scanning": head up, eyes narrowed, slow head pan left to
      right, ears rotating.
      -> Checking something (an action is being reviewed).
 
-  5. Proud  (LOOP, ~2 sec)
+  5. Proud  (LOOP, ~2 sec)  OPTIONAL — skip for now
      Chest out, chin up, tail high with a slow wag.
      -> The user is happy, or things went well. (Replaces "Happy".)
 
-  6. Guard  (LOOP, ~1.5 sec)   ** replaces "Scared" for Warden **
+  6. Guard  (LOOP, ~1.5 sec)   ** replaces "Scared" for Warden **  OPTIONAL — skip for now
      Legs planted wide, head low, eyes locked forward, small
      protective shift of weight. Steady, NOT trembling.
      -> The user is angry/stressed/sad: Warden stands guard.
@@ -119,49 +128,49 @@ Where others have "Happy", Warden has "Proud".
 
  ===== TIER 2 - SECURITY MOMENTS =====
 
- 10. Alert  (ONE-SHOT, ~0.6 sec)
+ 10. Alert  (ONE-SHOT, ~0.6 sec)  OPTIONAL — skip for now
      Ears snap up, head whips toward the side, body freezes.
      -> An animal asks to change something. Warden notices.
 
- 11. Nod  (ONE-SHOT, ~0.8 sec)
+ 11. Nod  (ONE-SHOT, ~0.8 sec)  OPTIONAL — skip for now
      One slow, approving nod.
      -> The user answered the approval card (allow or deny).
 
- 12. Howl  (ONE-SHOT, ~2 sec)
+ 12. Howl  (ONE-SHOT, ~2 sec)  OPTIONAL — skip for now
      Sits back, lifts his head to the sky, long howl.
      -> Warden spots a TRICK (an email or file trying to give
         the animals instructions).
 
- 13. Run  (LOOP, ~0.6 sec cycle)
+ 13. Run  (LOOP, ~0.6 sec cycle)  OPTIONAL — skip for now
      Fast, low lope.
      -> Rushing to block something far away on the screen.
 
- 14. Sniff  (LOOP, ~2 sec)
+ 14. Sniff  (LOOP, ~2 sec)  OPTIONAL — skip for now
      Nose low, sweeping side to side, ears forward.
      -> Inspecting suspicious content.
 
  ===== TIER 3 - SLEEP =====
 
- 15. Yawn  (ONE-SHOT, ~1.5 sec)
+ 15. Yawn  (ONE-SHOT, ~1.5 sec)  OPTIONAL — skip for now
      Big wolf yawn (long tongue curl), stretch.
      -> Falling asleep.
 
- 16. Sleep  (LOOP, ~4 sec)
+ 16. Sleep  (LOOP, ~4 sec)  OPTIONAL — skip for now
      Curled in a ball, tail over his nose, slow breathing, an ear
      twitch.
      -> Asleep.
 
- 17. SleepWalk  (LOOP, ~1.2 sec cycle)
+ 17. SleepWalk  (LOOP, ~1.2 sec cycle)  OPTIONAL — skip for now
      Slow, droopy walk, head low, eyes half-closed.
      -> Walking sleepily to the Agent Hub to "dock" (turn off).
 
- 18. WakeUp  (ONE-SHOT, ~1.2 sec)
+ 18. WakeUp  (ONE-SHOT, ~1.2 sec)  OPTIONAL — skip for now
      Head pops up, ears up, a full-body shake.
      -> Woken by a job or a click.
 
  ===== TIER 4 =====
 
- 19. Greet  (ONE-SHOT, ~1.5 sec)
+ 19. Greet  (ONE-SHOT, ~1.5 sec)  OPTIONAL — skip for now
      A calm head bow, one slow tail wave.
      -> App start ("Warden on watch.").
 

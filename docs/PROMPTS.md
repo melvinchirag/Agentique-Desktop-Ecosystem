@@ -273,11 +273,10 @@ real API differs from the docs. Status table after every step.
 ```text
 Help me build and save ARCHIE THE BEAVER's 3D model and animations for the ADE project.
 
-1. Read docs/animations/Archie_Animations_for_Zarin.txt (my full list) and docs/ASSETS.md section 2
-   (export rules). Summarize the Tier 1 list for me in 10 lines.
+1. Read docs/animations/Archie_Animations_for_Zarin.txt and docs/ASSETS.md section 2
+   (export rules). Final required clips: Idle, Walk, Talk, Happy. Carry, HoldNote, and any of Chip clip names are optional (Chip names are valid if copying Chip rig).
 2. Git: git switch main && git pull && git switch -c beaver/graphics && git push -u origin beaver/graphics
-3. Make sure tools/blender/required_clips.json has the "beaver" entry with EXACTLY the clip names
-   from Archie_Animations_for_Zarin.txt (loop flags + tiers). Update it if needed.
+3. Make sure tools/blender/required_clips.json marks ONLY Idle, Walk, Talk, Happy as required; keep other listed clips optional (required: false).
 4. When I say "check", run:
      blender -b art/beaver/beaver.blend --python tools/blender/check_character.py -- beaver
    and explain any FAIL lines in plain words.
@@ -382,12 +381,11 @@ ask if a real API differs from the docs. Status table after every step.
 ```text
 Help me build and save WARDEN THE WOLF's 3D model and animations for the ADE project.
 
-1. Read docs/animations/Warden_Animations_for_Zarin.txt (my full list) and docs/ASSETS.md sections 2
-   and 5 (export rules, character.json). Summarize the Tier 1 list for me in 10 lines. Note: Warden has
+1. Read docs/animations/Warden_Animations_for_Zarin.txt and docs/ASSETS.md sections 2
+   and 5 (export rules, character.json). Final required clips: Idle, Walk, Talk, Block, Growl, Sit; every other clip is optional.
    Guard instead of Scared and Proud instead of Happy, and no Think/Sad/Nervous/Excited clips.
 2. Git: git switch main && git pull && git switch -c warden/graphics && git push -u origin warden/graphics
-3. Make sure tools/blender/required_clips.json has the "wolf" entry with EXACTLY the clip names
-   from Warden_Animations_for_Zarin.txt (loop flags + tiers), and that
+3. Make sure tools/blender/required_clips.json marks ONLY Idle, Walk, Talk, Block, Growl, Sit as required; keep other listed clips optional (required: false), and that
    src/renderer/public/characters/wolf/character.json has "clipMap": { "Scared": "Guard", "Happy": "Proud" }.
 4. When I say "check", run:
      blender -b art/wolf/wolf.blend --python tools/blender/check_character.py -- wolf
@@ -409,7 +407,7 @@ Branches: `pixel/logic`, `pixel/sponsors`, `pixel/graphics`, lanes `lane/pixel-<
 |---|---|---|
 | Melvin | Claude Code (Opus 5.5, effort high), repo root | Melvin — Pixel logic orchestrator |
 | Shafeen | Claude Code (Opus 5.5, effort high), repo root | Shafeen — Pixel sponsor tech |
-| Zarin | Codex, repo root | Zarin — Pixel graphics |
+| Shafeen | Codex, repo root | Zarin — Pixel graphics |
 
 ## Melvin — Pixel logic orchestrator
 *Paste into: Claude Code, **Opus 5.5**, `/effort high`, repo root. Start any time after Chip's Wave 1 is merged (can overlap Warden and Archie).*
@@ -495,30 +493,17 @@ memory is extracted ONLY from task text, never from tool results (PW1 proves it)
 committed file; deny MCP tool calls; STOP and ask if a real API differs from the docs. Status table after every step.
 ```
 
-## Zarin — Pixel graphics
-*Paste into: **Codex**, repo root. Graphics must be fast: only 6 clips.*
+## Shafeen — Pixel graphics
+*Paste into: **Codex**, repo root. Pixel concept is done.*
 
 ```text
-Help me build and save PIXEL's 3D model and animations for the ADE project. Pixel is a CUSTOM character (not an
-animal) that handles Google email/calendar/docs.
+Build PIXEL graphics in the ADE repo. Pixel concept is done; do not make concept art.
 
-1. Read docs/animations/Pixel_Animations_for_Zarin.txt (my full list) and docs/ASSETS.md section 2 (export rules).
-   Summarize the character brief and the 6 required clips for me in 10 lines. Only 6 clips are needed: Idle,
-   Walk, Talk, Happy, Write, Handoff. Everything else is done in code.
-2. Help me make 2-3 concept images (front view, readable at 70-90 px, big hands, holds a letter and a pen,
-   accent color #7A6A9E). I will send them to Chanuth to pick one BEFORE I rig anything.
-3. Git: git switch main && git pull && git switch -c pixel/graphics && git push -u origin pixel/graphics
-4. Make sure tools/blender/required_clips.json has a "workspace" entry with EXACTLY: Idle, Walk, Talk, Happy,
-   Write, Handoff (loop flags per the txt file), and that
-   src/renderer/public/characters/workspace/character.json has "clipMap": { "Work": "Write" }.
-5. When I say "check", run:
-     blender -b art/workspace/workspace.blend --python tools/blender/check_character.py -- workspace
-   and explain any FAIL lines in plain words.
-6. When I say "export", run:
-     blender -b art/workspace/workspace.blend --python tools/blender/export_character.py -- workspace
-7. When I say "save", commit and push only art/workspace, src/renderer/public/characters/workspace, and
-   tools/blender with a message like "pixel(graphics): 6 clips".
-Never touch other folders. Stop and tell me if any file is over 100 MB.
+1. Read docs/animations/Pixel_Animations_for_Zarin.txt and docs/ASSETS.md section 2. Required clips: Idle, Walk, Talk, Happy, Write, Handoff; everything else is optional.
+2. Git setup: git switch main && git pull && git switch -c pixel/graphics
+3. Work only on art/workspace/pixel.blend. Push the STATIC model first: export to src/renderer/public/characters/workspace/default/model.glb, run the checker, and push.
+4. Then create the six required clips one at a time. After each clip, check, export, and push before starting the next clip.
+5. Never touch other folders. Stop if any file is over 100 MB.
 ```
 
 ---

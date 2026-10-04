@@ -1,4 +1,12 @@
+> **FINAL PLAN (Oct 4)**
+> REQUIRED: Idle, Walk, Talk, Happy. OPTIONAL: Carry, HoldNote, and any of Chip clip names (Chip rig names are valid).
+> Ship order: push the STATIC model first (the app animates static models procedurally), then add clips one at a time and push after each clip.
+> Everything else in this document is optional.
+
 # Archie (Beaver) — Animation Actions for Zarin
+
+> **FAST MODE (Oct 4): make ONLY these 6 essential clips — Idle, Walk, Talk, Happy, Carry, HoldNote. Everything else is optional / done in code.**
+> Every other clip: **OPTIONAL — skip for now**.
 
 Same rules as Chip (`chip-actions.md`, `../ASSETS.md §2`):
 - exact Action names, Fake User on, in place, 30 fps, loops seamless, no color animation
@@ -30,27 +38,27 @@ Same rules as Chip (`chip-actions.md`, `../ASSETS.md §2`):
 | 1 | `Idle` | ✅ | 3 s | Breathing, whisker twitch, tail sway, looks around | Default |
 | 2 | `Walk` | ✅ | 1 s | Waddle on all fours, tail dragging | Moving across the desktop |
 | 3 | `Talk` | ✅ | 1.5 s | Head bobs, paw gestures, teeth show on emphasis | Speaking |
-| 4 | `Work` | ✅ | 2 s | **Gnawing** a log held in both paws (`Prop_Log`) | Searching / working |
+| 4 | `Work` | ✅ | 2 s | **Gnawing** a log held in both paws (`Prop_Log`)  **OPTIONAL — skip for now** |
 | 5 | `Happy` | ❌ | 1.2 s | Hop + grin + tail wag | Done / user happy |
-| 6 | `Scared` | ✅ | 1.5 s | Crouched, trembling, covers face | User angry |
+| 6 | `Scared` | ✅ | 1.5 s | Crouched, trembling, covers face  **OPTIONAL — skip for now** |
 | 7 | `Carry` | ✅ | 1 s | Waddle-walk carrying a log on his shoulder (`Prop_Log`) | Moving files (applying a plan) |
-| 8 | `TailSlap` | ❌ | 0.8 s | Tail lifts and slaps the ground once, proud nod | Job finished (with the thwack SFX) |
-| 9 | `Read` | ✅ | 2 s | Holds a paper to his face, eyes scanning left-right (`Prop_Paper`) | Reading a file |
+| 8 | `TailSlap` | ❌ | 0.8 s | Tail lifts and slaps the ground once, proud nod  **OPTIONAL — skip for now** |
+| 9 | `Read` | ✅ | 2 s | Holds a paper to his face, eyes scanning left-right (`Prop_Paper`)  **OPTIONAL — skip for now** |
 | 10 | `HoldNote` | ✅ | 2 s | Holds the paper up toward the camera with both paws, small bob (`Prop_Paper`) | **"Talking file"**: the file's line is spoken |
 | **Tier 2 — emotions + teamwork** | | | | | |
-| 11 | `Nervous` | ✅ | 2 s | Fidgeting, teeth chattering, glancing at Warden | Waiting for approval, user stressed |
-| 12 | `Sad` | ✅ | 3 s | Slumped, tail dragging, sigh | User sad / job failed |
-| 13 | `Excited` | ✅ | 1 s | Hopping, rapid tail slaps | User excited |
-| 14 | `Think` | ✅ | 2 s | Taps chin, looks up, tail curls | Planning |
-| 15 | `Handoff` | ❌ | 1.2 s | Holds out a paper/log with both paws, nod | Handing a file to Pixel or Chip (help jobs) |
-| 16 | `Sniff` | ✅ | 2 s | Nose to the ground, moving side to side, whiskers twitching | Searching for a file |
+| 11 | `Nervous` | ✅ | 2 s | Fidgeting, teeth chattering, glancing at Warden  **OPTIONAL — skip for now** |
+| 12 | `Sad` | ✅ | 3 s | Slumped, tail dragging, sigh  **OPTIONAL — skip for now** |
+| 13 | `Excited` | ✅ | 1 s | Hopping, rapid tail slaps  **OPTIONAL — skip for now** |
+| 14 | `Think` | ✅ | 2 s | Taps chin, looks up, tail curls  **OPTIONAL — skip for now** |
+| 15 | `Handoff` | ❌ | 1.2 s | Holds out a paper/log with both paws, nod  **OPTIONAL — skip for now** |
+| 16 | `Sniff` | ✅ | 2 s | Nose to the ground, moving side to side, whiskers twitching  **OPTIONAL — skip for now** |
 | **Tier 3 — sleep** | | | | | |
-| 17 | `Yawn` | ❌ | 1.5 s | Big toothy yawn, stretch | Falling asleep |
-| 18 | `Sleep` | ✅ | 4 s | Curled, tail as a blanket, slow breathing | Asleep |
-| 19 | `SleepWalk` | ✅ | 1.2 s | Drowsy waddle, eyes half-closed | Walking to the Agent Hub to dock |
-| 20 | `WakeUp` | ❌ | 1.2 s | Startles awake, shakes head | Woken by a job or a click |
+| 17 | `Yawn` | ❌ | 1.5 s | Big toothy yawn, stretch  **OPTIONAL — skip for now** |
+| 18 | `Sleep` | ✅ | 4 s | Curled, tail as a blanket, slow breathing  **OPTIONAL — skip for now** |
+| 19 | `SleepWalk` | ✅ | 1.2 s | Drowsy waddle, eyes half-closed  **OPTIONAL — skip for now** |
+| 20 | `WakeUp` | ❌ | 1.2 s | Startles awake, shakes head  **OPTIONAL — skip for now** |
 | **Tier 4** | | | | | |
-| 21 | `Greet` | ❌ | 1.5 s | Waves a paw, tail slap | App start |
+| 21 | `Greet` | ❌ | 1.5 s | Waves a paw, tail slap  **OPTIONAL — skip for now** |
 
 **Optional shape keys** (head mesh): `MouthOpen` (lip-sync), `Blink`.
 **Don't make:** talking-while-scared variants or color changes (code does those).
