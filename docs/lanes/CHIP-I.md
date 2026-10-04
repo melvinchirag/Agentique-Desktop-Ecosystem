@@ -26,6 +26,8 @@ export interface OfflineChipOptions {
   specialists?: FakeSpecialists;               // default new FakeSpecialists({ clock })
   settings?: AdeSettings;                      // default makeTestSettings()
   calendar?: CalendarSource;                   // default new FakeCalendar(clock)
+  plannerLlm?: LlmClient;                      // the nudge planner's OWN client; default: always answers {"nudges":[]}
+  startNudges?: boolean;                       // default true
   timeZone?: string;                           // default 'America/Detroit'
 }
 export interface OfflineChip {
@@ -38,7 +40,10 @@ export interface OfflineChip {
 }
 export function buildOfflineChip(opts?: OfflineChipOptions): OfflineChip;
 ```
-Wiring order: bus → presence → jobs (runner = specialists) → mood → nudge store + engine (`isUserBusy` = a Chip turn is running or the last `user.message` was < 20 s ago, tracked from the bus) → history → orchestrator. Calls `presence.start()` and `nudges.start()`. (Lane J1 later turns this into `createChipCore()`.)
+Wiring order: bus → presence → jobs (runner = specialists) → mood → nudge store + engine (`isUserBusy` = a Chip turn is running or the last `user.message` was < 20 s ago, tracked from the bus) → history → orchestrator. Calls `presence.start()` and (unless `startNudges: false`) `nudges.start()`. (Lane J1 later turns this into `createChipCore()`.)
+
+**Important (found in lane G's audit):** the nudge engine must get `plannerLlm`, **never** the scripted Chip `llm`. `nudges.start()` runs the planner immediately; on a shared `FakeLlm` it would consume the scenario's scripted steps and break the test. The default `plannerLlm` is a tiny local `LlmClient` that always returns `completed('{"nudges":[]}')` (and `submitToolOutputs` throws). Scenarios that need planner nudges (C12) pass their own `plannerLlm`.
+"Is a Chip turn running": the orchestrator interface has no such flag, so track it from the bus: running from Chip's `agent.status` `listening`/`thinking` until `agent.status` `idle`/`error`.
 
 ### `scripts/chip-cli.ts` (run with `npx tsx scripts/chip-cli.ts [--live] [--demo]`)
 - Reads lines from stdin. Prints every bus event as one colored line: `+12.4s  agent.say      chipmunk  "Scout, fly!"  [Scout 🦅] (ack)`. Times are relative to start.
