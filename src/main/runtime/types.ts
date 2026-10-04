@@ -9,7 +9,38 @@
 import type { AgentId, AgentMood, ModelChoice, Presence, UserMood } from '../../shared/agents';
 import type { ArtifactKind, BiomeEvent } from '../../shared/events';
 import type { AdeSettings } from '../../shared/ipc';
-import type { DistributiveOmit } from '../../shared/tools';
+import type { DistributiveOmit, Risk } from '../../shared/tools';
+
+// ── Warden ────────────────────────────────────────────────────────────────────
+
+export type WardenVerdict = 'allow' | 'ask' | 'deny';
+export interface GateRequest {
+  agentId: AgentId; taskId: string; callId: string; tool: string; risk: Risk;
+  jobId: string; jobKind: 'normal' | 'help'; args: unknown;
+}
+export interface WardenGate {
+  /** Sync. Emits wolf.verdict; failures are reported as deny with rule W0. */
+  review(r: GateRequest): WardenVerdict;
+  explain?(callId: string): { rule: string; reason: string } | undefined;
+}
+
+export type ApprovalHow = 'user' | 'timeout' | 'cancelled';
+export interface ApprovalOutcome { approved: boolean; how: ApprovalHow }
+export interface ApprovalRequest {
+  callId: string; jobId: string; taskId: string; agentId: AgentId;
+  title: string; preview: string; signal: AbortSignal;
+}
+export interface Approvals {
+  request(r: ApprovalRequest): Promise<ApprovalOutcome>;
+  resolve(callId: string, approved: boolean): void;
+  cancelForJobs(jobIds: string[]): void;
+  pending(): { callId: string; jobId: string; agentId: AgentId; title: string; expiresAt: number }[];
+  dispose(): void;
+}
+
+export interface ScreenSource { kind: 'email' | 'file' | 'doc' | 'calendar' | 'web' | 'summary'; name: string; taskId?: string; jobId?: string }
+export interface ScreenResult { flagged: boolean; score: number; reasons: string[]; wrapped: string }
+export interface InjectionScreen { screen(text: string, source: ScreenSource): Promise<ScreenResult> }
 
 // ── Ids ───────────────────────────────────────────────────
 
@@ -154,6 +185,31 @@ export interface CalendarSource { listEvents(from: Date, to: Date): Promise<Cale
 export type HistoryKind = 'recent_tasks' | 'warden_blocks' | 'agent_activity' | 'mood_history';
 export interface HistoryStore { query(kind: HistoryKind, sinceHours: number, agent?: AgentId): Promise<object[]> }
 
+// ── File operations (Archie) ─────────────────────────────
+
+/** One undoable filesystem operation. The local journal is primary; Tiger stores a copy. */
+export interface FileOp {
+  id: string;
+  ts: number;
+  jobId: string;
+  batchId: string;
+  op: 'move' | 'rename' | 'mkdir' | 'trash' | 'sweep';
+  fromPath?: string;
+  toPath?: string;
+  undone: boolean;
+  swept?: boolean;
+}
+
+export interface FileOpsJournal {
+  record(op: FileOp): Promise<void>;
+  lastBatch(): Promise<string | null>;
+  batchOps(batchId: string): Promise<FileOp[]>;
+  markUndone(batchId: string): Promise<void>;
+  recent(sinceHours: number): Promise<FileOp[]>;
+  trashBatchesOlderThan(days: number): Promise<string[]>;
+  markSwept(batchId: string): Promise<void>;
+}
+
 // ── Sponsor pieces built by Shafeen (agents/01-chip-SPONSOR-LANES-SHAFEEN.md) ──
 
 export interface EventSink { enqueue(e: BiomeEvent): void; flush(): Promise<void> }                       // Tiger writer; subscribed to the bus
@@ -163,6 +219,11 @@ export interface MemoryApi {
   update(agentId: AgentId, id: string, text: string): Promise<void>; remove(agentId: AgentId, id: string): Promise<void>;
 }
 export interface TigerQueries { taskEvents(taskId: string): Promise<BiomeEvent[]>; wardenAudit(limit: number): Promise<object[]>; pulse(): Promise<object> }
+/** Backboard thread-document API used by Archie's fs_ask_file tool. */
+export interface DocumentsApi {
+  uploadToThread(threadId: string, absPath: string): Promise<{ documentId: string }>;
+  waitIndexed(documentId: string, timeoutMs: number): Promise<{ status: 'indexed' | 'error'; chunks: number }>;
+}
 export interface VoiceService {
   speak(agentId: AgentId, text: string, mood: AgentMood): Promise<{ audio: ArrayBuffer; alignment?: object }>;
   transcribe(audio: ArrayBuffer, mime: string): Promise<{ text: string; cues: string[] }>;

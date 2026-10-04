@@ -35,7 +35,7 @@ const VOICES: Record<string, VoiceSpec> = {
   },
   beaver: {
     name: 'Archie', env: 'EL_VOICE_BEAVER',
-    description: 'Friendly, practical working-guy voice; upbeat, a bit goofy, warm, mid-range, proud of tidy work.',   // 02-archie-files.md §9
+    description: 'A calm, clear, trustworthy builder and engineer. Smooth mid-low pitch, never squeaky or shrill. Soft-spoken and relaxed volume, steady pace, crisp clear articulation. Quietly confident and optimistic, reassuring, sounds like an expert who knows exactly what he is talking about. Warm and friendly.',   // tuned from 02-archie-files.md §9 after two preview rounds
     text: "Dam's built! Thirty-seven files, five folders, and not one out of place. Everything from your Downloads is sorted nice and neat. Just say undo and I'll put it all right back."
   },
   eagle: {

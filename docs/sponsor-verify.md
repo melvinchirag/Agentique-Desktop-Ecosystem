@@ -153,6 +153,31 @@ Verified with real calls on 2026-10-04.
 
 ---
 
+# Archie (lane W1) — verified 2026-10-04
+
+## A1. Backboard thread documents — verified
+| Step | Call | Result |
+|---|---|---|
+| Create a thread | `POST /assistants/{assistant_id}/threads` body `{}` | 200 `{ thread_id, assistant_id, created_at, ... }` |
+| Upload | `POST /threads/{thread_id}/documents`, multipart field `file` | 200 `{ document_id, filename, status: "pending", status_message, summary, created_at }` |
+| Status | `GET /documents/{document_id}/status` | 200 `{ document_id, filename, document_type: "thread", status, status_message, file_size_bytes, total_tokens, chunk_count, processing_started_at, processing_completed_at }` |
+| Ask | `POST /threads/messages` on the same thread | Response has `retrieved_files: ["<filename>"]` and `retrieved_files_count` |
+
+- Status went `pending` → `indexed`. The chunk count is in **`chunk_count`** (the spec's `{ ok, document_id, chunks }` should map from it).
+- **Index time:** an 8-page PDF (38 KB, 40 chunks) took 7.8 s; a 1-page PDF (8 chunks) took 14.6 s. Time is not proportional to size, so keep the 60 s timeout.
+- **Answering from the file works:** asked "What does my syllabus say about late work?" and got the correct policy from the uploaded PDF.
+- **Limit to know:** answers come from retrieved chunks, not the whole file. In a file made of near-identical filler lines, one planted sentence was not found. Real documents with distinct sections work; "find this one exact line" questions may miss.
+
+## A2. Supported types — verified from the API's own error message
+Uploading `.exe` → 400: `File type '.exe' is not supported`. Allowed extensions:
+`.aac .avi .bmp .c .cpp .css .csv .doc .docx .flac .gif .go .h .html .java .jpeg .jpg .js .json .jsonl .jsx .m4a .markdown .md .mkv .mov .mp3 .mp4 .mpeg .mpg .ogg .pdf .php .png .ppt .pptx .py .rb .rs .sql .tif .tiff .ts .tsx .txt .wav .webm .webp .xls .xlsx .xml`
+`fs_ask_file` should check the extension against this list before uploading. `.txt` upload → 200.
+
+## A3. Maximum file size — not verified
+No call tested it (it would mean uploading very large files). The spec's own 20 MB cap in `fs_ask_file` stands until someone confirms Backboard's limit.
+
+## A4. `[softly]` tag — verified
+`eleven_v4_turbo` accepted `[softly]` (200) and did not read it aloud (checked by transcribing the audio). How soft it sounds needs a human listen.
 # Warden (lane WW1) — verified 2026-10-04
 
 ## W-1. Classifier settings — verified
