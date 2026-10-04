@@ -1,7 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { dirname, join } from 'node:path';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { homedir } from 'node:os';
 import type { AgentId } from '../../shared/agents';
 import { AGENTS } from '../../shared/config';
 import type { BiomeEvent } from '../../shared/events';
@@ -51,6 +50,7 @@ import { createWardenClassifier } from '../sponsors/wardenClassifier';
 import { handleStandInSendPost, StandInSpecialists } from './standInSpecialists';
 import { ElevenLabsVoice } from '../voice/elevenlabs';
 import { ShippedLines } from '../voice/cache';
+import { defaultFolders } from './defaultFolders';
 
 const ids = Object.keys(AGENTS) as AgentId[];
 const silent = () => new ArrayBuffer(0);
@@ -70,9 +70,10 @@ export function missingRealCoreKeys(env: Env): string[] {
 
 function defaultSettings(options: RealCoreOptions): AdeSettings {
   const model = { llm_provider: 'google', model_name: 'gemini-2.5-flash' };
+  const folders = defaultFolders({ desktop: options.desktopRoot, documents: options.documentsRoot, downloads: options.downloadsRoot });
   return {
     models: Object.fromEntries(ids.map(id => [id, { ...model }])) as AdeSettings['models'],
-    voiceEnabled: true, allowedFolders: [options.desktopRoot ?? join(homedir(), 'Desktop'), options.documentsRoot ?? join(homedir(), 'Documents'), options.downloadsRoot ?? join(homedir(), 'Downloads')], biome: 'forest', demoMode: !!options.demoTimers,
+    voiceEnabled: true, allowedFolders: folders.allowed, biome: 'forest', demoMode: !!options.demoTimers,
     installed: Object.fromEntries(ids.map(id => [id, AGENTS[id].tier === 'core'])) as AdeSettings['installed'],
     timers: { sleepAfterSec: options.demoTimers ? 30 : 180, dockAfterSec: options.demoTimers ? 60 : 600, moodDecaySec: 20 },
     nudges: { enabled: true, quietStart: '23:00', quietEnd: '08:00', maxPerHour: 3 },
@@ -86,9 +87,16 @@ function fallbackCore(resourcesDir: string | undefined, warning: boolean): CoreA
   const sessionId = randomUUID();
   return {
     ...fake,
+    // Missing live credentials must never expose FakeCore's sample memories as user memories.
+    getMemories: async () => [],
+    searchMemories: async () => [],
+    updateMemory: async () => { throw new Error('Backboard memories are unavailable: missing live credentials'); },
+    deleteMemory: async () => { throw new Error('Backboard memories are unavailable: missing live credentials'); },
+    sendMessage: async () => { throw new Error('Live services are unavailable: missing credentials'); },
+    sendVoice: async () => { throw new Error('Live services are unavailable: missing credentials'); },
     subscribe(cb) {
       listeners.add(cb);
-      const off = fake.subscribe(cb);
+      const off = fake.subscribe(event => { if (event.type !== 'agent.recall') cb(event); });
       return () => { listeners.delete(cb); off(); };
     },
     start() {
@@ -106,6 +114,7 @@ export interface RealCoreOptions {
   demoMode?: boolean;
   resourcesDir?: string;
   env?: Env;
+  envPaths?: string[];
   openExternal?: (url: string) => Promise<void>;
   documentsRoot?: string;
   desktopRoot?: string;
@@ -119,11 +128,20 @@ export interface RealCoreOptions {
   dataDir?: string;
 }
 
-export function loadRealCoreEnv(options: Pick<RealCoreOptions, 'exePath' | 'dataDir' | 'env'> = {}): { env: Env; baseDir: string } {
+export function loadRealCoreEnv(options: Pick<RealCoreOptions, 'exePath' | 'dataDir' | 'env' | 'envPaths'> = {}): { env: Env; baseDir: string } {
   if (options.env) return { env: options.env, baseDir: process.cwd() };
-  const paths = [options.exePath && join(dirname(options.exePath), '.env'), join(options.dataDir ?? adeDataDir(), '.env'), join(process.cwd(), '.env')].filter((path): path is string => !!path);
-  const found = paths.find(existsSync);
-  return { env: { ...(found ? readEnvFile(found) : {}), ...process.env }, baseDir: found ? dirname(found) : process.cwd() };
+  const paths = [options.exePath && join(dirname(options.exePath), '.env'), ...(options.envPaths ?? []).slice().reverse(),
+    join(options.dataDir ?? adeDataDir(), '.env'), join(process.cwd(), '.env')].filter((path): path is string => !!path);
+  const found = [...new Set(paths)].filter(existsSync);
+  const env: Env = {};
+  let baseDir = found[0] ? dirname(found[0]) : process.cwd();
+  // Layer fallback files while keeping executable-side configuration highest priority.
+  for (const path of found.slice().reverse()) {
+    const values = readEnvFile(path);
+    Object.assign(env, values);
+    if (values.TIGER_CA_FILE) baseDir = dirname(path);
+  }
+  return { env: { ...env, ...process.env }, baseDir };
 }
 
 export function disconnectedCalendar() { return { listEvents: async () => [] }; }
@@ -176,8 +194,8 @@ export function createRealCore(options: RealCoreOptions = {}): CoreAdapter {
   const standIns = new StandInSpecialists(clock);
   let pixelTools: readonly ToolDefinition[] | undefined;
   const runner: SpecialistRunner = standIns;
-  const documentsRoot = options.documentsRoot ?? join(homedir(), 'Documents');
-  const safe = { allowedRoots: settings.allowedFolders, documentsRoot };
+  const documentsRoot = defaultFolders({ desktop: options.desktopRoot, documents: options.documentsRoot, downloads: options.downloadsRoot }).documentsRoot;
+  const safe = { allowedRoots: settings.allowedFolders, documentsRoot, watch: true };
   const index = new FileIndex(safe);
   const documents = new BackboardDocuments({ apiKey: env.BACKBOARD_API_KEY! });
   const googleStore = options.safeStorage ? new SafeStorageTokenStore(options.safeStorage) : undefined;

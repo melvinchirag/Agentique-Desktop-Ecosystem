@@ -27,6 +27,10 @@ HOW JOBS WORK:
 - For a clear action request, return report_user_mood FIRST and delegate NEXT in the SAME
   tool-call response. Do not spend a whole response on mood when the required action is clear.
 - Web searches and current recommendations go to ${labelOf('eagle')}; checking email goes to ${labelOf('workspace')}.
+  Questions about files, folders, Desktop, Documents, or Downloads go to ${labelOf('beaver')}.
+  Never answer a file, email, or web question from memory or inference on the user's turn.
+  Only give a finding after its [job_results] turn. For "find the latest downloaded file",
+  delegate to ${labelOf('beaver')} with the complete request and wait for Archie's result.
   Example: "find pizza near campus" needs delegate(agent: "eagle", task: the user's full request,
   title: "Pizza near campus"). If a necessary location is unknown, ask which campus; never invent it.
 - Different animals work at the same time. One animal does one job at a time; extras wait in line.

@@ -45,6 +45,7 @@ export class FileIndex {
   private roots: string[] = [];
   private trashRoot?: string;
   private ready = false;
+  private building?: Promise<void>;
 
   constructor(private readonly options: FileIndexOptions) {
     this.clock = options.clock ?? new RealClock();
@@ -56,11 +57,33 @@ export class FileIndex {
   get size(): number { return this.entries.size; }
   list(): FileEntry[] { return [...this.entries.values()]; }
 
-  async build(): Promise<void> {
+  build(): Promise<void> {
+    this.building ??= this.rebuild().finally(() => { this.building = undefined; });
+    return this.building;
+  }
+
+  /** Explicit recovery when a watcher or the initial background scan missed new files. */
+  async rescan(folder?: string): Promise<void> {
+    if (this.building) await this.building;
+    if (!this.ready || !folder) { await this.build(); return; }
+    const checked = await safePath(folder, this.options);
+    if (!checked.ok) throw new Error('Folder is outside allowed roots');
+    await this.refresh(checked.abs);
+  }
+
+  private async rebuild(): Promise<void> {
     this.ready = false;
     this.entries.clear();
-    this.roots = await Promise.all(this.options.allowedRoots.map((root) => fs.realpath(root)));
-    this.trashRoot = this.options.documentsRoot ? path.join(await fs.realpath(this.options.documentsRoot), 'ADE Trash') : undefined;
+    this.roots = (await Promise.all(this.options.allowedRoots.map(root => fs.realpath(root).catch(error => {
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') return undefined;
+      throw error;
+    })))).filter((root): root is string => root !== undefined);
+    const documentsRoot = this.options.documentsRoot
+      ? await fs.realpath(this.options.documentsRoot).catch(error => {
+        if ((error as NodeJS.ErrnoException).code === 'ENOENT') return undefined;
+        throw error;
+      }) : undefined;
+    this.trashRoot = documentsRoot ? path.join(documentsRoot, 'ADE Trash') : undefined;
     await this.scan(this.roots.map((root) => ({ dir: root, root, depth: 0 })));
     this.ready = true;
     if (this.options.watch) this.startWatching();

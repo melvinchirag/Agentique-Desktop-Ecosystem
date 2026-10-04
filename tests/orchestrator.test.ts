@@ -109,6 +109,25 @@ function deferred<T>() {
 }
 
 describe('orchestrator', () => {
+  it('delegates a downloaded-file request when Chip tries to answer from its own turn', async () => {
+    const t = setup({ script: [completed("[bubble: Missing]\nI couldn't find that file."),
+      completed('[bubble: Found]\nArchie found the newest file.')] });
+    await t.user('Chip, find the latest downloaded file');
+    expect(t.jobs.list()[0]).toMatchObject({ agent: 'beaver', task: 'Chip, find the latest downloaded file', state: 'running' });
+    expect(t.chipSays('chip')).toHaveLength(0);
+    await t.advance(3 * SEC + RESULT_BATCH_MS);
+    expect(t.sends()[1]!.content).toContain('[job_results]');
+    expect(t.chipSays('chip').map(e => e.text)).toEqual(['Archie found the newest file.']);
+  });
+
+  it('suppresses a speculative answer after a successful delegation', async () => {
+    const t = setup({ script: [requiresAction([delegate('beaver', 'Latest download')]),
+      completed("[bubble: Missing]\nI couldn't find that file.")] });
+    await t.user('find the latest downloaded file');
+    expect(t.jobs.list()[0]?.agent).toBe('beaver');
+    expect(t.chipSays('chip')).toHaveLength(0);
+  });
+
   it('C1 small talk: mood, then bubble + speech, events in §8 order, no jobs', async () => {
     const t = setup({ script: [requiresAction([mood('happy', 0.6, 'greeting')]), completed('[bubble: Hi!]\nHey there!')] });
     await t.user('hi chip!');
@@ -210,12 +229,12 @@ describe('orchestrator', () => {
     expect(t.chipSays('chip').at(-1)?.text).toBe('Hey there!');
   });
 
-  it.each(['(silent)', ''])('bounds recovery for an unanswered %j response and explains failure', async (answer) => {
-    const t = setup({ script: [completed(answer), completed(answer)] });
+  it.each(['(silent)', ''])('delegates email despite an unanswered %j response', async (answer) => {
+    const t = setup({ script: [completed(answer)] });
     await t.user('check my email');
-    expect(t.sends()).toHaveLength(2);
-    expect(t.jobs.list()).toHaveLength(0);
-    expect(t.chipSays('chip').at(-1)?.text).toBe("I couldn't finish that request. Please try again.");
+    expect(t.sends()).toHaveLength(1);
+    expect(t.jobs.list()[0]).toMatchObject({ agent: 'workspace', state: 'running' });
+    expect(t.chipSays('chip')).toHaveLength(0);
   });
 
   it('does not retry an action that has already been attempted', async () => {

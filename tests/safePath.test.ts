@@ -20,6 +20,8 @@ describe('safePath (A1)', () => {
     await fs.writeFile(path.join(downloads, 'notes.txt'), 'fixture');
     const options = { allowedRoots: [downloads], documentsRoot: documents };
     expect(await safePath('Downloads/notes.txt', options)).toMatchObject({ ok: true, abs: path.join(downloads, 'notes.txt') });
+    expect(await safePath('Downloads/notes.txt', { ...options, allowedRoots: [path.join(fixture, 'missing'), downloads] }))
+      .toMatchObject({ ok: true, abs: path.join(downloads, 'notes.txt') });
     expect(await safePath(path.join(downloads, 'new', 'later.txt'), options)).toMatchObject({ ok: true });
     expect(await safePath(path.join(documents, 'ADE Trash', 'batch', 'old.txt'), options)).toMatchObject({ ok: true });
   });

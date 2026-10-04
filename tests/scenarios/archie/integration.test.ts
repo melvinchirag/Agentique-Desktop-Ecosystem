@@ -59,6 +59,24 @@ describe.each(['standin', 'real'] as const)('Archie through Chip and AgentRuntim
     expect(r.core.bus.recent().some((e) => e.type === 'tool.request' && e.tool === 'fs_search')).toBe(true);
   });
 
+  it('finds the newest file in a temporary Downloads folder by mtime', async () => {
+    const r = await setup([toolStep('fs_search', { query: 'latest downloaded file' }),
+      (call) => {
+        const hits = output(call).results as { name: string; path: string }[];
+        expect(hits.map(hit => hit.name).slice(0, 2)).toEqual(['newer.txt', 'older.txt']);
+        return doneStep('Found it.', hits[0]!.path);
+      }]);
+    const older = path.join(r.fixture.downloads, 'older.txt');
+    const newer = path.join(r.fixture.downloads, 'newer.txt');
+    await writeFile(older, 'old');
+    await writeFile(newer, 'new');
+    await utimes(older, new Date(r.clock.now() - 60_000), new Date(r.clock.now() - 60_000));
+    await utimes(newer, new Date(r.clock.now()), new Date(r.clock.now()));
+    await r.index.build();
+    const result = await r.run('find the latest downloaded file');
+    expect(result.summary).toContain(newer);
+  });
+
   it('A3 reads desktop notes as untrusted file data', async () => {
     const r = await setup([toolStep('fs_read_text', { path: 'Desktop/notes.txt' }),
       (call) => {

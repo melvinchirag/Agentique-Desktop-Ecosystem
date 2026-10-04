@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import type { AdeApi } from '../../shared/ipc';
 import type { AgentId } from '../../shared/agents';
 import { AGENTS } from '../../shared/config';
@@ -30,33 +30,47 @@ export const MemoriesTab: React.FC<MemoriesTabProps> = ({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [recalled, setRecalled] = useState<string[]>([]);
   const [error, setError] = useState('');
+  const requestId = useRef(0);
 
   const isWarden = selectedAgentId === 'wolf';
 
   const loadMemories = async (agentId: AgentId) => {
+    const request = ++requestId.current;
+    setError('');
     if (agentId === 'wolf') {
       setMemories([]);
+      setIsLoading(false);
       return;
     }
     setIsLoading(true);
-    setError('');
     try {
       const data = await api.getMemories(agentId);
-      setMemories(Array.isArray(data) ? data : []);
+      if (request === requestId.current) setMemories(Array.isArray(data) ? data : []);
     } catch (cause) {
-      setMemories([]);
-      setError(cause instanceof Error ? cause.message : String(cause));
+      if (request === requestId.current) {
+        setMemories([]);
+        setError(cause instanceof Error ? cause.message : String(cause));
+      }
     } finally {
-      setIsLoading(false);
+      if (request === requestId.current) setIsLoading(false);
     }
   };
 
   useEffect(() => {
     setSearchQuery('');
     setEditingId(null);
+    setMemories([]);
+    setRecalled([]);
     void loadMemories(selectedAgentId);
-  }, [selectedAgentId]);
+    const off = api.onEvent(event => {
+      if (event.type === 'agent.recall' && event.agentId === selectedAgentId) {
+        setRecalled(event.memories.filter(memory => memory.trim()));
+      }
+    });
+    return () => { requestId.current++; off(); };
+  }, [selectedAgentId, api]);
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,20 +84,24 @@ export const MemoriesTab: React.FC<MemoriesTabProps> = ({
 
     setIsLoading(true);
     setError('');
+    const request = ++requestId.current;
     try {
       const data = await api.searchMemories(selectedAgentId, trimmed);
-      setMemories(Array.isArray(data) ? data : []);
+      if (request === requestId.current) setMemories(Array.isArray(data) ? data : []);
     } catch (cause) {
-      setMemories([]);
-      setError(cause instanceof Error ? cause.message : String(cause));
+      if (request === requestId.current) {
+        setMemories([]);
+        setError(cause instanceof Error ? cause.message : String(cause));
+      }
     } finally {
-      setIsLoading(false);
+      if (request === requestId.current) setIsLoading(false);
     }
   };
 
   const handleDelete = async (memoryId: string) => {
     try {
       await api.deleteMemory(selectedAgentId, memoryId);
+      setRecalled([]);
       setMemories((prev) => prev.filter((m) => m.id !== memoryId));
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : String(cause));
@@ -168,7 +186,7 @@ export const MemoriesTab: React.FC<MemoriesTabProps> = ({
               </div>
             ) : error ? null : memories.length === 0 ? (
               <div style={{ color: 'var(--hub-text-muted)', padding: 12, textAlign: 'center' }}>
-                No memories found for {AGENTS[selectedAgentId]?.displayName ?? selectedAgentId}.
+                {!searchQuery.trim() && recalled.length ? recalled.join('; ') : error || (searchQuery.trim() ? 'No matching memories' : 'No memories yet')}
               </div>
             ) : (
               memories.map((m) => (
