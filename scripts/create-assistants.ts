@@ -10,6 +10,7 @@ import { AGENTS } from '../src/shared/config';
 import { BackboardClient } from '../src/main/runtime/backboard';
 import { AGENT_IDS, readEnvFile, setEnvValue } from '../src/main/sponsors/env';
 import { withFactFormat, type FactExample } from '../src/main/sponsors/memoryFormat';
+import { WARDEN_SCREEN_ENV, WARDEN_SCREEN_NAME, WARDEN_SCREEN_PROMPT } from '../src/main/sponsors/wardenClassifier';
 import * as chipmunk from '../src/main/agents/chipmunk/memory-rules';
 import * as workspace from '../src/main/agents/workspace/memory-rules';
 import * as wolf from '../src/main/agents/wolf/memory-rules';
@@ -46,6 +47,18 @@ async function main(): Promise<void> {
     setEnvValue(ENV_PATH, key, assistantId);
     if (existing) await client.deleteAssistant(existing).catch(() => console.log(`        (could not delete the old ${id} assistant)`));
     console.log(`created ${id} → ADE · ${profile.displayName}${RULES[id].FACT_EXTRACTION_PROMPT ? '' : '  (no memory rules)'}  ${key} written to .env`);
+  }
+
+  // Warden's second assistant: the injection classifier. No memory prompts; every call sends memory 'off'.
+  if (!only || only === 'wolf') {
+    const existing = env[WARDEN_SCREEN_ENV];
+    if (existing && !force) console.log('skip    warden screen (already in .env)');
+    else {
+      const { assistantId } = await client.createAssistant({ name: WARDEN_SCREEN_NAME, systemPrompt: WARDEN_SCREEN_PROMPT });
+      setEnvValue(ENV_PATH, WARDEN_SCREEN_ENV, assistantId);
+      if (existing) await client.deleteAssistant(existing).catch(() => console.log('        (could not delete the old warden screen assistant)'));
+      console.log(`created warden screen → ${WARDEN_SCREEN_NAME}  (no memory rules)  ${WARDEN_SCREEN_ENV} written to .env`);
+    }
   }
 }
 main().catch((e) => { console.error(String(e.message ?? e)); process.exit(1); });

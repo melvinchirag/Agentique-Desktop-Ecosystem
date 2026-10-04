@@ -1,6 +1,6 @@
 import type { AgentId, AgentMood } from '../../shared/agents';
 import type { VoiceService } from '../runtime/types';
-import { VoiceCache, type CachedClip } from './cache';
+import { ShippedLines, VoiceCache, type CachedClip } from './cache';
 import { moodVoice, tagPrefix } from './moodVoice';
 
 const API = 'https://api.elevenlabs.io/v1';
@@ -9,6 +9,7 @@ const FALLBACK_MODEL = 'eleven_flash_v2_5';     // no tags
 const STT_MODEL = 'scribe_v2';
 const OUTPUT_FORMAT = 'mp3_44100_128';
 const PREGENERATE_CONCURRENCY = 3;
+const WARDEN_MOOD: AgentMood = 'protective';   // → [serious] (moodVoice.ts)
 
 /** Character timing for lip-sync and bubble timing. Covers the spoken text only (the mood tag is removed). */
 export interface Alignment { characters: string[]; character_start_times_seconds: number[]; character_end_times_seconds: number[] }
@@ -20,6 +21,8 @@ export interface ElevenLabsVoiceOptions {
   /** settings.voiceEnabled. When false, speak() returns an empty clip and spends no credits. */
   voiceEnabled?: () => boolean;
   cache?: VoiceCache;
+  /** Lines rendered at build time (resources/voice-lines). Warden's template lines play from here. */
+  shipped?: ShippedLines;
   fetch?: typeof fetch;
   log?: (message: string) => void;
 }
@@ -46,6 +49,7 @@ export class ElevenLabsVoice implements VoiceService {
   private readonly voiceIds: Partial<Record<AgentId, string>>;
   private readonly voiceEnabled: () => boolean;
   private readonly cache: VoiceCache;
+  private readonly shipped: ShippedLines;
   private readonly fetchFn: typeof fetch;
   private readonly log: (message: string) => void;
 
@@ -55,6 +59,7 @@ export class ElevenLabsVoice implements VoiceService {
     this.voiceIds = opts.voiceIds;
     this.voiceEnabled = opts.voiceEnabled ?? (() => true);
     this.cache = opts.cache ?? new VoiceCache();
+    this.shipped = opts.shipped ?? new ShippedLines();
     this.fetchFn = opts.fetch ?? fetch;
     this.log = opts.log ?? ((m) => console.warn(`[voice] ${m}`));
   }
@@ -63,6 +68,12 @@ export class ElevenLabsVoice implements VoiceService {
   async speak(agentId: AgentId, text: string, mood: AgentMood): Promise<{ audio: ArrayBuffer; alignment?: object }> {
     const line = text.trim();
     if (!this.voiceEnabled() || !line) return EMPTY;
+    if (agentId === 'wolf') {
+      // Warden ignores the biome's mood: he is always [serious]. His template lines ship as mp3s, so try those first.
+      mood = WARDEN_MOOD;
+      const shipped = this.shipped.get('wolf', line);
+      if (shipped) return shipped;
+    }
     const voiceId = this.voiceIds[agentId];
     if (!voiceId) throw new Error(`No ElevenLabs voice for "${agentId}". Run scripts/design-voices.ts (EL_VOICE_${agentId.toUpperCase()}).`);
 

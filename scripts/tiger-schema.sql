@@ -60,6 +60,20 @@ SELECT add_continuous_aggregate_policy('job_stats_daily',
   start_offset => INTERVAL '7 days', end_offset => INTERVAL '1 minute',
   schedule_interval => INTERVAL '5 minutes', if_not_exists => TRUE);
 
+-- Warden's verdicts and alerts per day, rule, and verdict (alerts count as verdict 'alert').
+CREATE MATERIALIZED VIEW IF NOT EXISTS warden_daily
+WITH (timescaledb.continuous) AS
+SELECT time_bucket('1 day', ts) AS day,
+       coalesce(payload->>'rule', '') AS rule,
+       coalesce(payload->>'verdict', 'alert') AS verdict,
+       count(*) AS times
+FROM biome_events WHERE type IN ('wolf.verdict', 'wolf.alert') GROUP BY day, rule, verdict
+WITH NO DATA;
+ALTER MATERIALIZED VIEW warden_daily SET (timescaledb.materialized_only = false);
+SELECT add_continuous_aggregate_policy('warden_daily',
+  start_offset => INTERVAL '7 days', end_offset => INTERVAL '1 minute',
+  schedule_interval => INTERVAL '5 minutes', if_not_exists => TRUE);
+
 -- ── Views ────────────────────────────────────────────────────────────────────
 -- Warden's audit trail. The first nine columns are the original ones, in order; asking_agent, tool, and how
 -- are appended (03-warden-security.md §10). asking_agent + tool come from the tool.request with the same callId

@@ -18,15 +18,13 @@ const SQL: Record<HistoryKind, string> = {
     GROUP BY task_id
     HAVING count(*) FILTER (WHERE type = 'user.message') > 0
     ORDER BY at DESC LIMIT ${MAX_ROWS}`,
-  // Warden's denials, with the animal and tool that asked.
+  // Warden's denials, with the animal and tool that asked (columns of the wolf_audit view).
   warden_blocks: `
-    SELECT a.ts AS at, r.agent_id AS agent, r.payload->>'tool' AS tool, a.rule, a.reason
-    FROM wolf_audit a
-    LEFT JOIN LATERAL (SELECT agent_id, payload FROM biome_events
-                       WHERE type = 'tool.request' AND payload->>'callId' = a.call_id ORDER BY ts DESC LIMIT 1) r ON true
-    WHERE a.type = 'wolf.verdict' AND a.verdict = 'deny' AND a.ts >= $1
-      AND ($2::text IS NULL OR r.agent_id = $2)
-    ORDER BY a.ts DESC LIMIT ${MAX_ROWS}`,
+    SELECT ts AS at, asking_agent AS agent, tool, rule, reason
+    FROM wolf_audit
+    WHERE type = 'wolf.verdict' AND verdict = 'deny' AND ts >= $1
+      AND ($2::text IS NULL OR asking_agent = $2)
+    ORDER BY ts DESC LIMIT ${MAX_ROWS}`,
   // Jobs from the daily aggregate, actions from the 5-minute aggregate. Archie's row also counts his file operations.
   agent_activity: `
     WITH j AS (SELECT agent, sum(done)::int AS jobs, sum(failed)::int AS failed

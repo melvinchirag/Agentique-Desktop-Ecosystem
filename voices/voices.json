@@ -12,6 +12,19 @@
     "voice_id": "zwHgyhSOMsEletx3ymIv",
     "picked": 3
   },
+  "wolf": {
+    "name": "Warden",
+    "description": "A deep, calm, clear guardian with a wolf in his voice: a low rumbling growl sits under every word, slightly gravelly and husky, with a faint wolfish rasp at the start of phrases. Slow, steady, few words, protective, serious, never mean. Clear and easy to understand.",
+    "previews": [
+      {
+        "n": 4,
+        "file": "voices/previews/wolf-4.mp3",
+        "generated_voice_id": "kAEj7YFC1uxzcysihuC9"
+      }
+    ],
+    "voice_id": "kAEj7YFC1uxzcysihuC9",
+    "picked": 4
+  },
   "beaver": {
     "name": "Archie",
     "description": "A calm, clear, trustworthy builder and engineer. Smooth mid-low pitch, never squeaky or shrill. Soft-spoken and relaxed volume, steady pace, crisp clear articulation. Quietly confident and optimistic, reassuring, sounds like an expert who knows exactly what he is talking about. Warm and friendly.",

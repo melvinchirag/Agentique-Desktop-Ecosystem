@@ -31,6 +31,7 @@ const SOUNDS: Sound[] = [
   S('wolf', 'growl', 2, 'low wolf growl, deep, protective warning, close, clean, no background'),
   S('wolf', 'howl', 3, 'single wolf howl, clear, alert, noble, clean'),
   S('wolf', 'sniff', 1, 'wolf sniffing the air twice, close, short, clean'),
+  S('wolf', 'paw-thump', 1, 'one heavy wolf paw thumping down on a wooden floor, single soft heavy thud, close, clean'),
   S('wolf', 'poke', 2, 'a single short wild wolf howl, rising then falling awoo, lone timber wolf, clear, natural, not a dog, no barking'),
   S('beaver', 'tail-slap', 1, 'beaver tail slap on water, one sharp wet smack, clean'),
   S('beaver', 'wood-gnaw', 2, 'beaver gnawing on wood, quick crunchy chewing, close, clean'),
