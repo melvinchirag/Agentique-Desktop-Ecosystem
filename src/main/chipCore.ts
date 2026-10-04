@@ -290,12 +290,13 @@ export function createChipCore(config: ChipCoreConfig): ChipCore {
     eagleRuntime = {
       async run(agentId, task, runCtx) {
         bus.emit({ type: 'agent.status', agentId: 'eagle', taskId: runCtx.taskId, status: 'away', detail: 'Scanning the web…' });
-        try {
-          const result = await runtime.run(agentId, task, runCtx);
-          if (result.ok) await e.recordFindings?.(task, result.summary);
-          return result;
+        const result = await runtime.run(agentId, task, runCtx);
+        if (result.ok) {
+          try { await e.recordFindings?.(task, result.summary); }
+          catch (error) { console.error('[chipCore] Scout findings persistence failed', error); }
         }
-        finally { bus.emit({ type: 'agent.status', agentId: 'eagle', taskId: runCtx.taskId, status: 'done' }); }
+        // The scheduler reports, returns, and clears away status even if reporting fails.
+        return result;
       },
     };
     eagle = { runtime: eagleRuntime, gate, approvals };

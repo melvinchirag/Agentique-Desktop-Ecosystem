@@ -219,6 +219,24 @@ describe('AnimationDirector event choreography', () => {
     expect(h.clips('chipmunk')).toContain('Happy');
   });
 
+  it.each(['agent.return', 'job.update'] as const)('%s lands an away Scout without a status event', async kind => {
+    const h = harness();
+    h.director.handle(event('agent.status', { status: 'away' }, 'eagle'));
+    await settle();
+    if (kind === 'agent.return') {
+      h.director.handle(event('agent.return', { to: 'chipmunk', ok: true, summary: 'done' }, 'eagle'));
+    } else {
+      h.director.handle(event('job.update', { jobId: 'web', to: 'eagle', state: 'done',
+        title: 'Research', requestedBy: 'chipmunk' }));
+    }
+    await settle();
+    expect(h.events('flyIn').map(call => call.args)).toEqual([['eagle', layout.spots.eagle]]);
+    expect(h.clips('eagle').at(-1)).toBe('Idle');
+    h.director.handle(event('agent.status', { status: 'idle' }, 'eagle'));
+    await settle();
+    expect(h.events('flyIn')).toHaveLength(1);
+  });
+
   it('agent.say uses the current mood and talks only during speech', async () => {
     const h = harness();
     h.director.handle(event('agent.mood', { mood: 'scared', intensity: 1, cause: 'user' })); await settle();

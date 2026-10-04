@@ -233,6 +233,10 @@ export function createOrchestrator(deps: OrchestratorDeps, opts: OrchestratorOpt
       if (item.kind === 'user' && !turn.delegationSucceeded && unanswered()) {
         text = "[bubble: Try again]\nI couldn't finish that request. Please try again.";
       }
+      if (item.kind === 'result' && !turn.delegationSucceeded && unanswered()) {
+        text = `[bubble: Results ready]\n${item.finished.map(({ job, result }) =>
+          `${nameOf(job.agent)}: ${result.say || result.summary}`).join('\n')}`;
+      }
 
       if (item.kind === 'user' && !turn.moodReported) moodFallback(turn, item.voiceCues);
 

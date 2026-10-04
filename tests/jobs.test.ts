@@ -332,7 +332,7 @@ describe('JobScheduler', () => {
     events.length = 0;
     runner.calls[0].resolve(ok('x'.repeat(400)));
     await jobs.waitFor(a.jobId!);
-    expect(events.map((e) => e.type)).toEqual(['agent.say', 'agent.return', 'job.update']);
+    expect(events.map((e) => e.type)).toEqual(['agent.say', 'agent.return', 'job.update', 'agent.status']);
     expect(events[0]).toMatchObject({ agentId: 'eagle', text: 'Found it!', bubble: 'Done', priority: 'report', taskId: 'task-9' });
     expect(events[1]).toMatchObject({ agentId: 'eagle', to: 'chipmunk', ok: true, taskId: 'task-9' });
     expect((events[1] as Extract<BiomeEvent, { type: 'agent.return' }>).summary).toHaveLength(300);
@@ -342,6 +342,37 @@ describe('JobScheduler', () => {
     jobs.submit(req('workspace', 'Block study time', { planStep: 2 }));
     await flushPromises();
     expect(ofType('agent.handoff')[0]).toMatchObject({ to: 'workspace', via: 'ants' });
+  });
+
+  it('completes even when reporting throws after the speech event', async () => {
+    const originalEmit = bus.emit.bind(bus);
+    vi.spyOn(bus, 'emit').mockImplementation((input) => {
+      const event = originalEmit(input);
+      if (input.type === 'agent.say' && input.agentId === 'eagle') throw new Error('report transport failed');
+      return event;
+    });
+    const errors = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const onFinished = vi.fn();
+    jobs.onFinished(onFinished);
+    const submitted = jobs.submit(req('eagle', 'Search web'));
+    await flushPromises();
+    runner.calls[0].resolve({ ok: true, say: 'Found NASA.', bubble: 'Found', summary: 'NASA source.', artifacts: [] });
+    await expect(jobs.waitFor(submitted.jobId!)).resolves.toMatchObject({ ok: true, summary: 'NASA source.' });
+    expect(events.filter(e => ['agent.say', 'agent.return', 'job.update'].includes(e.type)).slice(-3)
+      .map(e => e.type)).toEqual(['agent.say', 'agent.return', 'job.update']);
+    expect(onFinished).toHaveBeenCalledOnce();
+    expect(jobs.list().find(j => j.jobId === submitted.jobId)?.state).toBe('done');
+    expect(busyNet('eagle')).toBe(0);
+    errors.mockRestore();
+  });
+
+  it('derives missing result fields before emitting the terminal events', async () => {
+    const submitted = jobs.submit(req('beaver', 'Find a file'));
+    await flushPromises();
+    runner.calls[0].resolve({ ok: true, say: 'Found the file.' } as AgentResult);
+    await expect(jobs.waitFor(submitted.jobId!)).resolves.toMatchObject({ ok: true, summary: 'Found the file.' });
+    expect(ofType('agent.return').at(-1)?.summary).toBe('Found the file.');
+    expect(ofType('job.update').at(-1)?.state).toBe('done');
   });
 
   it('runner throws → failed with the error message; the next queued job starts', async () => {

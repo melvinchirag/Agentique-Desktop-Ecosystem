@@ -2,10 +2,11 @@ import type { AgentResult } from './types';
 
 type Speech = Pick<AgentResult, 'say' | 'bubble' | 'summary'>;
 
-/** The three labelled fields are required; malformed output falls back to a short first sentence. */
+/** Backboard web search may return prose instead of the requested labelled fields. */
 export function parseSpecialistOutput(content: string | null | undefined, agentName: string): Speech {
   const text = (content ?? '').trim();
   const fields: Partial<Record<'BUBBLE' | 'SAY' | 'SUMMARY', string>> = {};
+  const prose: string[] = [];
   let current: keyof typeof fields | undefined;
   for (const line of text.split(/\r?\n/)) {
     const match = /^(BUBBLE|SAY|SUMMARY):\s*(.*)$/i.exec(line.trim());
@@ -14,11 +15,16 @@ export function parseSpecialistOutput(content: string | null | undefined, agentN
       fields[current] = match[2]!.trim();
     } else if (current) {
       fields[current] = `${fields[current]}\n${line}`.trim();
+    } else {
+      prose.push(line);
     }
   }
-  if (fields.BUBBLE && fields.SAY && fields.SUMMARY) {
-    return { bubble: fields.BUBBLE, say: fields.SAY, summary: fields.SUMMARY };
-  }
-  const first = (text.match(/^.*?[.!?](?=\s|$)/s)?.[0] ?? text.split(/\r?\n/)[0] ?? '').trim();
-  return { bubble: agentName, say: first.split(/\s+/).filter(Boolean).slice(0, 12).join(' '), summary: text };
+  const summary = fields.SUMMARY || [prose.join('\n').trim(), fields.SAY].filter(Boolean).join('\n')
+    || fields.BUBBLE || '';
+  const first = (summary.match(/^.*?[.!?](?=\s|$)/s)?.[0] ?? summary.split(/\r?\n/)[0] ?? '').trim();
+  return {
+    bubble: fields.BUBBLE && (fields.SAY || fields.SUMMARY) ? fields.BUBBLE : agentName,
+    say: fields.SAY || first.split(/\s+/).filter(Boolean).slice(0, 12).join(' '),
+    summary,
+  };
 }

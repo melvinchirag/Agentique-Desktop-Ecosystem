@@ -167,30 +167,50 @@ export function createJobScheduler(deps: JobSchedulerDeps): JobScheduler {
     const { job } = rec;
     if (job.state !== 'running') return;                       // cancelled or timed out already
     clearTimer(rec);
-    job.state = result.ok ? 'done' : 'failed';
+    // A runner (including an older plugin) can resolve with incomplete fields. Never let
+    // rendering a report strand a job after its model has already answered.
+    const raw = result as Partial<AgentResult> | null | undefined;
+    const answer = typeof raw?.summary === 'string' && raw.summary.trim()
+      ? raw.summary : typeof raw?.say === 'string' && raw.say.trim() ? raw.say : '';
+    const summary = answer || 'The specialist returned no result.';
+    const ok = raw?.ok === true && Boolean(answer);
+    const complete: AgentResult = {
+      ok,
+      summary,
+      say: typeof raw?.say === 'string' && raw.say.trim() ? raw.say : summary.split(/\r?\n/)[0]!.slice(0, 120),
+      bubble: typeof raw?.bubble === 'string' && raw.bubble.trim() ? raw.bubble : ok ? 'Done' : 'Snag',
+      artifacts: Array.isArray(raw?.artifacts) ? raw.artifacts : [],
+    };
+    job.state = complete.ok ? 'done' : 'failed';
     job.finishedAt = clock.now();
     if (job.kind === 'normal' && runningNormal.get(job.agent) === rec) runningNormal.delete(job.agent);
 
-    bus.emit({ type: 'agent.say', agentId: job.agent, taskId: job.parentTaskId, text: result.say, bubble: result.bubble, priority: 'report' });
-    bus.emit({
+    const safe = (step: string, action: () => void): void => {
+      try { action(); } catch (err) { console.error(`[jobs] ${step} failed`, err); }
+    };
+    safe('report', () => { bus.emit({ type: 'agent.say', agentId: job.agent, taskId: job.parentTaskId,
+      text: complete.say, bubble: complete.bubble, priority: 'report' }); });
+    safe('return', () => { bus.emit({
       type: 'agent.return', agentId: job.agent, taskId: job.parentTaskId, to: job.requestedBy,
-      ok: result.ok, summary: result.summary.slice(0, RETURN_SUMMARY_MAX),
-    });
-    emitJobUpdate(job);
+      ok: complete.ok, summary: complete.summary.slice(0, RETURN_SUMMARY_MAX),
+    }); });
+    safe('job update', () => { emitJobUpdate(job); });
 
     // A help job can finish while the animal's own job is still running; the other job's hold keeps it awake.
-    releaseBusy(rec);
-    presence.touch(job.agent);
+    safe('release busy', () => { releaseBusy(rec); });
+    safe('touch presence', () => { presence.touch(job.agent); });
+    safe('idle status', () => { bus.emit({ type: 'agent.status', agentId: job.agent,
+      taskId: job.parentTaskId, status: 'idle' }); });
 
     const snapshot = { ...job };
     for (const cb of finishedCbs) {
       try {
-        cb(snapshot, result);
+        cb(snapshot, complete);
       } catch (err) {
         console.error('[jobs] onFinished callback failed', err);
       }
     }
-    rec.resolve(result);
+    rec.resolve(complete);
 
     if (job.kind === 'normal') startNext(job.agent);
   }
