@@ -48,9 +48,12 @@ function requiredSpecialist(text: string): SpecialistId | undefined {
   if (!/\b(find|show|list|open|read|check|search|look up|what|which|where|latest|newest)\b/i.test(text)) return undefined;
   if (/\b(files?|folders?|downloads?|downloaded|desktop|documents|pdfs?|on my computer)\b/i.test(text)) return 'beaver';
   if (/\b(emails?|inbox|gmail)\b/i.test(text)) return 'workspace';
-  if (/\b(web|websites?|internet|online|news|sources?)\b/i.test(text)) return 'eagle';
+  if (/\b(web|websites?|internet|online|news|sources?|facts?|weather|research|scout)\b/i.test(text)) return 'eagle';
   return undefined;
 }
+
+/** "Let me send Scout…" with no tool call: the model promised to act but did not. */
+const PROMISE_ONLY = /\b(?:let me|i'?ll|i will|i'?m going to|sending|on it)\b[^.!?\n]{0,60}\b(?:send|ask|get|fetch|check|look|find|have|dispatch)\b/i;
 
 const USER_MOODS: readonly UserMood[] = ['calm', 'happy', 'excited', 'stressed', 'angry', 'sad'];
 const HISTORY_KINDS: readonly HistoryKind[] = ['recent_tasks', 'warden_blocks', 'agent_activity', 'mood_history'];
@@ -243,7 +246,7 @@ export function createOrchestrator(deps: OrchestratorDeps, opts: OrchestratorOpt
       // A silent response is only valid after delegation. Retry once only when no action
       // was attempted, so a recovery cannot repeat an already executed side effect.
       const unanswered = (): boolean => parseChipOutput(text).silent || !text.trim();
-      if (item.kind === 'user' && !turn.actionAttempted && unanswered()) {
+      if (item.kind === 'user' && !turn.actionAttempted && (unanswered() || PROMISE_ONLY.test(text))) {
         // Mood is only dropped from the corrective turn when it was already reported (a model that
         // repeats the mood tool instead of acting failed C3). If it was never reported, ask for it:
         // a skipped mood read means an angry user would get no reaction from the biome.
