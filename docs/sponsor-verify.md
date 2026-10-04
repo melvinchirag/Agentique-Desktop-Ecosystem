@@ -11,6 +11,7 @@ Checked on 2026-10-04 with small real calls against Shafeen's accounts. No key v
 | B3 | `tools` + `json_output` in one call | ✅ Accepted (200); the model called the tool first |
 | B4 | Models list | ✅ Verified; **the list is huge (13,438), page it** |
 | B5 | Users plug in their own provider API key | ❌ Not verified (no call tested it) |
+| B6 | Custom memory prompts from `SPONSORS.md` §1.1 | ⚠ **As written they save nothing.** Fixed with an output-format block |
 | E1 | Audio-tag words on `eleven_v4_turbo` | ✅ All nine accepted and not read aloud |
 | E2 | Voice settings (stability / style / speed) on `eleven_v4_turbo` | ✅ Accepted |
 | E3 | TTS with timestamps | ✅ Verified: `/with-timestamps`; **alignment includes the tag characters** |
@@ -33,7 +34,7 @@ Response fields: `thread_id`, `assistant_id`, `content` (null while a tool call 
 - With a tool: `status: "REQUIRES_ACTION"`, `tool_calls: [{ id, type: "function", function: { name, arguments } }]`. `arguments` is a **JSON string**.
 - `POST /threads/tool-outputs` with `{ thread_id, tool_outputs: [{ tool_call_id, output }] }` → 200, `status: "COMPLETED"`, `content` filled. Same response fields.
 - Omitting `thread_id` creates a new thread and returns its id.
-- `retrieved_memories` is `null` (not `[]`) when nothing was recalled. Treat null as empty.
+- `retrieved_memories` is `null` (not `[]`) when nothing was recalled. Treat null as empty. When present, items are objects with a `memory` text; `BackboardClient` normalizes them to plain strings.
 - `memory_operation_id` was `null` on every call, including `memory: 'Auto'` calls that did save a memory. The plan already ignores it.
 
 **Change in `SPONSORS.md`:** none. The `LlmResponse` contract in Chip spec §7 fits.
@@ -64,6 +65,27 @@ Providers seen: `anthropic`, `aws-bedrock`, `google`, and more. `google` / `gemi
 
 ### B5. Bring your own provider key — not verified
 No call tested it. All calls here ran on the Backboard account's own credit balance. Until someone confirms it in the Backboard dashboard or docs, pitch it as "pick any model", not "plug in your own provider key".
+
+### B6. Custom memory prompts — the plan's text alone saves nothing (fixed)
+Tested four throwaway assistants with the same message (`memory: 'Auto'`):
+
+| Assistant created with | Memories saved |
+|---|---|
+| no custom prompts | 1 |
+| `custom_update_memory_prompt` only | 2 |
+| `custom_fact_extraction_prompt` only (text from §1.1) | **0** |
+| both (as the plan specifies) | **0** |
+
+Cause: the extraction prompt must tell the model to answer as `{"facts": ["...", "..."]}`. The rules text in §1.1 does not, so every extraction came back empty and nothing was stored. No error is returned.
+Fix: `src/main/sponsors/memoryFormat.ts` appends the JSON shape plus three short examples to each animal's rules. `scripts/create-assistants.ts` applies it.
+After the fix, verified live on the real assistants:
+- Chip saved "Favorite ice cream flavor is peanut butter" and did **not** save a password quoted from an email in the same message.
+- A fresh thread recalled it (`retrieved_memories` returned the text).
+- The update rule works: "CS 280 midterm on 2026-10-05" became "2026-10-05 CS 280 midterm — went great" instead of a duplicate.
+- Archie saved a folder convention and did not save file contents. Warden (no rules, `memory: 'off'`) saved nothing.
+- Saving is asynchronous: a memory appears roughly 5 to 12 s after the turn.
+
+**Change in `SPONSORS.md` §1.1 / §2.3:** note that the extraction prompt needs the `{"facts": [...]}` format block.
 
 ### Also verified
 `POST /assistants` accepts `custom_fact_extraction_prompt` and `custom_update_memory_prompt` and echoes them back. Response id field is **`assistant_id`**. `DELETE /assistants/{id}` → 200.
