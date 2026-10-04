@@ -1,0 +1,507 @@
+{
+  "chipmunk": {
+    "height": 0.35,
+    "clips": {
+      "Idle": {
+        "loop": true,
+        "duration": 3,
+        "tier": 1
+      },
+      "Talk": {
+        "loop": true,
+        "duration": 1.5,
+        "tier": 1
+      },
+      "Run": {
+        "loop": true,
+        "duration": 0.6,
+        "tier": 1
+      },
+      "Handoff": {
+        "loop": false,
+        "duration": 1.2,
+        "tier": 1
+      },
+      "Happy": {
+        "loop": false,
+        "duration": 1.2,
+        "tier": 1
+      },
+      "Scared": {
+        "loop": true,
+        "duration": 1.5,
+        "tier": 1
+      },
+      "Listen": {
+        "loop": true,
+        "duration": 2,
+        "tier": 1
+      },
+      "Think": {
+        "loop": true,
+        "duration": 2,
+        "tier": 1
+      },
+      "Nervous": {
+        "loop": true,
+        "duration": 2,
+        "tier": 2
+      },
+      "Sad": {
+        "loop": true,
+        "duration": 3,
+        "tier": 2
+      },
+      "Excited": {
+        "loop": true,
+        "duration": 1,
+        "tier": 2
+      },
+      "Relief": {
+        "loop": false,
+        "duration": 1.5,
+        "tier": 2
+      },
+      "Celebrate": {
+        "loop": false,
+        "duration": 2,
+        "tier": 2
+      },
+      "Yawn": {
+        "loop": false,
+        "duration": 1.5,
+        "tier": 3
+      },
+      "Sleep": {
+        "loop": true,
+        "duration": 4,
+        "tier": 3
+      },
+      "WakeUp": {
+        "loop": false,
+        "duration": 1.2,
+        "tier": 3
+      },
+      "Greet": {
+        "loop": false,
+        "duration": 1.5,
+        "tier": 4
+      },
+      "Nudge": {
+        "loop": false,
+        "duration": 2,
+        "tier": 4
+      },
+      "Dizzy": {
+        "loop": false,
+        "duration": 1.5,
+        "tier": 4
+      },
+      "Walk": {
+        "loop": true,
+        "duration": 1,
+        "tier": 4
+      }
+    }
+  },
+  "workspace": {
+    "height": 0.7,
+    "clips": {
+      "Idle": {
+        "loop": true,
+        "tier": 1
+      },
+      "Walk": {
+        "loop": true,
+        "tier": 1
+      },
+      "Talk": {
+        "loop": true,
+        "tier": 1
+      },
+      "Work": {
+        "loop": true,
+        "tier": 1
+      },
+      "Happy": {
+        "loop": false,
+        "tier": 1
+      },
+      "Scared": {
+        "loop": true,
+        "tier": 1
+      },
+      "Think": {
+        "loop": true,
+        "tier": 2
+      },
+      "Sad": {
+        "loop": true,
+        "tier": 2
+      },
+      "Sleep": {
+        "loop": true,
+        "tier": 3
+      },
+      "Greet": {
+        "loop": false,
+        "tier": 2
+      },
+      "Yawn": {
+        "loop": false,
+        "tier": 3
+      },
+      "SleepWalk": {
+        "loop": true,
+        "tier": 3
+      },
+      "Write": {
+        "loop": true,
+        "tier": 2
+      },
+      "Handoff": {
+        "loop": false,
+        "tier": 2
+      }
+    }
+  },
+  "wolf": {
+    "height": 1,
+    "clips": {
+      "Idle": {
+        "loop": true,
+        "tier": 1,
+        "required": true
+      },
+      "Walk": {
+        "loop": true,
+        "tier": 1,
+        "required": true
+      },
+      "Talk": {
+        "loop": true,
+        "tier": 1,
+        "required": true
+      },
+      "Work": {
+        "loop": true,
+        "tier": 1,
+        "required": false
+      },
+      "Happy": {
+        "loop": false,
+        "tier": 1,
+        "required": false
+      },
+      "Scared": {
+        "loop": true,
+        "tier": 1,
+        "required": false
+      },
+      "Think": {
+        "loop": true,
+        "tier": 2,
+        "required": false
+      },
+      "Sad": {
+        "loop": true,
+        "tier": 2,
+        "required": false
+      },
+      "Sleep": {
+        "loop": true,
+        "tier": 3,
+        "required": false
+      },
+      "Greet": {
+        "loop": false,
+        "tier": 2,
+        "required": false
+      },
+      "Yawn": {
+        "loop": false,
+        "tier": 3,
+        "required": false
+      },
+      "SleepWalk": {
+        "loop": true,
+        "tier": 3,
+        "required": false
+      },
+      "Guard": {
+        "loop": true,
+        "tier": 2,
+        "required": false
+      },
+      "Growl": {
+        "loop": false,
+        "tier": 2,
+        "required": true
+      },
+      "Block": {
+        "loop": false,
+        "tier": 2,
+        "required": true
+      },
+      "Howl": {
+        "loop": false,
+        "tier": 2,
+        "required": false
+      },
+      "Sit": {
+        "loop": true,
+        "tier": 2,
+        "required": true
+      }
+    }
+  },
+  "beaver": {
+    "height": 0.6,
+    "clips": {
+      "Idle": {
+        "loop": true,
+        "tier": 1,
+        "required": true
+      },
+      "Walk": {
+        "loop": true,
+        "tier": 1,
+        "required": true
+      },
+      "Talk": {
+        "loop": true,
+        "tier": 1,
+        "required": true
+      },
+      "Work": {
+        "loop": true,
+        "tier": 1,
+        "required": false
+      },
+      "Happy": {
+        "loop": false,
+        "tier": 1,
+        "required": true
+      },
+      "Scared": {
+        "loop": true,
+        "tier": 1,
+        "required": false
+      },
+      "Think": {
+        "loop": true,
+        "tier": 2,
+        "required": false
+      },
+      "Sad": {
+        "loop": true,
+        "tier": 2,
+        "required": false
+      },
+      "Sleep": {
+        "loop": true,
+        "tier": 3,
+        "required": false
+      },
+      "Greet": {
+        "loop": false,
+        "tier": 2,
+        "required": false
+      },
+      "Yawn": {
+        "loop": false,
+        "tier": 3,
+        "required": false
+      },
+      "SleepWalk": {
+        "loop": true,
+        "tier": 3,
+        "required": false
+      },
+      "TailSlap": {
+        "loop": false,
+        "tier": 2,
+        "required": false
+      },
+      "Carry": {
+        "loop": true,
+        "tier": 1,
+        "required": true
+      },
+      "HoldNote": {
+        "loop": true,
+        "duration": 2,
+        "tier": 1,
+        "required": true
+      }
+    }
+  },
+  "eagle": {
+    "height": 0.7,
+    "clips": {
+      "Idle": {
+        "loop": true,
+        "tier": 1
+      },
+      "Fly": {
+        "loop": true,
+        "tier": 1
+      },
+      "Talk": {
+        "loop": true,
+        "tier": 1
+      },
+      "Work": {
+        "loop": true,
+        "tier": 1
+      },
+      "Happy": {
+        "loop": false,
+        "tier": 1
+      },
+      "Scared": {
+        "loop": true,
+        "tier": 1
+      },
+      "Think": {
+        "loop": true,
+        "tier": 2
+      },
+      "Sad": {
+        "loop": true,
+        "tier": 2
+      },
+      "Sleep": {
+        "loop": true,
+        "tier": 3
+      },
+      "Greet": {
+        "loop": false,
+        "tier": 2
+      },
+      "Yawn": {
+        "loop": false,
+        "tier": 3
+      },
+      "SleepWalk": {
+        "loop": true,
+        "tier": 3
+      },
+      "Glide": {
+        "loop": true,
+        "tier": 2
+      },
+      "Land": {
+        "loop": false,
+        "tier": 2
+      },
+      "Takeoff": {
+        "loop": false,
+        "tier": 2
+      },
+      "Perch": {
+        "loop": true,
+        "tier": 2
+      }
+    }
+  },
+  "ants": {
+    "height": 0.08,
+    "clips": {
+      "Idle": {
+        "loop": true,
+        "tier": 1
+      },
+      "Walk": {
+        "loop": true,
+        "tier": 1
+      },
+      "Carry": {
+        "loop": true,
+        "tier": 1
+      },
+      "Happy": {
+        "loop": false,
+        "tier": 1
+      },
+      "Scared": {
+        "loop": true,
+        "tier": 1
+      }
+    }
+  },
+  "butterfly": {
+    "height": null,
+    "clips": {
+      "Idle": {
+        "loop": true,
+        "tier": 1
+      },
+      "Fly": {
+        "loop": true,
+        "tier": 1
+      }
+    }
+  },
+  "nightingale": {
+    "height": null,
+    "clips": {
+      "Idle": {
+        "loop": true,
+        "tier": 1
+      },
+      "Fly": {
+        "loop": true,
+        "tier": 1
+      },
+      "Talk": {
+        "loop": true,
+        "tier": 1
+      },
+      "Work": {
+        "loop": true,
+        "tier": 1
+      },
+      "Happy": {
+        "loop": false,
+        "tier": 1
+      },
+      "Scared": {
+        "loop": true,
+        "tier": 1
+      },
+      "Think": {
+        "loop": true,
+        "tier": 2
+      },
+      "Sad": {
+        "loop": true,
+        "tier": 2
+      },
+      "Sleep": {
+        "loop": true,
+        "tier": 3
+      },
+      "Greet": {
+        "loop": false,
+        "tier": 2
+      },
+      "Yawn": {
+        "loop": false,
+        "tier": 3
+      },
+      "SleepWalk": {
+        "loop": true,
+        "tier": 3
+      },
+      "Sing": {
+        "loop": true,
+        "tier": 2
+      },
+      "Perch": {
+        "loop": true,
+        "tier": 2
+      }
+    }
+  }
+}

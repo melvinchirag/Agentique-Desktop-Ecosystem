@@ -1,0 +1,217 @@
+=====================================================================
+
+┌─ FAST MODE (Oct 4): make ONLY these 6 essential clips — Idle, Walk,
+│ Talk, Block, Growl, Sit. Everything else is optional / done in code.
+└─ Every other clip below: OPTIONAL — skip for now.
+  WARDEN THE WOLF - ANIMATION LIST FOR ZARIN
+  ADE (Agentique Desktop Ecosystem) - Hack Dearborn 5
+  (APPROVED Oct 4)
+=====================================================================
+
+Warden is the security guardian: calm, steady, few words, protective,
+never mean to the user. He checks every action the other animals try
+to take. He lives on the real Windows desktop (right of Chip, above
+the taskbar). No forest scene.
+
+IMPORTANT: Warden NEVER cowers. Where other animals have "Scared",
+Warden has "Guard" (he stands in front of the others to protect them).
+Where others have "Happy", Warden has "Proud".
+
+
+---------------------------------------------------------------------
+ 1. GOLDEN RULES (same as Chip and Archie)
+---------------------------------------------------------------------
+
+ - Each animation is one Blender ACTION, named EXACTLY as below.
+   Capitals matter.
+ - FAKE USER on for every Action.
+ - Animate IN PLACE (the code moves Warden around). 30 fps.
+ - Looping animations: first frame = last frame.
+ - Don't animate colors. The code does mood tints (e.g. a red rim
+   light when he blocks something).
+ - Branch:  warden/graphics
+   Blender file:  art/wolf/wolf.blend
+   Export to:     src/renderer/public/characters/wolf/default/model.glb
+ - Check + export with your Codex tools:
+     blender -b art/wolf/wolf.blend --python tools/blender/check_character.py -- wolf
+     blender -b art/wolf/wolf.blend --python tools/blender/export_character.py -- wolf
+
+
+---------------------------------------------------------------------
+ 2. RIG
+---------------------------------------------------------------------
+
+ - About 1.0 m tall (ASSETS.md: wolf 1.0), faces -Y, origin at the feet.
+ - Four legs that can PLANT firmly (for Block and Guard).
+ - Tail with 4-5 bones (low and still when serious, high and slow
+   when proud, curled over the nose when asleep).
+ - Ears that move separately (they snap up for Alert).
+ - Jaw that opens wide (Howl, Growl, Talk).
+ - No props.
+ - Under 15,000 triangles, 60 bones or fewer, under 5 MB.
+
+
+---------------------------------------------------------------------
+ 3. HOW A WOLF SHOWS EACH MOOD
+---------------------------------------------------------------------
+
+ NEUTRAL     - Ears relaxed, slowly turning to listen. Tail low,
+               still. Standing tall and calm. Slow blinks.
+ ALERT       - Ears snap straight up and forward. Head whips toward
+               the sound. Body freezes. Tail straight out.
+ PROTECTIVE  - Legs planted wide. Head low, eyes locked forward.
+ (Guard)       Ears forward. Tail level and stiff. Steps half a pace
+               in front of the others.
+ ANGRY-AT-A-THREAT (Growl / Block)
+             - Head low, lips pulled back, teeth showing, fur ridge
+               up along the back (hackles). Ears forward, never flat.
+               This anger is aimed at the THREAT, never at the user.
+ PROUD       - Chest out, chin up, tail high with a slow wag, ears up.
+ APPROVING   - Slow, calm nod. Soft eyes.
+ SLEEPY      - Curled up, tail wrapped over his nose, ears folded.
+
+
+---------------------------------------------------------------------
+ 4. THE ANIMATION LIST (make them in this order)
+---------------------------------------------------------------------
+
+ ===== TIER 1 - MAKE FIRST (the demo needs these) =====
+
+  1. Idle  (LOOP, ~3 sec)
+     Standing tall, slow breathing, ears turning to listen, a slow
+     look across the screen.
+     -> Default (also when he silently allows safe actions).
+
+  2. Walk  (LOOP, ~1 sec cycle)
+     Steady, confident trot-walk, head level, tail low.
+     -> Moving across the desktop (e.g. to an approval card).
+
+  3. Talk  (LOOP, ~1.5 sec)
+     Slow, deliberate head movements, jaw moving, very few gestures.
+     -> Whenever Warden speaks (his lines are short and serious).
+
+  4. Work  (LOOP, ~2 sec)  OPTIONAL — skip for now
+     "Scanning": head up, eyes narrowed, slow head pan left to
+     right, ears rotating.
+     -> Checking something (an action is being reviewed).
+
+  5. Proud  (LOOP, ~2 sec)  OPTIONAL — skip for now
+     Chest out, chin up, tail high with a slow wag.
+     -> The user is happy, or things went well. (Replaces "Happy".)
+
+  6. Guard  (LOOP, ~1.5 sec)   ** replaces "Scared" for Warden **  OPTIONAL — skip for now
+     Legs planted wide, head low, eyes locked forward, small
+     protective shift of weight. Steady, NOT trembling.
+     -> The user is angry/stressed/sad: Warden stands guard.
+
+  7. Block  (ONE-SHOT, ~1 sec)   ** Warden's signature **
+     Leaps forward, lands, plants all four feet hard, head low,
+     facing out. Like a wall jumping in front of someone.
+     -> Warden BLOCKS a dangerous action (e.g. "send this email").
+
+  8. Growl  (ONE-SHOT, ~1.2 sec)
+     Head lowers, lips curl back, teeth show, hackles rise, a low
+     rumble in the chest (the code plays the growl sound).
+     -> Right before/with a block, or when an animal keeps trying.
+
+  9. Sit  (LOOP, ~2 sec)
+     Sits upright and calm beside something, an ear flick now and
+     then, waiting patiently.
+     -> Sitting beside an APPROVAL CARD while the user decides.
+
+ >>> After Tier 1: CHECK, EXPORT, PUSH (on warden/graphics).
+
+ ===== TIER 2 - SECURITY MOMENTS =====
+
+ 10. Alert  (ONE-SHOT, ~0.6 sec)  OPTIONAL — skip for now
+     Ears snap up, head whips toward the side, body freezes.
+     -> An animal asks to change something. Warden notices.
+
+ 11. Nod  (ONE-SHOT, ~0.8 sec)  OPTIONAL — skip for now
+     One slow, approving nod.
+     -> The user answered the approval card (allow or deny).
+
+ 12. Howl  (ONE-SHOT, ~2 sec)  OPTIONAL — skip for now
+     Sits back, lifts his head to the sky, long howl.
+     -> Warden spots a TRICK (an email or file trying to give
+        the animals instructions).
+
+ 13. Run  (LOOP, ~0.6 sec cycle)  OPTIONAL — skip for now
+     Fast, low lope.
+     -> Rushing to block something far away on the screen.
+
+ 14. Sniff  (LOOP, ~2 sec)  OPTIONAL — skip for now
+     Nose low, sweeping side to side, ears forward.
+     -> Inspecting suspicious content.
+
+ ===== TIER 3 - SLEEP =====
+
+ 15. Yawn  (ONE-SHOT, ~1.5 sec)  OPTIONAL — skip for now
+     Big wolf yawn (long tongue curl), stretch.
+     -> Falling asleep.
+
+ 16. Sleep  (LOOP, ~4 sec)  OPTIONAL — skip for now
+     Curled in a ball, tail over his nose, slow breathing, an ear
+     twitch.
+     -> Asleep.
+
+ 17. SleepWalk  (LOOP, ~1.2 sec cycle)  OPTIONAL — skip for now
+     Slow, droopy walk, head low, eyes half-closed.
+     -> Walking sleepily to the Agent Hub to "dock" (turn off).
+
+ 18. WakeUp  (ONE-SHOT, ~1.2 sec)  OPTIONAL — skip for now
+     Head pops up, ears up, a full-body shake.
+     -> Woken by a job or a click.
+
+ ===== TIER 4 =====
+
+ 19. Greet  (ONE-SHOT, ~1.5 sec)  OPTIONAL — skip for now
+     A calm head bow, one slow tail wave.
+     -> App start ("Warden on watch.").
+
+
+---------------------------------------------------------------------
+ 5. FACE SHAPE KEYS (optional)
+---------------------------------------------------------------------
+   MouthOpen  (lip-sync to his voice)
+   Blink
+   Snarl      (lips pulled back, teeth showing; used with Growl/Block)
+   Hackles    (fur ridge up along the back; used with Growl/Block)
+
+
+---------------------------------------------------------------------
+ 6. DON'T MAKE
+---------------------------------------------------------------------
+ - No "Scared", "Happy", "Nervous", "Sad", "Excited", or "Think" clips for Warden.
+   He never cowers. The app maps those moods to Guard / Proud.
+ - No "talking while growling" versions (the code layers the mood).
+ - No color or glow animations.
+
+
+---------------------------------------------------------------------
+ 7. ORDER + TIME (Warden only)
+---------------------------------------------------------------------
+   1. Model + rig (planting legs, tail, ears, jaw)       ~70 min
+   2. Idle, Walk, Talk, Work, Proud, Guard               ~60 min
+   3. Block, Growl, Sit                                  ~40 min
+   4. CHECK + EXPORT + PUSH                              ~10 min
+   5. Tier 2 (Alert, Nod, Howl, Run, Sniff)              ~45 min
+   6. Tier 3 (sleep)                                     ~30 min
+   7. Tier 4 (Greet)                                     ~10 min
+
+   Total: about 4-4.5 hours. Steps 1-4 first; everything else has
+   fallbacks in the app.
+
+ NOTE for your Codex: in tools/blender/required_clips.json, the
+ "wolf" entry uses Guard instead of Scared and Proud instead of
+ Happy (exact list above). Also save
+ src/renderer/public/characters/wolf/character.json with
+   "clipMap": { "Scared": "Guard", "Happy": "Proud" }
+ so the app's normal mood logic plays Guard/Proud. No Think or Sad
+ clips: Warden never thinks out loud or gets sad (the app uses
+ Idle / Guard instead).
+
+ Use ChatGPT and Codex only (your plan). Save on warden/graphics.
+
+ Thank you, Zarin!
+=====================================================================

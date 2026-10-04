@@ -273,11 +273,10 @@ real API differs from the docs. Status table after every step.
 ```text
 Help me build and save ARCHIE THE BEAVER's 3D model and animations for the ADE project.
 
-1. Read docs/animations/Archie_Animations_for_Zarin.txt (my full list) and docs/ASSETS.md section 2
-   (export rules). Summarize the Tier 1 list for me in 10 lines.
+1. Read docs/animations/Archie_Animations_for_Zarin.txt and docs/ASSETS.md section 2
+   (export rules). Summarize ONLY the 6 essential clips.
 2. Git: git switch main && git pull && git switch -c beaver/graphics && git push -u origin beaver/graphics
-3. Make sure tools/blender/required_clips.json has the "beaver" entry with EXACTLY the clip names
-   from Archie_Animations_for_Zarin.txt (loop flags + tiers). Update it if needed.
+3. Make sure tools/blender/required_clips.json marks ONLY the 6 essential clips as required; keep other listed clips optional (required: false).
 4. When I say "check", run:
      blender -b art/beaver/beaver.blend --python tools/blender/check_character.py -- beaver
    and explain any FAIL lines in plain words.
@@ -286,7 +285,241 @@ Help me build and save ARCHIE THE BEAVER's 3D model and animations for the ADE p
 6. When I say "save", commit and push only art/beaver, src/renderer/public/characters/beaver, and
    tools/blender with a message like "beaver(graphics): Tier 1 clips ...".
 Never touch other folders. Stop and tell me if any file is over 100 MB.
+```
+
+---
+
+# Warden (wolf, security) — ✅ APPROVED (Oct 4)
+
+Branches use the character name: `warden/logic`, `warden/sponsors`, `warden/graphics`, lanes `lane/warden-<track>-<x>`. The agent id in code and folders stays `wolf`.
+
+| Who | Paste into | Section |
+|---|---|---|
+| Melvin | Claude Code (Opus 5.5, effort high), repo root | Melvin — Warden logic orchestrator |
+| Shafeen | Claude Code (Opus 5.5, effort high), repo root | Shafeen — Warden sponsor tech |
+| Zarin | Codex, repo root | Zarin — Warden graphics |
+
+## Melvin — Warden logic orchestrator
+*Paste into: Claude Code, **Opus 5.5**, `/effort high`, repo root. Start any time after Chip's Wave 1 is merged (can overlap Archie).*
+
+```text
+You are the ORCHESTRATOR for building WARDEN (the wolf security agent, id "wolf") in the ADE repo:
+the real WardenGate (rules W0-W16), Approvals, the InjectionScreen, Warden's lines + speaker, and the
+swap that replaces Chip's StubWardenGate. You plan, write lane specs, dispatch AI lanes, audit, and
+merge. You don't implement lanes yourself (only Wave 0 items and few-line fixes).
+
+READ FIRST, IN THIS ORDER:
+1. docs/DECISIONS.md
+2. docs/agents/03-warden-security.md        (Warden spec: rules §3, approvals §5, injection §6, lines §7, contracts §15, tests §16)
+3. docs/agents/03-warden-BUILD-LANES.md     (YOUR plan: lanes X L J A G I, models, merge order, handoffs §6)
+4. src/shared/events.ts, src/shared/tools.ts, src/main/runtime/types.ts on main, and
+   src/main/testing/stubWarden.ts + src/main/runtime/jobs.ts on chip/logic (the stub you replace; pauseClock is boolean)
+5. docs/agents/02-archie-files.md §2, §4, §13, §14   (sandbox, tools, what Warden enforces, AgentRuntime hook points)
+6. docs/agents/01-chip-orchestrator.md §3, §4.1, §4.4, §9   (help jobs, job clock, speech priority, stop)
+7. docs/GIT-WORKFLOW.md
+
+WAVE 0:
+- Open a small PR contracts/warden -> main with EXACTLY spec §15 (types.ts: WardenVerdict, GateRequest,
+  WardenGate, ApprovalHow, ApprovalOutcome, ApprovalRequest, Approvals, ScreenSource, ScreenResult,
+  InjectionScreen; tools.ts: ToolInspection + ToolDefinition.inspect?; events.ts: approval.resolve how?).
+  Tell me the PR link; ask me to merge it before Archie's lane R starts. Shafeen does not wait on it.
+- Create branch warden/logic FROM chip/logic, write lane files docs/lanes/WARDEN-<X>.md, and make a
+  worktree per lane: git worktree add ../ade-wt-warden-logic-<x> -b lane/warden-logic-<x> warden/logic
+- Dispatch X and L now. After the contracts PR merges: rebase warden/logic on main, then dispatch J, A, G.
+
+DISPATCH: give me the EXACT launch command or instruction per lane, using the model, effort, and engine
+in the plan's lane table (Codex via stdin with --ignore-user-config --disable apps; Claude interactive
+in the worktree). I launch them. Never move a strong-floor lane to AGY; escalate effort before band.
+
+AUDIT + MERGE: re-run every lane's tests yourself; no test may touch my real folders; diff = owned paths
+only, no secrets; you (Opus) check X's rule matrix against spec §3 and review J, A, G, and I before
+merging (security-critical). Merge into warden/logic: X -> L -> J -> A -> G. Then, once beaver/logic has
+Archie's lane R (AgentRuntime), git merge origin/beaver/logic and run lane I. npm test after each; push.
+Done = W-1..W-36 green AND every Chip test (C1-C19 + unit suites) AND every Archie test (A1-A20) green
+with the REAL gate. When Shafeen posts "Warden sponsor kit ready", merge origin/warden/sponsors.
+
+RULES: never commit .env; deny MCP tool calls; the gate must FAIL CLOSED; Approvals (not the runtime)
+calls pauseClock/resumeClock; STOP and ask on spec conflicts. Report a status table (lane | state | next)
+after every step.
+```
+
+## Shafeen — Warden sponsor tech
+*Paste into: Claude Code, **Opus 5.5**, `/effort high`, repo root. Start after Chip's sponsor kit is handed off.*
+
+```text
+You are the ORCHESTRATOR for WARDEN's sponsor tech (ElevenLabs voice + pre-generated lines + SFX, Tiger
+audit view + queries, Backboard injection classifier) in the ADE repo. Plan, write lane specs, dispatch,
+audit, merge. Don't implement lanes yourself except few-line fixes.
+
+READ FIRST:
+1. docs/DECISIONS.md
+2. docs/agents/03-warden-SPONSOR-LANES-SHAFEEN.md   (YOUR plan: lanes WW1 WT1 WB1 WV1 WV2)
+3. docs/agents/03-warden-security.md sections 6.3 (classifier), 7 (lines), 8 (inspect card + Audit data), 10 (sponsors)
+4. docs/SPONSORS.md (Warden rows) and docs/agents/01-chip-SPONSOR-LANES-SHAFEEN.md (tooling you reuse)
+
+SETUP: no lane needs Warden's contracts PR. Branch warden/sponsors from main (merge origin/chip/sponsors
+first if it isn't on main yet); lane files docs/lanes/WARDEN-SP-<X>.md; worktrees:
+git worktree add ../ade-wt-warden-sponsors-<x> -b lane/warden-sponsors-<x> warden/sponsors
+
+DISPATCH each lane with the exact model, effort, and engine from the lane table (Codex via stdin with
+--ignore-user-config --disable apps; Claude/AGY interactive). I launch them. AGY only on WV1/WV2 (value
+floor). For WV1, tell me when Warden's voice previews are ready so the team can pick one; his lines are
+rendered ONCE (always [serious]) and shipped as mp3s.
+
+AUDIT + MERGE into warden/sponsors: WW1 -> WT1 -> WB1 -> WV1 -> WV2; you review WT1 and WB1; no keys in
+diffs; npm test after each (Chip's and Archie's sponsor tests must stay green); push. Run the smoke test
+in plan section 2, tell me to post "Warden sponsor kit ready: <commit>", and open PR warden/sponsors -> main.
+
+RULES: never edit src/shared or types.ts (Melvin owns them); Warden's Backboard calls always use
+memory "off"; the classifier must fail safe (return null on any error); deny MCP tool calls; STOP and
+ask if a real API differs from the docs. Status table after every step.
+```
+
+## Zarin — Warden graphics
+*Paste into: **Codex**, repo root.*
+
+```text
+Help me build and save WARDEN THE WOLF's 3D model and animations for the ADE project.
+
+1. Read docs/animations/Warden_Animations_for_Zarin.txt and docs/ASSETS.md sections 2
+   and 5 (export rules, character.json). Summarize ONLY the 6 essential clips. Note: Warden has
+   Guard instead of Scared and Proud instead of Happy, and no Think/Sad/Nervous/Excited clips.
+2. Git: git switch main && git pull && git switch -c warden/graphics && git push -u origin warden/graphics
+3. Make sure tools/blender/required_clips.json marks ONLY the 6 essential clips as required; keep other listed clips optional (required: false), and that
+   src/renderer/public/characters/wolf/character.json has "clipMap": { "Scared": "Guard", "Happy": "Proud" }.
+4. When I say "check", run:
+     blender -b art/wolf/wolf.blend --python tools/blender/check_character.py -- wolf
+   and explain any FAIL lines in plain words.
+5. When I say "export", run:
+     blender -b art/wolf/wolf.blend --python tools/blender/export_character.py -- wolf
+6. When I say "save", commit and push only art/wolf, src/renderer/public/characters/wolf, and
+   tools/blender with a message like "warden(graphics): Tier 1 clips ...".
+Never touch other folders. Stop and tell me if any file is over 100 MB.
+```
+
+---
+
+# Pixel (workspace, Google Workspace) — ✅ APPROVED (Oct 4)
+
+Branches: `pixel/logic`, `pixel/sponsors`, `pixel/graphics`, lanes `lane/pixel-<track>-<x>`. The agent id in code and folders stays `workspace`.
+
+| Who | Paste into | Section |
+|---|---|---|
+| Melvin | Claude Code (Opus 5.5, effort high), repo root | Melvin — Pixel logic orchestrator |
+| Shafeen | Claude Code (Opus 5.5, effort high), repo root | Shafeen — Pixel sponsor tech |
+| Zarin | Codex, repo root | Zarin — Pixel graphics |
+
+## Melvin — Pixel logic orchestrator
+*Paste into: Claude Code, **Opus 5.5**, `/effort high`, repo root. Start any time after Chip's Wave 1 is merged (can overlap Warden and Archie).*
+
+```text
+You are the ORCHESTRATOR for building PIXEL (the Google Workspace agent, id "workspace") in the ADE repo:
+the Google connector (OAuth, Gmail/Calendar/Drive/Docs/Sheets clients, endpoint allowlist), Pixel's 18 tools,
+email style learning, GoogleCalendarSource, the draft registry/tracker and waiting-drafts nudge, Pixel's prompt,
+and the integration into createChipCore. You plan, write lane specs, dispatch AI lanes, audit, and merge. You
+don't implement lanes yourself (only Wave 0 items and few-line fixes).
+
+READ FIRST, IN THIS ORDER:
+1. docs/DECISIONS.md
+2. docs/agents/04-pixel-workspace.md        (Pixel spec: scopes §2.1, tools §3, style learning §6, privacy §13, contracts §15, tests §16)
+3. docs/agents/04-pixel-BUILD-LANES.md      (YOUR plan: human tasks §0, lanes F H A S P K T1 T2 N I, models, merge order, handoffs §6)
+4. src/shared/*.ts and src/main/runtime/types.ts on main (CalendarSource, InjectionScreen, DocumentsApi, MemoryApi, NudgeEngine, ToolDefinition.inspect)
+5. docs/agents/03-warden-security.md §3, §4, §6  (rules W1-W16, inspect, injection screen: Pixel's tool args must not use the scanned names)
+6. docs/agents/02-archie-files.md §2, §4.1, §14   (safePath you reuse, blocked extensions, AgentRuntime hook points)
+7. docs/agents/01-chip-orchestrator.md §3, §10.6, §14, §16
+8. docs/GIT-WORKFLOW.md
+
+STEP 0 — HUMAN TASKS (plan §0): walk me through H1-H5 (Google Cloud project, consent screen in Testing mode with
+the 5 scopes and test users, Desktop OAuth client, a DEDICATED demo Google account). I paste secrets into .env
+myself; never print or commit them. Confirm .env and .ade-dev/ are gitignored.
+
+WAVE 0:
+- Open a small PR contracts/pixel -> main with EXACTLY spec §15 (events.ts ArtifactKind += 'google_doc'; types.ts
+  MemoryWriter, DraftRecord, DraftsLog; ipc.ts AdeApi.disconnectGoogle + IPC.disconnectGoogle + AdeSettings.styleLearnedAt?).
+  Tell me the PR link; Shafeen waits on MemoryWriter/DraftsLog.
+- Create branch pixel/logic FROM chip/logic, write src/main/connectors/google/api.ts (the frozen GoogleApi interface,
+  spec §2.5), write lane files docs/lanes/PIXEL-<X>.md, and make a worktree per lane:
+  git worktree add ../ade-wt-pixel-logic-<x> -b lane/pixel-logic-<x> pixel/logic
+- Run the G0 spike with me on the DEMO account only; record results in docs/sponsor-verify.md.
+
+DISPATCH: give me the EXACT launch command or instruction per lane, using the model, effort, and engine in the lane
+table (Codex via stdin with --ignore-user-config --disable apps; Claude interactive in the worktree; AGY interactive
+and ATTENDED only). I launch them. Stagger the three Sol lanes. Never move a strong-floor lane to AGY; escalate
+effort before band. If Codex hits a usage limit, STOP and tell me.
+
+AUDIT + MERGE: re-run every lane's tests yourself; no test may touch a real mailbox, calendar, or Drive (only
+FakeGoogle and fake fetch; the single exception is the live run on the demo account); grep every diff for
+send/permissions/.delete( outside the allowlist's deny table, for tokens and secrets, and for logged email bodies;
+you (Opus) review H, A, S, K, T1, and I before merging. Merge into pixel/logic: F -> H -> A -> P -> S, then
+K -> T1 -> T2 -> N, then (after beaver/logic has lane R) git merge origin/beaver/logic and run lane I.
+npm test after each; push. When Shafeen posts "Pixel sponsor kit ready", merge origin/pixel/sponsors.
+Done = P1-P35 green plus all Chip and Archie tests, then P36 live on the demo account.
+
+RULES: never commit .env or tokens. Deny ALL MCP tool calls (the Google connectors here can reach real
+mailboxes). Pixel can NEVER send: no send tool, the allowlist blocks send endpoints, and a test greps for it.
+Never run Pixel against anyone's real inbox. STOP and ask on spec conflicts. Report a status table
+(lane | state | next) after every step.
+```
+
+## Shafeen — Pixel sponsor tech
+*Paste into: Claude Code, **Opus 5.5**, `/effort high`, repo root. Start after Chip's sponsor kit is handed off.*
+
+```text
+You are the ORCHESTRATOR for PIXEL's sponsor tech (Backboard memory rules + MemoryWriter + live memory checks,
+Tiger drafts_log store, ElevenLabs voice + SFX) in the ADE repo. Plan, write lane specs, dispatch, audit, merge.
+Don't implement lanes yourself except few-line fixes.
+
+READ FIRST:
+1. docs/DECISIONS.md
+2. docs/agents/04-pixel-SPONSOR-LANES-SHAFEEN.md   (YOUR plan: lanes PW1 PM1 PT1 PV1)
+3. docs/agents/04-pixel-workspace.md sections 5.2 (DraftsLog), 6.4 (style memory mirror), 10 (Backboard), 11 (voice/SFX/Tiger), 13 (privacy), 15 (contracts)
+4. docs/SPONSORS.md (Pixel rows) and docs/agents/01-chip-SPONSOR-LANES-SHAFEEN.md (tooling you reuse)
+
+SETUP: PW1 and PV1 can start now. PT1 and PM1 need Melvin's contracts/pixel PR (MemoryWriter, DraftsLog in
+types.ts); check with: git fetch && git show origin/main:src/main/runtime/types.ts | findstr DraftsLog.
+Branch pixel/sponsors from main; lane files docs/lanes/PIXEL-SP-<X>.md; worktrees:
+git worktree add ../ade-wt-pixel-sponsors-<x> -b lane/pixel-sponsors-<x> pixel/sponsors
+
+DISPATCH each lane with the exact model, effort, and engine from the lane table (Codex via stdin with
+--ignore-user-config --disable apps; Claude interactive; AGY interactive and ATTENDED only, on PV1 only). I launch
+them. For PV1, tell me when Pixel's voice previews are ready so the team can pick; we re-run after Zarin's design exists.
+
+AUDIT + MERGE into pixel/sponsors: PW1 -> PT1 -> PM1 -> PV1; you review PT1 and PM1; no keys in diffs; npm test
+after each (Chip's, Archie's, and Warden's sponsor tests must stay green); push. Run the smoke test in plan
+section 2, tell me to post "Pixel sponsor kit ready: <commit>", and open PR pixel/sponsors -> main.
+
+RULES: never edit src/shared or types.ts (Melvin owns them); Pixel's style-learning call uses memory "off"; Pixel
+memory is extracted ONLY from task text, never from tool results (PW1 proves it); no real email text in any
+committed file; deny MCP tool calls; STOP and ask if a real API differs from the docs. Status table after every step.
+```
+
+## Zarin — Pixel graphics
+*Paste into: **Codex**, repo root. Graphics must be fast: only 6 clips.*
+
+```text
+Help me build and save PIXEL's 3D model and animations for the ADE project. Pixel is a CUSTOM character (not an
+animal) that handles Google email/calendar/docs.
+
+1. Read docs/animations/Pixel_Animations_for_Zarin.txt (my full list) and docs/ASSETS.md section 2 (export rules).
+   Summarize the character brief and the 6 required clips for me in 10 lines. Only 6 clips are needed: Idle,
+   Walk, Talk, Happy, Write, Handoff. Everything else is done in code.
+2. Help me make 2-3 concept images (front view, readable at 70-90 px, big hands, holds a letter and a pen,
+   accent color #7A6A9E). I will send them to Chanuth to pick one BEFORE I rig anything.
+3. Git: git switch main && git pull && git switch -c pixel/graphics && git push -u origin pixel/graphics
+4. Make sure tools/blender/required_clips.json has a "workspace" entry with EXACTLY: Idle, Walk, Talk, Happy,
+   Write, Handoff (loop flags per the txt file), and that
+   src/renderer/public/characters/workspace/character.json has "clipMap": { "Work": "Write" }.
+5. When I say "check", run:
+     blender -b art/workspace/workspace.blend --python tools/blender/check_character.py -- workspace
+   and explain any FAIL lines in plain words.
+6. When I say "export", run:
+     blender -b art/workspace/workspace.blend --python tools/blender/export_character.py -- workspace
+7. When I say "save", commit and push only art/workspace, src/renderer/public/characters/workspace, and
+   tools/blender with a message like "pixel(graphics): 6 clips".
+Never touch other folders. Stop and tell me if any file is over 100 MB.
+```
+
 ---
 
 ## Prompts for later agents
-Each new agent plan (Pixel, Warden, Scout, Swarm, then the app shell) adds its own prompt sections here.
+Each new agent plan (Scout, Swarm, then extras) adds its own prompt sections here.

@@ -267,7 +267,7 @@ export interface OverlayUiProps {
   layout: DesktopLayout;
   /** Agent rows for the inspect card. */
   store: HubStoreHook;
-  api: Pick<AdeApi, 'resolveApproval' | 'wakeAgent'>;
+  api: Pick<AdeApi, 'resolveApproval' | 'wakeAgent' | 'sleepAgent'>;
   shell: Pick<AdeShellApi, 'openHubTab'>;
   onReady(ui: OverlayUi): void;
 }

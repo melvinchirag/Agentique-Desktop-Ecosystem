@@ -25,11 +25,11 @@ export type BiomeEvent = Base & (
   | { type: 'wolf.verdict';     callId: string; verdict: 'allow' | 'ask' | 'deny'; rule: string; reason: string }
   | { type: 'wolf.alert';       source: string; reason: string }                              // prompt-injection etc.
   | { type: 'approval.request'; callId: string; title: string; preview: string }
-  | { type: 'approval.resolve'; callId: string; approved: boolean }
+  | { type: 'approval.resolve'; callId: string; approved: boolean; how?: 'user' | 'timeout' | 'cancelled' }
   | { type: 'tool.result';      callId: string; ok: boolean; summary: string }
   | { type: 'artifact';         kind: ArtifactKind; title: string; data: unknown; openUrl?: string }
 );
 
-export type ArtifactKind = 'email_draft' | 'email_digest' | 'calendar_event' | 'file_plan' | 'research_brief' | 'social_post' | 'day_plan';
+export type ArtifactKind = 'email_draft' | 'email_digest' | 'calendar_event' | 'file_plan' | 'file_note' | 'research_brief' | 'social_post' | 'day_plan';
 
 export type BiomeEventType = BiomeEvent['type'];

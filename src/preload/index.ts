@@ -16,6 +16,7 @@ const api: AdeApi = {
   speak: (agentId, text, mood) => ipcRenderer.invoke(IPC.speak, agentId, text, mood),
   resolveApproval: (callId, approved) => ipcRenderer.invoke(IPC.resolveApproval, callId, approved),
   wakeAgent: agentId => ipcRenderer.invoke(IPC.wakeAgent, agentId),
+  sleepAgent: agentId => ipcRenderer.invoke(IPC.sleepAgent, agentId),
   setDoNotDisturb: enabled => ipcRenderer.invoke(IPC.setDoNotDisturb, enabled),
   demoFireNudge: () => ipcRenderer.invoke(IPC.demoFireNudge),
   getSettings: () => ipcRenderer.invoke(IPC.getSettings),

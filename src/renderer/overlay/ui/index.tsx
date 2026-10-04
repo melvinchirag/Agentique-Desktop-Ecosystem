@@ -226,7 +226,7 @@ function InspectCard({ agentId, store, api, shell, style, register, onClose, onD
     <p className="job-line">{row.job?.title ?? 'No current job'}{row.queued ? ` · ${row.queued} queued` : ''}</p>
     <div className="card-actions inspect-actions">
       {wakeable && <button onClick={() => void api.wakeAgent(agentId)}>Wake</button>}
-      <button disabled title="Coming soon">Send to Hub</button>
+      <button onClick={() => void api.sleepAgent(agentId)}>Send to Hub</button>
       <button onClick={() => shell.openHubTab('memories', agentId)}>What I remember</button>
     </div>
   </section>;

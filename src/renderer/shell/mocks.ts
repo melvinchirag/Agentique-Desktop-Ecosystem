@@ -32,6 +32,7 @@ export function createMockAdeApi(overrides: Partial<AdeApi> = {}): AdeApi & Mock
     speak: record('speak', new ArrayBuffer(0)),
     resolveApproval: record('resolveApproval', undefined),
     wakeAgent: record('wakeAgent', undefined),
+    sleepAgent: record('sleepAgent', undefined),
     setDoNotDisturb: record('setDoNotDisturb', undefined),
     demoFireNudge: record('demoFireNudge', undefined),
     getSettings: record('getSettings', settings),

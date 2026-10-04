@@ -21,7 +21,7 @@ function setup(options: { anchor?: Rect | null } = {}) {
     set: vi.fn(), remove: vi.fn(), shapes: vi.fn(() => []), hitTest: vi.fn(() => null),
     pointerMove: vi.fn(), setCaptured: vi.fn(), dispose: vi.fn(),
   } as unknown as HitRegistry;
-  const api = { resolveApproval: vi.fn(async () => {}), wakeAgent: vi.fn(async () => {}) };
+  const api = { resolveApproval: vi.fn(async () => {}), wakeAgent: vi.fn(async () => {}), sleepAgent: vi.fn(async () => {}) };
   const shell = { openHubTab: vi.fn() };
   const store = createHubStore(demoSeedState());
   const view = render(<OverlayUiLayer hit={hit} getRect={() => options.anchor === undefined ? rect : options.anchor} layout={{ width: 900, height: 600, groundY: 596, spots: {} as never, colonyX: 54, centerX: 450, hubX: 790, dockPoint: { x: 790, y: 90 } }} store={store} api={api} shell={shell} onReady={layer => { ui = layer; }} />);
@@ -75,7 +75,8 @@ describe('OverlayUiLayer', () => {
     expect(app.api.wakeAgent).toHaveBeenCalledWith('ants');
     fireEvent.click(screen.getByRole('button', { name: 'What I remember' }));
     expect(app.shell.openHubTab).toHaveBeenCalledWith('memories', 'ants');
-    expect(screen.getByRole('button', { name: 'Send to Hub' }).hasAttribute('disabled')).toBe(true);
+    fireEvent.click(screen.getByRole('button', { name: 'Send to Hub' }));
+    expect(app.api.sleepAgent).toHaveBeenCalledWith('ants');
     fireEvent.click(screen.getByRole('button', { name: 'Close' }));
     expect(screen.queryByLabelText('Swarm details')).toBeNull();
     expect(app.hit.remove).toHaveBeenCalledWith('card:inspect');
