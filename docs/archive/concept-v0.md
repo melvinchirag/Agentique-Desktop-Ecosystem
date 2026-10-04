@@ -1,3 +1,5 @@
+> **Archived (Oct 4, 2026).** Melvin's first concept doc, kept for history. The architecture here (Tauri, MCP app agents, Gemini/Vultr) is **superseded** by `docs/ARCHITECTURE.md` and `docs/DECISIONS.md`.
+
 # ADE (Agentique Desktop Ecosystem) — Concept
 
 *ADE = Agentique Desktop Ecosystem (formerly "Living Desktop"). Hack Dearborn: Conjure Reality · October 3–4, 2026 · University of Michigan–Dearborn*

@@ -1,0 +1,210 @@
+=====================================================================
+  ZARIN'S PLAN - GRAPHICS, SAVING YOUR WORK, AND YOUR AI HELPERS
+  ADE - Hack Dearborn 5
+=====================================================================
+
+You build all the graphics: rig + animate every animal, plus the
+biome. This file covers how to SAVE everything safely on GitHub
+(branches), and how to use ChatGPT/Codex to check and export your
+work automatically.
+
+Your animation list for Chip is in: Chip_Animations_for_Zarin.txt
+Export rules for every animal are in: ../ASSETS.md
+
+Your AI tools: ChatGPT and Codex ONLY (same ChatGPT account).
+   - No Claude (you don't have it).
+   - No AGY (it's not good at graphics).
+
+
+---------------------------------------------------------------------
+ 1. ONE-TIME SETUP (~10 min)
+---------------------------------------------------------------------
+
+ 1. Install Git LFS (stores big .blend files properly):
+       git lfs install
+ 2. Clone the team repo (Chanuth will share the link) and go in:
+       git clone <repo-url>
+       cd <repo-folder>
+ 3. Make your branch for Chip's graphics:
+       git switch main
+       git pull
+       git switch -c chip/graphics
+       git push -u origin chip/graphics
+ 4. Tell Git LFS which files are big (only once, the first time):
+       git lfs track "*.blend"
+       git lfs track "*.fbx"
+       git add .gitattributes
+       git commit -m "chip(graphics): track blend files with LFS"
+       git push
+ 5. Make sure Blender backup files never get committed. Add this
+    line to the .gitignore file:
+       *.blend1
+
+
+---------------------------------------------------------------------
+ 2. WHERE FILES GO (exact folders)
+---------------------------------------------------------------------
+
+ Your Blender source files (the .blend):
+    art/chipmunk/chipmunk.blend
+    art/wolf/wolf.blend
+    art/workspace/pixel.blend
+    art/beaver/beaver.blend
+    art/eagle/eagle.blend
+    art/ants/ant.blend           (ONE ant; the app makes the swarm)
+    art/butterfly/butterfly.blend
+    art/nightingale/nightingale.blend
+    art/biomes/forest/forest.blend
+
+ Exported models the app loads (the .glb):
+    src/renderer/public/characters/chipmunk/default/model.glb
+    src/renderer/public/characters/wolf/default/model.glb
+    ... same pattern for every animal ...
+    src/renderer/public/biomes/forest/biome.glb
+
+ Folder names use the animal ID (chipmunk, wolf, workspace, beaver,
+ eagle, ants, butterfly, nightingale), not the character name.
+
+
+---------------------------------------------------------------------
+ 3. ONE BRANCH PER ANIMAL
+---------------------------------------------------------------------
+
+   Chip ............ chip/graphics       (start here)
+   Warden .......... warden/graphics
+   Pixel ........... pixel/graphics
+   Archie .......... archie/graphics
+   Scout ........... scout/graphics
+   Swarm ........... swarm/graphics
+   Iris ............ iris/graphics
+   Celene .......... celene/graphics
+   Forest biome .... biome/forest
+
+ To start a new animal, ALWAYS begin from the latest main:
+       git switch main
+       git pull
+       git switch -c warden/graphics
+       git push -u origin warden/graphics
+
+ You never merge into main yourself. When an animal's set is done,
+ open a Pull Request on GitHub ("chip/graphics -> main") and
+ Chanuth merges it.
+
+
+---------------------------------------------------------------------
+ 4. SAVE YOUR WORK OFTEN (so nothing is ever lost)
+---------------------------------------------------------------------
+
+ After EVERY finished tier of animations (or at least every hour):
+
+       git add art/ src/renderer/public/
+       git commit -m "chip(graphics): Tier 1 clips Idle Talk Run Handoff Happy Scared Listen Think"
+       git push
+
+ Message format:   <animal>(graphics): what you did
+ Examples:
+       chip(graphics): rig done (ears, tail 5 bones, paws, jaw)
+       chip(graphics): Tier 2 emotions Nervous Sad Excited Relief Celebrate
+       warden(graphics): core 6 + Block + Growl
+
+
+---------------------------------------------------------------------
+ 5. YOUR AI HELPERS (ChatGPT + Codex)
+---------------------------------------------------------------------
+
+ Use CODEX to write three small Blender Python tools ONCE. They
+ check and export every animal automatically, so you never
+ export by hand or miss a clip name.
+
+ Model routing (cheapest that's good enough):
+   - Codex  GPT-6 Sol  (medium effort)  -> the two Blender scripts (Z2, Z3)
+   - Codex  GPT-6 Luna (medium effort)  -> the simple clip-list file (Z1)
+   - ChatGPT (chat)                     -> animation and rigging questions
+     ("how do I make the tail puff up for Scared?")
+   If a script fails twice: raise the effort one step (medium -> high).
+
+ Run Codex like this, in the repo folder. The extra flags stop it
+ from touching any of your accounts:
+       codex --ignore-user-config --disable apps
+   Then paste one task below.
+
+ ---- Z1 (Codex GPT-6 Luna, medium) ---------------------------------
+   "Create tools/blender/required_clips.json. For each animal id
+    (chipmunk, wolf, workspace, beaver, eagle, ants, butterfly,
+    nightingale) list the required animation clip names from
+    docs/ASSETS.md section 3 and, for chipmunk, from
+    docs/animations/chip-actions.md. Mark each clip as
+    'loop': true/false and 'tier': 1-4. Chipmunk does NOT need
+    SleepWalk. JSON only, no code."
+
+ ---- Z2 (Codex GPT-6 Sol, medium) ----------------------------------
+   "Create tools/blender/check_character.py, a Blender Python script
+    run as:
+      blender -b art/<animal>/<file>.blend --python tools/blender/check_character.py -- <animal_id>
+    It prints a PASS/FAIL report:
+    - every required clip from tools/blender/required_clips.json
+      exists as an Action with that exact name (case-sensitive),
+      and has Fake User on
+    - looping clips: first and last keyframes match
+    - scene frame rate is 30
+    - triangles <= 15000, bones <= 60, max 4 weights per vertex
+    - object transforms applied, origin near the feet (z ~ 0)
+    - optional shape keys found: MouthOpen, Blink, Smile, Worried
+    It changes nothing in the file. Report only."
+
+ ---- Z3 (Codex GPT-6 Sol, medium) ----------------------------------
+   "Create tools/blender/export_character.py, a Blender Python script
+    run as:
+      blender -b art/<animal>/<file>.blend --python tools/blender/export_character.py -- <animal_id>
+    It exports the armature + mesh to
+      src/renderer/public/characters/<animal_id>/default/model.glb
+    with glTF binary, +Y up, apply modifiers, animation mode
+    'Actions', always sample animations, include shape keys,
+    no cameras or lights. Then it prints the file size and
+    fails if it's over 5 MB."
+
+ Commit these tools on chip/graphics:
+       git add tools/blender
+       git commit -m "chip(graphics): blender check + export tools"
+       git push
+
+
+---------------------------------------------------------------------
+ 6. YOUR LOOP FOR EVERY ANIMAL
+---------------------------------------------------------------------
+
+   1. Model + rig in Blender (save in art/<animal>/).
+   2. Animate the next tier of clips (exact names!).
+   3. CHECK:  blender -b art/chipmunk/chipmunk.blend --python tools/blender/check_character.py -- chipmunk
+      -> fix anything that says FAIL.
+   4. EXPORT: blender -b art/chipmunk/chipmunk.blend --python tools/blender/export_character.py -- chipmunk
+   5. LOOK at it: when the app exists, use the Asset Lab
+      (Ctrl+Shift+A). Until then, drag model.glb into any glTF
+      viewer that plays animations, to see every clip move.
+   6. SAVE: git add / commit / push (section 4).
+   7. Next tier.
+
+
+---------------------------------------------------------------------
+ 7. ORDER OF WORK (from ASSETS.md)
+---------------------------------------------------------------------
+
+   1. Chip: rig + Tier 1  (Idle, Talk, Run, Handoff, Happy, Scared,
+      Listen, Think)  -> check, export, push
+   2. Make the 3 Codex tools (section 5). Do this while Blender is
+      busy, or right after Chip's Tier 1.
+   3. Warden (wolf): core 6 + Block + Growl  -> new branch warden/graphics
+   4. Pixel: core 6 (after you design the character)
+   5. Archie (beaver): core 6
+   6. Scout (eagle): Fly, Glide, Perch, Talk, Happy, Scared, Takeoff, Land
+   7. Swarm: one ant, 5 clips
+   8. (Forest biome: DEFERRED. The animals live on the real desktop for now.)
+   9. Back to Chip: Tiers 2, 3, 4 + shape keys
+  10. Every animal: Sleep, Yawn, SleepWalk (not Chip)
+  11. Extras: Iris, Celene
+
+ If you're running behind, skip signature clips first. The app has
+ fallback animations for anything missing.
+
+ Thank you, Zarin!
+=====================================================================
