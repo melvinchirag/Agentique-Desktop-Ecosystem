@@ -38,6 +38,7 @@ export function createMockAdeApi(overrides: Partial<AdeApi> = {}): AdeApi & Mock
     getSettings: record('getSettings', settings),
     setSettings: record('setSettings', undefined),
     connectGoogle: record('connectGoogle', { email: '' }),
+    disconnectGoogle: record('disconnectGoogle', undefined),
     learnEmailStyle: record('learnEmailStyle', { sampled: 0 }),
     getTimeline: record('getTimeline', [] as BiomeEvent[]),
     getTaskEvents: record('getTaskEvents', [] as BiomeEvent[]),
