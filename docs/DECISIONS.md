@@ -193,18 +193,36 @@ Owner of this file: Chanuth (with Claude). Last updated: Sun Oct 4, 2026, early 
 | `PROMPTS.md` | Copy-paste prompts for each person's AI (Melvin, Shafeen, Zarin; more per agent) |
 | `app-shell/00-APP-SHELL-SPEC.md` | App shell spec (real-desktop overlay + Agent Hub window) ✅ |
 | `app-shell/01-APP-SHELL-BUILD-LANES.md` | App shell build plan for Chanuth's Codex + AGY ✅ |
+| `agents/02-archie-files.md` | Archie (beaver, files) spec v1 ✅ **approved**; also defines the shared **AgentRuntime** |
+| `agents/02-archie-BUILD-LANES.md` | Melvin's lanes for Archie + AgentRuntime |
+| `agents/02-archie-SPONSOR-LANES-SHAFEEN.md` | Shafeen's lanes for Archie |
+| `animations/archie-actions.md`, `animations/Archie_Animations_for_Zarin.txt` | Archie's animation list (21 actions + props) |
 
 ## 15a. Melvin's original docs (repo)
 - `VISION.md` stays as the vision contract (north star, principles, Thronglets framing, demo safety, long-term phases), updated to match these decisions. `concept.md` is archived as `docs/archive/concept-v0.md`.
 - **Melvin's demo task adopted** for when those agents are planned: *"Turn the notes on my desktop into a report with 3 sources."* Archie reads the notes → Scout researches → Pixel writes the Google Doc → Warden stops the delete.
 - "Long-term memory: WON'T" in the old VISION is **reversed**: per-animal memory is a core feature (Backboard).
 
+## 15c. Archie plan ✅ APPROVED (Oct 4)
+- Spec, lanes, animations, prompts: `agents/02-archie-*`, `animations/archie-actions.md`, `animations/Archie_Animations_for_Zarin.txt`, `PROMPTS.md` (Archie sections).
+- **Shared AgentRuntime** (runs every specialist) is built in Archie's logic lanes (lane R); `beaver/logic` branches from `chip/logic` ✅.
+- **Contract additions** ✅: `file_note` artifact kind, `ToolContext.threadId`, `FileOp`/`FileOpsJournal`, `DocumentsApi`. They land via a **small follow-up PR (`contracts/archie` → `main`) after Melvin's `contracts/shared` PR merges**.
+- **Soft trash** ✅: "delete" moves files to `Documents/ADE Trash/<batch>/…` (journaled, undoable); batches older than 7 days are swept to the Windows Recycle Bin (`shell.trashItem`) on app start; never permanent delete. ADE Trash is always inside the sandbox and excluded from search/organize.
+- **Warden rule W11** ✅ (implement when Warden is planned): undoing ADE's own journaled batch runs without asking.
+- **W3** ✅: every single move/rename/mkdir asks Warden; a plan gets one approval for the whole batch.
+- **Undo journal** ✅: local `file-ops.jsonl` is primary; Tiger `file_ops` is a copy.
+- **Talking files** ✅: Archie's voice with a softer "paper" delivery; Archie holds the note at his own spot.
+- **Default allowed folders** ✅: Desktop, Documents, Downloads. **Archie's spot** ✅: bottom-left above the taskbar.
+
+## 15d. Desktop movement
+- **MVP:** animals stand on the taskbar. **Dragging animals anywhere on the screen = post-MVP** ✅.
+
 ## 15b. Pipeline ✅
 - Chanuth plans one agent at a time with Claude while the team builds the previous one. Each finished plan goes straight to Melvin (logic), Shafeen (sponsors), and Zarin (graphics).
 - Plan order: **Chip ✅ → Pixel → Warden → Archie → Scout** → app shell plan → Swarm → extras.
 - **The app shell is built by Chanuth's idle Codex + AGY seats** (Claude stays on planning). Its plan gets written **only when Chanuth says so**.
 
-## 15c. App shell plan ✅ APPROVED (Oct 4)
+## 15e. App shell plan ✅ APPROVED (Oct 4)
 - Spec: `app-shell/00-APP-SHELL-SPEC.md`; build plan: `app-shell/01-APP-SHELL-BUILD-LANES.md` (Codex GPT-6 Astra orchestrates; Codex Sol/Luna + AGY Gemini 3.8 Flash High build; X0 spike first).
 - ✅ S1 the Agent Hub is a separate small, movable, focusable window; the overlay never takes focus.
 - ✅ S2 animals start on the taskbar's top edge (Chip center-left, right side clear under the Hub). User-dragging animals anywhere = **post-MVP**.

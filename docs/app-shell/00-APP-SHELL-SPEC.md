@@ -7,7 +7,15 @@
 **What it is:** the part of ADE you *see*. The animals live **directly on the real Windows desktop**. There's no app window, no hybrid, and no biome strip. The **Agent Hub** is the only app-like UI.
 **Built now against a fake event stream.** Chip's core and Shafeen's sponsor kit plug in later (Lane J2), with no shell changes.
 
-> ⚠ verify = an Electron/Windows behavior to confirm in the Wave 0 spike (X0) before lanes rely on it.
+## X0 results (Chanuth's laptop, Oct 4)
+- Transparent overlay rendered correctly (not black); clicks passed through to apps underneath; hovering and clicking the test creature worked.
+- Click-and-hold recorded microphone audio. The Hub accepted typing without the overlay stealing focus.
+- At 125% scaling, the work area measured 1536x816 DIP and the creature's bottom edge sat exactly on the taskbar's top edge.
+- Chosen defaults: pointer mode `forward`, always-on-top level `floating`, toolbar type off. Polling, `screen-saver` level, and toolbar variants showed no visible difference; retain them only as fallbacks.
+- GPU compositing reported `disabled_software` even with `--ignore-gpu-blocklist`, so Chanuth's laptop renders on CPU. Render at `devicePixelRatio = 1`, keep the 30 moving / 10 idle / 0 asleep FPS caps and per-character triangle budgets, and add a six-dummy-model performance check to W2a.
+- Alt-Tab visibility was not confirmed; W2b keeps it as a manual check. The diagnostics panel was spike-only; the real app shows diagnostics only in dev mode.
+
+> ⚠ verify = an Electron/Windows behavior still to confirm manually or on other supported configurations.
 
 ---
 
@@ -20,7 +28,7 @@ You start `ADE.exe`. The animals appear **along the bottom of your screen, stand
 
 | Window | What | Key options |
 |---|---|---|
-| **Overlay** (1) | Transparent, full **work area** of the primary display (excludes the taskbar). Holds the 3D animals, bubbles, inspect cards, approval cards, and the replay banner. | `transparent: true, frame: false, backgroundColor: '#00000000', focusable: false` (on Windows this also implies `skipTaskbar: true`), `skipTaskbar: true, resizable: false, hasShadow: false, thickFrame: false, alwaysOnTop: true` → `setAlwaysOnTop(true, 'floating')` ⚠ verify the level (Electron #18982: some levels sit below the taskbar on Win32; since we cover the work area only, below the taskbar is fine), `type: 'toolbar'` (hides from Alt-Tab on Windows) ⚠ verify |
+| **Overlay** (1) | Transparent, full **work area** of the primary display (excludes the taskbar). Holds the 3D animals, bubbles, inspect cards, approval cards, and the replay banner. | `transparent: true, frame: false, backgroundColor: '#00000000', focusable: false` (on Windows this also implies `skipTaskbar: true`), `skipTaskbar: true, resizable: false, hasShadow: false, thickFrame: false, alwaysOnTop: true` → `setAlwaysOnTop(true, 'floating')` (confirmed X0; `screen-saver` fallback), default `type` (no toolbar; toolbar is an optional fallback) |
 | **Agent Hub** (2) | Small frameless, **focusable**, always-on-top window (default 360×560, collapsible to 360×56), top-right of the work area. Chat, status, tabs, settings, onboarding, Marketplace panel. | `frame: false, transparent: false, alwaysOnTop: true, skipTaskbar: true, resizable: false`; drag by its header (`-webkit-app-region: drag`; buttons are `no-drag`) |
 | **Asset Lab** (dev, 3) | Normal window for Zarin's model checks. Opened from Settings → Asset Lab (and Ctrl+Shift+A in dev/demo mode). | Regular window |
 
@@ -45,14 +53,14 @@ You start `ADE.exe`. The animals appear **along the bottom of your screen, stand
 - On leaving → `setInteractive(false)` (main: `setIgnoreMouseEvents(true, { forward: true })`).
 - Only send on change, with a 60 ms leave-debounce so moving between two shapes doesn't flicker.
 
-**Fallback if forwarding is unreliable** ⚠ verify in X0 (e.g. when another app has focus, or over certain windows): main polls `screen.getCursorScreenPoint()` every 33 ms and hit-tests against the shapes the renderer publishes (`adeShell.publishHitShapes(rects)`, throttled to 10 Hz). Both paths sit behind `OverlayController.setPointerMode('forward' | 'poll')`.
+**Fallback if forwarding is unreliable:** main polls `screen.getCursorScreenPoint()` every 33 ms and hit-tests against the shapes the renderer publishes (`adeShell.publishHitShapes(rects)`, throttled to 10 Hz). X0 confirmed forwarding; polling remains a fallback behind `OverlayController.setPointerMode('forward' | 'poll')`.
 
 **Dragging:** while interactive, pointer events go to the overlay. You can drag a card. *(Dragging animals anywhere on screen is **post-MVP**; for the MVP animals stay on the taskbar line.)* Releasing the mouse outside every shape returns to click-through.
 
 ---
 
 ## 4. Focus model
-- **Overlay:** never focusable. Clicking an animal or card works without activating the window ⚠ verify that click events arrive on a `focusable: false` window.
+- **Overlay:** never focusable. X0 confirmed that clicking the test creature works without activating the window or stealing focus.
 - **Hub:** gets focus when clicked (typing in chat, settings). Pressing **Esc** or sending a message blurs the Hub (`hub.blur()`). The user's previous app regains focus via the OS.
 - **Click-and-hold Chip to talk:** recording starts on overlay `pointerdown` over Chip, and ends on `pointerup` (or 30 s max). Mic capture doesn't need focus. A **short click (<250 ms)** on Chip focuses the Hub's text box instead.
 - **Mic permission:** `session.setPermissionRequestHandler` allows `media` for our own origin only.
@@ -63,7 +71,7 @@ You start `ADE.exe`. The animals appear **along the bottom of your screen, stand
 
 | Thing | Where |
 |---|---|
-| **Ground line** | Bottom of the work area − 4 px (animals stand on the taskbar's top edge). DIP coordinates; use `display.workArea` + `scaleFactor`. Test at 100/125/150 % ⚠ verify. |
+| **Ground line** | Bottom of the work area − 4 px (animals stand on the taskbar's top edge). DIP coordinates; use `display.workArea` + `scaleFactor`. Confirmed at 125% (1536x816 DIP); retain manual checks at 100% and 150%. |
 | **Animal spots** | Along the ground, from the left: Swarm's colony 6 %, Archie 16 %, Pixel 26 %, **Chip 38 %**, Warden 50 %, Scout 60 % (perches on the ground; flies off when working), Iris 70 %, Celene 78 % (extras appear only when installed and awake). Right ~20 % stays clear under the Hub. |
 | **Dock point** | Directly below the Hub window: animals sleep-walk along the ground to the Hub's x position, then float up and shrink into the Hub's header (0.6 s). Recomputed when the Hub is dragged. |
 | **Fly-off** (Scout) | Takeoff → arc up and exit through the top edge; return on `job.update(done)`, landing at its spot. |
@@ -84,7 +92,7 @@ Multi-monitor: **primary display only** for the hackathon. If the work area chan
 
 **Frame budget:**
 - `frameloop="demand"` with a 30 fps driver while anything animates; 10 fps when only idle loops play; **0 fps when everything is asleep, docked, or hidden**.
-- `dpr = min(devicePixelRatio, 1.5)`.
+- `dpr = 1` (X0 found software compositing on Chanuth's laptop, even with `--ignore-gpu-blocklist`).
 - Target: idle CPU < 5 %, GPU memory < 300 MB.
 
 ---
@@ -176,7 +184,7 @@ Drag in a `.glb` → turntable view, required-clip checklist (green/red, from `t
 `electron-builder.yml`: NSIS, `appId com.ade.agentique`, `productName ADE`, characters + sfx in `extraResources`, unsigned (SmartScreen: "More info → Run anyway"). Single-instance lock. Start-at-login **off**. Build by 9:30 AM and test on a second laptop.
 
 ## 16. Acceptance checks (the orchestrator runs them; manual where noted)
-1. Overlay covers the work area; the taskbar stays usable; **no taskbar button or Alt-Tab entry** (manual).
+1. Overlay covers the work area; the taskbar stays usable; **no taskbar button**. Alt-Tab visibility is unconfirmed by X0 and remains a W2b manual check.
 2. **Click-through:** desktop icons and apps behind are clickable everywhere except animals, bubbles, and cards (manual, 10 spots).
 3. Hovering an animal makes it clickable within 1 frame; leaving restores click-through.
 4. Hub: drag, type, Esc returns focus; the overlay never steals focus (manual).
@@ -194,9 +202,8 @@ Drag in a `.glb` → turntable view, required-clip checklist (green/red, from `t
 ## 17. Risks
 | Risk | Plan |
 |---|---|
-| Transparent window renders **black** with GPU acceleration on some machines | X0 spike on the **demo laptop** first. Fallbacks: driver/flag tweaks; worst case, disable hardware acceleration (3D gets slow) ⚠ verify |
+| Transparent window renders **black** with GPU acceleration on some machines | X0 rendered transparently on Chanuth's laptop. Its GPU compositing is `disabled_software` even with `--ignore-gpu-blocklist`; keep `dpr = 1`, FPS caps, and per-character triangle budgets, then check six animated dummy models in W2a. |
 | Forwarded mouse-moves unreliable | Cursor-polling fallback (§3) |
-| `focusable:false` window not receiving clicks | ⚠ verify in X0; fallback: toggle `setFocusable(true)` only while the pointer is over a shape |
 | Other always-on-top apps or fullscreen video cover/fight the overlay | "Hide animals" toggle; level tweak; out of scope to solve fully |
 | DevTools opening breaks transparency | Use detached DevTools on the Hub window only |
 | GPU/battery drain | 0-fps idle rule, dpr cap |

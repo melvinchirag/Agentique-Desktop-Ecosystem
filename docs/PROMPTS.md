@@ -158,10 +158,10 @@ READ FIRST, IN THIS ORDER (all in this repo):
 5. docs/ASSETS.md + docs/animations/chip-actions.md (clip names the characters play)
 6. docs/GIT-WORKFLOW.md                           (branches)
 
-STEP 1 — NOW: write docs/lanes/SHELL-X0.md and give me the exact command to launch the X0 spike
-(Codex GPT-6 Sol, medium) in a throwaway folder spikes/overlay/ outside any branch we merge. When it
-reports, record the answers to every "verify" item in docs/app-shell/X0-spike.md and set the pointer
-mode (forward or poll) and the GPU fallback.
+STEP 1 — DONE: Chanuth ran X0 on his laptop on Oct 4. Use the results in both app-shell docs; the
+defaults are pointer forward, always-on-top floating, toolbar off, and software-GPU settings are
+devicePixelRatio 1 plus the existing FPS and triangle budgets. Alt-Tab visibility stays a W2b manual
+check. Do not repeat the spike.
 
 STEP 2 — when Melvin's PR "contracts: shared types for Chip" is merged into main
 (check: git fetch && git ls-tree origin/main src/shared): do Wave 0 exactly as the build-lanes
@@ -187,5 +187,106 @@ lane | state | next action.
 
 ---
 
+# Archie (beaver, file manager) — ✅ approved (Oct 4); Melvin starts after Chip's Wave 1 merges, Shafeen after Chip's sponsor kit
+
+| Who | Paste into | Section |
+|---|---|---|
+| Melvin | Claude Code (Opus 5.5, effort high), repo root | Melvin — Archie logic orchestrator |
+| Shafeen | Claude Code (Opus 5.5, effort high), repo root | Shafeen — Archie sponsor tech |
+| Zarin | Codex, repo root | Zarin — Archie graphics |
+
+## Melvin — Archie logic orchestrator
+*Paste into: Claude Code, **Opus 5.5**, `/effort high`, repo root. Start once Chip's Wave 1 is merged into `chip/logic`.*
+
+```text
+You are the ORCHESTRATOR for building ARCHIE (the beaver file-manager agent, id "beaver") AND the
+generic AgentRuntime that every specialist animal will reuse, in the ADE repo. You plan, write lane
+specs, dispatch AI lanes, audit, and merge. You don't implement lanes yourself (only Wave 0 items
+and few-line fixes).
+
+READ FIRST, IN THIS ORDER:
+1. docs/DECISIONS.md
+2. docs/agents/02-archie-files.md          (Archie spec: tools, safePath, organize/undo, AgentRuntime §14)
+3. docs/agents/02-archie-BUILD-LANES.md    (YOUR plan: waves, lanes R P D F T O I, models, merge order)
+4. docs/agents/01-chip-orchestrator.md     (sections 3, 4.1, 7, 8, 16: jobs, help jobs, output format)
+5. docs/GIT-WORKFLOW.md
+
+WAVE 0:
+- AFTER my Chip contracts PR (contracts/shared) is merged, open a small follow-up contracts PR
+  (branch contracts/archie -> main) with ONLY the Archie contract changes in spec section 15:
+  ArtifactKind 'file_note', ToolContext.threadId, and FileOp (op += trash|sweep) / FileOpsJournal
+  (+ trashBatchesOlderThan, markSwept) / DocumentsApi in src/main/runtime/types.ts.
+  Tell me the PR link; Shafeen waits on it.
+- After it merges: create branch beaver/logic FROM chip/logic, rebase it on main, write lane files
+  docs/lanes/ARCHIE-<X>.md, and make a worktree per lane:
+  git worktree add ../ade-wt-beaver-logic-<x> -b lane/beaver-logic-<x> beaver/logic
+
+DISPATCH: give me the EXACT launch command or instruction per lane, using the model, effort, and
+engine in the plan's lane table (Codex via stdin with --ignore-user-config --disable apps;
+Claude/AGY interactive in the worktree). I launch them.
+
+AUDIT + MERGE: re-run every lane's tests yourself; REJECT any test that touches real user folders
+(only the makeSandbox() fixture is allowed); diff = owned paths only, no secrets; you (Opus) review
+lanes R and O before merging. Merge into beaver/logic: F -> P -> D -> R, then T -> O, then I.
+npm test after each; push. When Shafeen posts "Archie sponsor kit ready", merge origin/beaver/sponsors
+and switch fs_ask_file + the journal to the real implementations.
+
+RULES: never commit .env; deny MCP tool calls; never run Archie's tools against my real Desktop,
+Documents, or Downloads. Use the fixture. STOP and ask on spec conflicts. Report a status table
+(lane | state | next) after every step.
+```
+
+## Shafeen — Archie sponsor tech
+*Paste into: Claude Code, **Opus 5.5**, `/effort high`, repo root. Start after Chip's sponsor kit is handed off.*
+
+```text
+You are the ORCHESTRATOR for ARCHIE's sponsor tech (Backboard documents, ElevenLabs voice + sounds,
+Tiger file-ops journal) in the ADE repo. Plan, write lane specs, dispatch, audit, merge. Don't
+implement lanes yourself except few-line fixes.
+
+READ FIRST:
+1. docs/DECISIONS.md
+2. docs/agents/02-archie-SPONSOR-LANES-SHAFEEN.md   (YOUR plan: lanes B1 V1 T1 W1)
+3. docs/agents/02-archie-files.md sections 4.1 (fs_ask_file), 5 (journal), 7 (memory rules), 9 (voice/SFX), 15 (contracts)
+4. docs/SPONSORS.md (Archie rows) and docs/agents/01-chip-SPONSOR-LANES-SHAFEEN.md (tooling you reuse)
+
+SETUP: wait until Melvin's Archie contracts PR (contracts/archie: FileOpsJournal, DocumentsApi in types.ts) is merged
+into main (check: git fetch && git show origin/main:src/main/runtime/types.ts | findstr DocumentsApi).
+W1 and V1 can start before that. Branch beaver/sponsors from main; lane files docs/lanes/ARCHIE-SP-<X>.md;
+worktrees: git worktree add ../ade-wt-beaver-sponsors-<x> -b lane/beaver-sponsors-<x> beaver/sponsors
+
+DISPATCH each lane with the exact model, effort, and engine from the lane table (Codex via stdin with
+--ignore-user-config --disable apps; Claude/AGY interactive). I launch them. For V1, tell me when
+Archie's voice previews are ready so the team can pick one.
+
+AUDIT + MERGE into beaver/sponsors: W1 -> T1 -> B1 -> V1; you review T1; no keys in diffs; npm test
+after each; push. Then run the smoke test in plan section 2, tell me to post
+"Archie sponsor kit ready: <commit>", and open PR beaver/sponsors -> main.
+
+RULES: never edit src/shared or types.ts (Melvin owns them); deny MCP tool calls; STOP and ask if a
+real API differs from the docs. Status table after every step.
+```
+
+## Zarin — Archie graphics
+*Paste into: **Codex**, repo root.*
+
+```text
+Help me build and save ARCHIE THE BEAVER's 3D model and animations for the ADE project.
+
+1. Read docs/animations/Archie_Animations_for_Zarin.txt (my full list) and docs/ASSETS.md section 2
+   (export rules). Summarize the Tier 1 list for me in 10 lines.
+2. Git: git switch main && git pull && git switch -c beaver/graphics && git push -u origin beaver/graphics
+3. Make sure tools/blender/required_clips.json has the "beaver" entry with EXACTLY the clip names
+   from Archie_Animations_for_Zarin.txt (loop flags + tiers). Update it if needed.
+4. When I say "check", run:
+     blender -b art/beaver/beaver.blend --python tools/blender/check_character.py -- beaver
+   and explain any FAIL lines in plain words.
+5. When I say "export", run:
+     blender -b art/beaver/beaver.blend --python tools/blender/export_character.py -- beaver
+6. When I say "save", commit and push only art/beaver, src/renderer/public/characters/beaver, and
+   tools/blender with a message like "beaver(graphics): Tier 1 clips ...".
+Never touch other folders. Stop and tell me if any file is over 100 MB.
+---
+
 ## Prompts for later agents
-Each new agent plan (Pixel, Warden, Archie, Scout, Swarm, then the app shell) adds its own prompt sections here.
+Each new agent plan (Pixel, Warden, Scout, Swarm, then the app shell) adds its own prompt sections here.

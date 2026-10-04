@@ -1,0 +1,199 @@
+=====================================================================
+  ARCHIE THE BEAVER - ANIMATION LIST FOR ZARIN
+  ADE (Agentique Desktop Ecosystem) - Hack Dearborn 5
+=====================================================================
+
+Archie is the file manager: a hardworking, tidy, upbeat, slightly
+goofy builder who's proud of a well-built dam. He lives on the real
+Windows desktop (bottom-left, above the taskbar). No forest scene.
+
+
+---------------------------------------------------------------------
+ 1. GOLDEN RULES (same as Chip)
+---------------------------------------------------------------------
+
+ - Each animation is one Blender ACTION, named EXACTLY as below.
+   Capitals matter.
+ - FAKE USER on for every Action.
+ - Animate IN PLACE (the code moves Archie around). 30 fps.
+ - Looping animations: first frame = last frame.
+ - Don't animate colors. The code does mood tints.
+ - Branch:  beaver/graphics
+   Blender file:  art/beaver/beaver.blend
+   Export to:     src/renderer/public/characters/beaver/default/model.glb
+ - Check + export with your Codex tools:
+     blender -b art/beaver/beaver.blend --python tools/blender/check_character.py -- beaver
+     blender -b art/beaver/beaver.blend --python tools/blender/export_character.py -- beaver
+
+
+---------------------------------------------------------------------
+ 2. RIG + PROPS
+---------------------------------------------------------------------
+
+ - Height about 0.6 m, faces -Y, origin at the feet.
+ - Flat paddle TAIL with 3-4 bones (it must lift up and slap down).
+ - Jaw + big front teeth (for gnawing and talking).
+ - Small ears, paws that can hold things, whiskers optional.
+ - Two PROPS as separate small meshes, parented to a hand bone,
+   shown or hidden per animation:
+     Prop_Log    (a short log)
+     Prop_Paper  (a sheet of paper / note)
+ - Under 15,000 triangles, 60 bones or fewer, under 5 MB.
+
+
+---------------------------------------------------------------------
+ 3. HOW A BEAVER SHOWS EACH EMOTION
+---------------------------------------------------------------------
+
+ NEUTRAL  - Ears relaxed. Tail flat on the ground, small sway.
+            Upright on his haunches. Calm, blinking. Paws on belly.
+ HAPPY    - Ears perked. Tail lifted, quick wag. Bouncy.
+            Buck-tooth grin. Little claps.
+ EXCITED  - Ears up. Tail slapping the ground fast. Hopping.
+            Big grin, wide eyes. Fists pumping.
+ NERVOUS  - Ears twitching. Tail curled under. Hunched, shifting.
+            Glancing sideways, teeth chattering. Wringing paws.
+ SCARED   - Ears flat. Tail tucked tight. Crouched low, trembling.
+            Wide eyes. Paws covering his face.
+ SAD      - Ears drooped. Tail dragging. Slumped, head down.
+            Looking down. Paws limp.
+ SLEEPY   - Ears folded. Tail wrapped around him like a blanket.
+            Curled ball, eyes closed, paws under chin.
+
+
+---------------------------------------------------------------------
+ 4. THE ANIMATION LIST (make them in this order)
+---------------------------------------------------------------------
+
+ ===== TIER 1 - MAKE FIRST (the demo needs them) =====
+
+  1. Idle  (LOOP, ~3 sec)
+     Breathing, whisker twitch, tail sway, looks around.
+     -> Default.
+
+  2. Walk  (LOOP, ~1 sec cycle)
+     Waddle on all fours, tail dragging behind.
+     -> Moving across the desktop.
+
+  3. Talk  (LOOP, ~1.5 sec)
+     Head bobs, paw gestures, teeth show on emphasis.
+     -> Whenever Archie speaks.
+
+  4. Work  (LOOP, ~2 sec)
+     GNAWING a log held in both paws (Prop_Log visible).
+     -> Searching / working on a job.
+
+  5. Happy  (ONE-SHOT, ~1.2 sec)
+     Hop, grin, tail wag.
+     -> Job done, or the user is happy.
+
+  6. Scared  (LOOP, ~1.5 sec)
+     Crouched, trembling, paws over his face.
+     -> The user is angry.
+
+  7. Carry  (LOOP, ~1 sec cycle)
+     Waddle-walking with a log on his shoulder (Prop_Log).
+     -> Moving files around (tidying a folder).
+
+  8. TailSlap  (ONE-SHOT, ~0.8 sec)   ** Archie's signature **
+     Tail lifts high and SLAPS the ground once, proud nod.
+     -> A job is finished (plays with a "thwack" sound).
+
+  9. Read  (LOOP, ~2 sec)
+     Holds a paper close to his face, eyes scanning left-right
+     (Prop_Paper).
+     -> Reading a file.
+
+ 10. HoldNote  (LOOP, ~2 sec)   ** the "talking file" moment **
+     Holds the paper UP toward the camera with both paws, small
+     proud bob (Prop_Paper).
+     -> A file "talks": its one-line summary is spoken while Archie
+        holds it up.
+
+ >>> After Tier 1: CHECK, EXPORT, PUSH (git add / commit / push on
+     beaver/graphics).
+
+ ===== TIER 2 - EMOTIONS + TEAMWORK =====
+
+ 11. Nervous  (LOOP, ~2 sec)
+     Fidgeting, teeth chattering, glancing sideways (toward Warden).
+     -> Waiting for the user to approve a change, or the user is stressed.
+
+ 12. Sad  (LOOP, ~3 sec)
+     Slumped, tail dragging, a slow sigh.
+     -> The user is sad, or a job failed.
+
+ 13. Excited  (LOOP, ~1 sec)
+     Hopping, rapid tail slaps.
+     -> The user is excited.
+
+ 14. Think  (LOOP, ~2 sec)
+     Taps his chin, looks up, tail curls.
+     -> Planning how to tidy a folder.
+
+ 15. Handoff  (ONE-SHOT, ~1.2 sec)
+     Holds out a paper or log with both paws, nods.
+     -> Handing a file to Pixel or Chip.
+
+ 16. Sniff  (LOOP, ~2 sec)
+     Nose to the ground, moving side to side, whiskers twitching.
+     -> Searching for a file.
+
+ ===== TIER 3 - SLEEP =====
+
+ 17. Yawn  (ONE-SHOT, ~1.5 sec)
+     Big toothy yawn and stretch.
+     -> Falling asleep.
+
+ 18. Sleep  (LOOP, ~4 sec)
+     Curled up, tail wrapped over him like a blanket, slow breathing.
+     -> Asleep.
+
+ 19. SleepWalk  (LOOP, ~1.2 sec cycle)
+     Drowsy waddle, eyes half-closed.
+     -> Walking sleepily to the Agent Hub to "dock" (turn off).
+
+ 20. WakeUp  (ONE-SHOT, ~1.2 sec)
+     Startles awake, shakes his head.
+     -> Woken by a job or a click.
+
+ ===== TIER 4 =====
+
+ 21. Greet  (ONE-SHOT, ~1.5 sec)
+     Waves a paw, one tail slap.
+     -> App start.
+
+
+---------------------------------------------------------------------
+ 5. FACE SHAPE KEYS (optional)
+---------------------------------------------------------------------
+   MouthOpen  (lip-sync to his voice)
+   Blink
+
+
+---------------------------------------------------------------------
+ 6. DON'T MAKE
+---------------------------------------------------------------------
+ - No "talking while scared/happy" versions (the code layers the mood).
+ - No color or glow animations.
+
+
+---------------------------------------------------------------------
+ 7. ORDER + TIME (Archie only)
+---------------------------------------------------------------------
+   1. Model + rig (tail paddle, jaw/teeth, props)      ~60 min
+   2. Idle, Walk, Talk, Work, Happy, Scared            ~60 min
+   3. Carry, TailSlap, Read, HoldNote                  ~40 min
+   4. CHECK + EXPORT + PUSH                            ~10 min
+   5. Tier 2                                           ~45 min
+   6. Tier 3                                           ~30 min
+   7. Tier 4                                           ~10 min
+
+   Total: about 4-4.5 hours. Steps 1-4 first; everything else has
+   fallbacks in the app.
+
+ Thank you, Zarin!
+=====================================================================
+
+ NOTE: when Archie "deletes" files he hauls them to ADE Trash
+ (undoable). The app reuses Carry for that, so no extra animation.

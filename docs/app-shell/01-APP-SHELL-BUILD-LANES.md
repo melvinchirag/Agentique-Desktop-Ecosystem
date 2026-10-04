@@ -8,6 +8,12 @@
 
 ---
 
+## X0 results (Chanuth's laptop, Oct 4)
+- Transparency, click-through, test-creature hover/click, click-and-hold mic recording, Hub typing/focus, and 125% placement all worked (work area 1536x816 DIP; creature bottom aligned to the taskbar top).
+- Defaults: pointer `forward`, always-on-top `floating`, toolbar off. Polling, `screen-saver` level, and toolbar variants showed no visible difference; retain as fallbacks only.
+- GPU compositing is `disabled_software` even with `--ignore-gpu-blocklist`; keep `devicePixelRatio = 1`, the 30 moving / 10 idle / 0 asleep FPS caps, and per-character triangle budgets. W2a adds a performance check with six dummy animated models.
+- Alt-Tab visibility is unconfirmed and stays a W2b manual check. The diagnostics panel was spike-only; the real app shows it only in dev mode.
+
 ## 1. Heads
 
 | Engine | Model | Band | Role |
@@ -26,7 +32,7 @@
 ```
 X0 SPIKE  (now, throwaway, outside the repo, ~20 min) — Codex GPT-6 Sol medium
    transparent full-work-area window + R3F cube + click-through toggle + focusable Hub window + mic test
-   → answers every ⚠ verify; result decides pointer mode (forward vs poll) and the GPU fallback
+   → X0 results recorded below; Alt-Tab visibility remains for a W2b manual check
 WAVE 0  (Astra, ~30 min, starts when Melvin's contracts/shared PR is merged into main)
    branch app/shell → add Electron (electron-vite, electron-builder, three, @react-three/fiber, drei, zustand)
    → freeze shell interfaces → lane files docs/lanes/SHELL-<X>.md → worktrees
@@ -52,7 +58,7 @@ LATER  — J2 at team integration: RealCore swaps FakeCore (Melvin's lane, 25 mi
 
 | Step | What | Done when |
 |---|---|---|
-| 0.1 | Read X0's spike report; set the pointer mode + GPU fallback in the spec | Report merged into `docs/app-shell/X0-spike.md` |
+| 0.1 | Record X0 results and set pointer mode + GPU fallback in the spec | Results recorded in this plan and `00-APP-SHELL-SPEC.md` |
 | 0.2 | Check that Melvin's `contracts/shared` is on `main` (`git ls-tree origin/main src/shared`). Then `git switch -c app/shell main` | Branch pushed |
 | 0.3 | Add Electron on top of Melvin's `package.json` (deps + scripts `dev`, `build:win`); `electron.vite.config.ts` with entries main/preload/renderer (`overlay.html`, `hub.html`, `assetlab.html`); `electron-builder.yml` (spec §15) | `npm run dev` opens an empty overlay + Hub |
 | 0.4 | **Freeze shell interfaces** in `src/renderer/shell/contracts.ts` + `src/main/shell/contracts.ts`: `OverlayController`, `HitRegistry`, `CharacterLayer` (spec §6 API), `SpeechQueue`, `HubStore` (zustand shape: agents{presence,status,mood,job,queue}, transcript, tray, approvals, settings), `EventPlayer`, `CoreAdapter`, `Layout`, `window.adeShell` | `tsc --noEmit` passes |
@@ -67,17 +73,17 @@ LATER  — J2 at team integration: RealCore swaps FakeCore (Melvin's lane, 25 mi
 
 | Lane | Builds (spec §) | Engine / model / effort | Floor | Backup | Owned paths | Est. |
 |---|---|---|---|---|---|---|
-| **X0** | Spike: verify transparency, click-through (forward + poll), `focusable:false` clicks, Hub focus, mic, GPU black-background check, DPI (§2–5, §17) | Codex · Sol · medium | strong | Astra low | `spikes/overlay/**` (never merged) | 20 min |
+| **X0** | Spike: transparency, click-through, focus, mic, GPU compositing, and DPI results recorded above | Chanuth · Oct 4 | complete | — | throwaway spike (never merged) | done |
 | **L1** | Overlay + Hub + Asset Lab windows, display/work-area + DPI, `OverlayController` (forward + poll modes), `setInteractive`, hit-shape intake, Hub drag/focus/Esc blur, permissions (mic), demo `globalShortcut`s (§13), single-instance, hide-animals | Codex · Sol · **high** | strong | Astra medium | `src/main/index.ts`, `src/main/shell/**`, `src/preload/**` | 75 min |
 | **L2** | `FakeCore` (every `AdeApi` handler), 10 demo scripts (§12), `EventPlayer` (play/pause/speed, used for Replay too), canned memories/pulse/audit, bundled sample voice clips | Codex · Luna · medium | value | AGY Flash High | `src/main/fake/**`, `src/main/ipc/registerCoreIpc.ts`, `resources/fake/**` | 60 min |
-| **L3** | `CharacterLayer`: R3F canvas (transparent, ortho camera, dpr cap, 30/10/0 fps driver), GLB loading, clip playback by name + crossfade, `character.json`, placeholder + procedural fallback, mood tints, morph `MouthOpen`/`Blink`, Swarm instancing, `screenRect()` | Codex · Sol · medium | strong | Astra low | `src/renderer/overlay/characters/**` | 80 min |
+| **L3** | `CharacterLayer`: R3F canvas (transparent, ortho camera, `dpr = 1`, 30/10/0 fps driver), GLB loading, clip playback by name + crossfade, `character.json`, placeholder + procedural fallback, mood tints, morph `MouthOpen`/`Blink`, Swarm instancing, `screenRect()` | Codex · Sol · medium | strong | Astra low | `src/renderer/overlay/characters/**` | 80 min |
 | **L4** | `AnimationDirector` (spec §7 table, action queue per agent), `layout.ts` (§5), movement (walk/run/fly-off/fly-in/sleepwalk/dock/undock), ant carrier, help-walk, Replay mode + banner | Codex · Sol · **high** | strong | Astra medium | `src/renderer/overlay/director/**`, `src/renderer/overlay/layout.ts` | 90 min |
 | **L5** | Hub window UI (§9): header, status rows, Agents ▾, DND, hide toggle, tray, tabs Chat/Memories/Pulse/Audit, Settings, Onboarding, Marketplace panel | AGY · Gemini 3.8 Flash High | value | Codex Luna high | `src/renderer/hub/**` | 90 min |
 | **L6** | Overlay UI: bubble layer (positioned from `screenRect`), status bubbles, 💭 sparkle, inspect card (§10), ApprovalCard, ✓/✗ puffs; each registers in `HitRegistry` | AGY · Gemini 3.8 Flash High | value | Codex Luna high | `src/renderer/overlay/ui/**` | 70 min |
 | **L7** | `SpeechQueue` (§8: priority, 8 s drop, one voice), playback + AnalyserNode → `setMouth`, Swarm chorus, SFX player, voice-off mode; mic: click-and-hold Chip / Hub mic → MediaRecorder → `sendVoice` | Codex · Luna · **high** | value | AGY Flash High | `src/renderer/audio/**` | 60 min |
 | **L8** | Asset Lab window (§14) | AGY · Gemini 3.8 Flash High | value | Codex Luna medium | `src/renderer/assetlab/**` | 45 min |
-| **W2a** | Wire everything end to end; run every acceptance check (spec §16); perf pass (CPU/GPU budget) | Codex · Sol · medium | strong | Astra medium | glue files only, listed by the orchestrator | 30 min |
-| **W2b** | Packaging: NSIS build, extraResources, single-instance, test on a second laptop | Codex · Luna · medium | value | AGY Flash High | `electron-builder.yml`, `build/**` | 20 min |
+| **W2a** | Wire everything end to end; run every acceptance check (spec §16); perf pass (CPU/GPU budget), including six dummy animated models | Codex · Sol · medium | strong | Astra medium | glue files only, listed by the orchestrator | 30 min |
+| **W2b** | Packaging: NSIS build, extraResources, single-instance, manual Alt-Tab visibility check, test on a second laptop | Codex · Luna · medium | value | AGY Flash High | `electron-builder.yml`, `build/**` | 20 min |
 
 **Lane independence:** L3–L8 code only against the frozen interfaces, with **mocks** of the others: L4 drives a mock `CharacterLayer` that logs calls; L5/L6 render from a seeded `HubStore`; L7 tests with a sample mp3. Nothing in Wave 1 waits on another Wave 1 lane.
 
@@ -119,7 +125,7 @@ Common STOP conditions:
 
 | Clock | Milestone |
 |---|---|
-| now | **X0 spike** running (doesn't need the contracts) |
+| now | **X0 spike complete**; results recorded above (doesn't need the contracts) |
 | +0:00 | Contracts on `main` → Wave 0 |
 | +0:30 | Wave 0 done; L1, L2, L3 dispatched; L4–L8 ten minutes later |
 | +2:00 | Wave 1 lanes report; audits + merges |
