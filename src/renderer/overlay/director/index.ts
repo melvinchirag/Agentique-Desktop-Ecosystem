@@ -213,7 +213,7 @@ export const createAnimationDirector: CreateAnimationDirector = (deps: DirectorD
         });
         break;
       case 'agent.recall':
-        queue([id], () => ui.sparkle(id));
+        ui.sparkle(id);
         break;
       case 'agent.presence':
         if (id === 'chipmunk' && e.presence === 'docked') break;
