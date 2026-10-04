@@ -14,6 +14,7 @@ export interface AdeApi {
   getSettings(): Promise<AdeSettings>;
   setSettings(patch: Partial<AdeSettings>): Promise<void>;
   connectGoogle(): Promise<{ email: string }>;
+  disconnectGoogle(): Promise<void>;
   learnEmailStyle(): Promise<{ sampled: number }>;
   getTimeline(fromTs: number, toTs: number): Promise<BiomeEvent[]>;             // Tiger
   getTaskEvents(taskId: string): Promise<BiomeEvent[]>;                         // Tiger, for Replay
@@ -33,6 +34,7 @@ export interface AdeSettings {
   ambienceEnabled?: boolean;
   allowedFolders: string[];      // Beaver's sandbox
   googleEmail?: string;
+  styleLearnedAt?: number;
   biome: 'forest';               // 'desert' | 'snow' later
   demoMode: boolean;             // replay a recorded session if the network dies; short timers
   installed: Record<AgentId, boolean>;
@@ -44,7 +46,7 @@ export const IPC = {
   sendMessage: 'ade:send-message', sendVoice: 'ade:send-voice', speak: 'ade:speak',
   resolveApproval: 'ade:approval', getSettings: 'ade:settings:get', setSettings: 'ade:settings:set',
   wakeAgent: 'ade:hub:wake', sleepAgent: 'ade:hub:sleep', setDoNotDisturb: 'ade:hub:dnd', demoFireNudge: 'ade:demo:nudge',
-  connectGoogle: 'ade:google:connect', learnEmailStyle: 'ade:google:learn-style',
+  connectGoogle: 'ade:google:connect', disconnectGoogle: 'ade:google:disconnect', learnEmailStyle: 'ade:google:learn-style',
   getTimeline: 'ade:tiger:timeline', getTaskEvents: 'ade:tiger:task', getMemories: 'ade:bb:memories',
   deleteMemory: 'ade:bb:memory-delete', searchMemories: 'ade:bb:memory-search', updateMemory: 'ade:bb:memory-update',
   getPulse: 'ade:tiger:pulse', getWardenAudit: 'ade:tiger:audit', event: 'ade:event',
