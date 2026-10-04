@@ -21,15 +21,20 @@ export function createCompositeJournal(
   /** Queue one Tiger write behind the earlier ones, so a later `markUndone` never overtakes its own `record`. */
   const mirror = (what: string, write: (copy: FileOpsJournal) => Promise<void>): void => {
     if (!tiger) return;
-    tail = tail.then(() => write(tiger)).catch((error: unknown) => {
-      log(`Tiger copy of ${what} failed: ${error instanceof Error ? error.message : String(error)}`);
+    tail = tail.then(() => write(tiger)).catch(() => {
+      // Driver errors may contain connection strings. Never stringify the rejection.
+      // Even a broken logger must not poison the queue or turn flush into a failure.
+      try { log(`Tiger copy of ${what} failed`); } catch { /* optional mirror diagnostics */ }
     });
   };
 
   return {
     async record(op: FileOp): Promise<void> {
       await local.record(op);
-      mirror('record', (copy) => copy.record(op));
+      // The mirror may run after the caller has reused or mutated its object.
+      // Capture the row that succeeded locally before placing it on the queue.
+      const mirroredOp = { ...op };
+      mirror('record', (copy) => copy.record(mirroredOp));
     },
     lastBatch: () => local.lastBatch(),
     batchOps: (batchId) => local.batchOps(batchId),

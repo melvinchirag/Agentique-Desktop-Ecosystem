@@ -3,6 +3,7 @@ import { EventBus } from './bus/eventBus';
 import { createBeaverAgent } from './agents/beaver';
 import { createOrganizeToolBindings, sweepOldTrash, type SweepResult } from './agents/beaver/organizeTools';
 import { createReadToolBindings } from './agents/beaver/readTools';
+import { createCompositeJournal, type CompositeJournal } from './connectors/fs/compositeJournal';
 import type { FileIndex } from './connectors/fs/fileIndex';
 import type { FsShell } from './connectors/fs/fsShell';
 import type { SafePathOptions } from './connectors/fs/safePath';
@@ -40,7 +41,8 @@ export interface ArchieWiring {
   approvals: (ctx: ArchieContext) => Approvals;
   safe: SafePathOptions;             // allowed roots + Documents (for ADE Trash)
   index: FileIndex;                  // the caller builds it; until it is ready, search falls back to a live scan
-  journal: FileOpsJournal;           // local journal, or createCompositeJournal(local, tiger)
+  journal: FileOpsJournal;           // local primary journal
+  tigerJournal?: FileOpsJournal;     // optional non-blocking copy; never consulted for undo
   shell: FsShell;                    // the app supplies Electron's; tests use FakeFsShell
   documents?: DocumentsApi;          // Backboard thread documents, for fs_ask_file
   screen?: InjectionScreen;          // Warden's injection screen, when it exists
@@ -49,6 +51,7 @@ export interface ArchieWiring {
 }
 
 export const TRASH_SWEEP_EVERY_MS = 6 * 60 * 60 * 1000;
+const SAFE_SWEEP_ERRORS = new Set(['INVALID_BATCH_ID', 'TRASH_LOCATION_CHANGED', 'NOT_A_FOLDER', 'ENOENT', 'EPERM', 'EBUSY']);
 
 export interface ChipCoreConfig {
   llm: LlmClient;                    // Chip's brain: BackboardClient (live) or FakeLlm (tests)
@@ -135,39 +138,80 @@ export function createChipCore(config: ChipCoreConfig): ChipCore {
 
   // Archie: real tools, gate, approvals and the 7-day trash sweep.
   let archie: ChipCore['archie'];
+  let archieJournal: CompositeJournal | undefined;
   let sweepTimer: TimerHandle | undefined;
   let sweepInFlight: Promise<SweepResult> | undefined;
+  let disposed = false;
   if (config.archie) {
     const a = config.archie;
+    const journal = createCompositeJournal(a.journal, a.tigerJournal);
+    archieJournal = journal;
     const gate = a.gate({ bus, clock, jobs });
     const approvals = a.approvals({ bus, clock, jobs });
+    const read = createReadToolBindings({
+      safe: a.safe, index: a.index, shell: a.shell, clock,
+      ...(a.documents ? { documents: a.documents } : {}), ...(a.screen ? { screen: a.screen } : {}),
+    });
+    // Talking files (spec §6.4): remember which file a job described, so the finished job can emit artifact(file_note).
+    const described = new Map<string, string>();
+    const describe = read.fs_describe!;
+    read.fs_describe = {
+      ...describe,
+      async execute(input, toolCtx) {
+        described.delete(toolCtx.jobId);
+        const out = await describe.execute(input, toolCtx);
+        const name = out && typeof out === 'object' && !('error' in out) ? (out as { name?: unknown }).name : undefined;
+        if (typeof name === 'string') described.set(toolCtx.jobId, name);
+        return out;
+      },
+    };
     const definition = createBeaverAgent({
-      ...createReadToolBindings({
-        safe: a.safe, index: a.index, shell: a.shell, clock,
-        ...(a.documents ? { documents: a.documents } : {}), ...(a.screen ? { screen: a.screen } : {}),
-      }),
-      ...createOrganizeToolBindings({ safe: a.safe, index: a.index, journal: a.journal, shell: a.shell, clock }),
+      ...read,
+      ...createOrganizeToolBindings({ safe: a.safe, index: a.index, journal, shell: a.shell, clock }),
     });
     const runtime = createAgentRuntime({
       bus, llm: a.llm, jobs, gate, approvals, settings, agents: [{ definition, assistantId: a.assistantId }],
       ...(a.screen ? { screen: a.screen } : {}),
     });
-    archieRuntime = runtime;
+    archieRuntime = {
+      async run(agentId, task, runCtx) {
+        try {
+          const result = await runtime.run(agentId, task, runCtx);
+          const name = described.get(runCtx.jobId);
+          if (!name || !result.ok || !result.say) return result;
+          bus.emit({ type: 'artifact', agentId: 'beaver', taskId: runCtx.taskId, kind: 'file_note', title: name, data: { name, line: result.say } });
+          return { ...result, artifacts: [...result.artifacts, { kind: 'file_note', title: name }] };
+        } finally {
+          described.delete(runCtx.jobId);
+        }
+      },
+    };
 
     const sweep = (): Promise<SweepResult> => {
+      if (disposed) return Promise.reject(new Error('Archie core is disposed'));
       if (sweepInFlight) return sweepInFlight;
-      const run: Promise<SweepResult> = sweepOldTrash({ safe: a.safe, journal: a.journal, shell: a.shell, emit: (e) => { bus.emit(e); } })
+      const run: Promise<SweepResult> = sweepOldTrash({ safe: a.safe, journal, shell: a.shell, emit: (e) => { bus.emit(e); } })
+        .then((result) => ({ ...result, failed: result.failed.map((item) => ({
+          ...item, error: SAFE_SWEEP_ERRORS.has(item.error) ? item.error : 'SWEEP_FAILED',
+        })) }))
+        .catch(() => { throw new Error('Archie trash sweep failed'); })
         .finally(() => { if (sweepInFlight === run) sweepInFlight = undefined; });
       sweepInFlight = run;
       return run;
     };
-    archie = { runtime, gate, approvals, sweep };
+    archie = { runtime: archieRuntime, gate, approvals, sweep };
 
     if (a.startSweep !== false) {
-      const every = a.sweepEveryMs ?? TRASH_SWEEP_EVERY_MS;
-      const onFailure = (err: unknown): void => console.error('[chipCore] trash sweep failed', err);
+      const every = a.sweepEveryMs !== undefined && Number.isFinite(a.sweepEveryMs) && a.sweepEveryMs > 0
+        ? a.sweepEveryMs : TRASH_SWEEP_EVERY_MS;
+      const onFailure = (): void => console.error('[chipCore] trash sweep failed');
       const tick = (): void => {
-        sweepTimer = clock.setTimeout(() => { tick(); void sweep().catch(onFailure); }, every);
+        if (disposed) return;
+        sweepTimer = clock.setTimeout(() => {
+          if (disposed) return;
+          tick();
+          void sweep().catch(onFailure);
+        }, every);
       };
       void sweep().catch(onFailure);
       tick();
@@ -177,22 +221,26 @@ export function createChipCore(config: ChipCoreConfig): ChipCore {
   presence.start();
   if (config.startNudges !== false) nudges.start();
 
-  let disposed = false;
-  const dispose = async (): Promise<void> => {
-    if (disposed) return;
+  let disposePromise: Promise<void> | undefined;
+  const dispose = (): Promise<void> => {
+    if (disposePromise) return disposePromise;
     disposed = true;
-    if (sweepTimer !== undefined) clock.clearTimeout(sweepTimer);
-    archie?.approvals.dispose();
-    orchestrator.dispose();
-    nudges.dispose();
-    mood.dispose();
-    presence.dispose();
-    for (const off of unsubscribers.splice(0)) off();
-    try {
-      await eventSink?.flush();
-    } catch (err) {
-      console.error('[chipCore] event sink flush failed', err);
-    }
+    disposePromise = (async () => {
+      if (sweepTimer !== undefined) clock.clearTimeout(sweepTimer);
+      try { archie?.approvals.dispose(); }
+      catch { console.error('[chipCore] approvals disposal failed'); }
+      orchestrator.dispose();
+      nudges.dispose();
+      mood.dispose();
+      presence.dispose();
+      // A startup or timer sweep may still be in flight. Keep subscribers until its final status is emitted.
+      if (sweepInFlight) await sweepInFlight.catch(() => undefined);
+      await archieJournal?.flush();
+      for (const off of unsubscribers.splice(0)) off();
+      try { await eventSink?.flush(); }
+      catch { console.error('[chipCore] event sink flush failed'); }
+    })();
+    return disposePromise;
   };
 
   return {
