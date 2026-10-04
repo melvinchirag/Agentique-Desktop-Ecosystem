@@ -1,0 +1,38 @@
+{
+  "animal": "ants",
+  "triangles": 1992,
+  "bones": 29,
+  "height": 0.08228570211213082,
+  "clips": {},
+  "morphs": [],
+  "errors": [],
+  "manual_checks": [
+    "Facing -Y",
+    "Visual quality of every clip",
+    "Playback in ADE Asset Lab"
+  ],
+  "glb_bytes": 572588,
+  "exported_clips": [
+    "Carry",
+    "Celebrate",
+    "Dizzy",
+    "Excited",
+    "Greet",
+    "Handoff",
+    "Happy",
+    "Idle",
+    "Listen",
+    "Nervous",
+    "Nudge",
+    "Relief",
+    "Run",
+    "Sad",
+    "Scared",
+    "Sleep",
+    "Talk",
+    "Think",
+    "WakeUp",
+    "Walk",
+    "Yawn"
+  ]
+}

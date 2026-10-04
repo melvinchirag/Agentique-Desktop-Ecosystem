@@ -133,6 +133,11 @@ CREATE TABLE IF NOT EXISTS plan_items (
   start_at TIMESTAMPTZ, end_at TIMESTAMPTZ, status TEXT DEFAULT 'planned'
 );
 CREATE INDEX IF NOT EXISTS ix_plan_items_date ON plan_items (plan_date);
+-- Swarm's plan store (06-swarm-QUICK-SHAFEEN.md W2): which plan a step belongs to, its goal, and its order.
+ALTER TABLE plan_items ADD COLUMN IF NOT EXISTS plan_id UUID;
+ALTER TABLE plan_items ADD COLUMN IF NOT EXISTS goal TEXT;
+ALTER TABLE plan_items ADD COLUMN IF NOT EXISTS step_no INT;
+ALTER TABLE plan_items ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT now();
 
 -- Pixel's drafts, metadata only (state: waiting | sent | deleted)
 CREATE TABLE IF NOT EXISTS drafts_log (

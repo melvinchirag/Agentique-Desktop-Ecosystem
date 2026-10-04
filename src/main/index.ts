@@ -1,4 +1,4 @@
-import { app, ipcMain } from 'electron';
+import { app, ipcMain, shell, safeStorage } from 'electron';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createRealCore } from './core/realCore';
@@ -96,7 +96,9 @@ if (!app.requestSingleInstanceLock()) {
     const disposeDisplay = watchDisplay({
       overlay, hub: hub.window, isCollapsed: () => hub.collapsed, layout, targets,
     });
-    const core = watchSettings(createRealCore({ demoMode, resourcesDir }), onSettings);
+    const core = watchSettings(createRealCore({ demoMode, demoTimers: argv.includes('--demo-timers'), resourcesDir,
+      desktopRoot: app.getPath('desktop'), documentsRoot: app.getPath('documents'), downloadsRoot: app.getPath('downloads'),
+      safeStorage, fsShell: shell, openExternal: url => shell.openExternal(url), onSettingsChanged: onSettings }), onSettings);
     coreRef = core;
     const disposeCoreIpc = registerCoreIpc(core, { ipc: ipcMain, targets });
     shortcuts.update(settingsDemoMode, devMode);

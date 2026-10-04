@@ -59,25 +59,15 @@
   },
   "eagle": {
     "name": "Scout",
-    "description": "A crisp, confident, sharp eagle. News-anchor energy, clear and concise, sees far.",
+    "description": "A young, cute cartoon eagle character. A light, bright, boyish voice with eager, playful energy and a little cocky confidence. Quick, clear and friendly, like an enthusiastic rookie scout reporting back.",
     "previews": [
       {
         "n": 1,
         "file": "voices/previews/eagle-1.mp3",
-        "generated_voice_id": "JovNvGHQidOs4NzD0uFO"
-      },
-      {
-        "n": 2,
-        "file": "voices/previews/eagle-2.mp3",
-        "generated_voice_id": "7zYr9M0baYnC59bHDXI3"
-      },
-      {
-        "n": 3,
-        "file": "voices/previews/eagle-3.mp3",
-        "generated_voice_id": "WyWhqeqJZrUmUNbhR2la"
+        "generated_voice_id": "6V1eEH0eoRC1jILQ5VL2"
       }
     ],
-    "voice_id": "JovNvGHQidOs4NzD0uFO",
+    "voice_id": "6V1eEH0eoRC1jILQ5VL2",
     "picked": 1
   },
   "ants": {

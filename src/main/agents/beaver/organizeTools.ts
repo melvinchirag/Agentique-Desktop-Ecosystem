@@ -180,13 +180,21 @@ export async function moveWithoutOverwrite(from: string, to: string, options: Mo
     await releasePlaceholder(target);
     return { ok: false, error: 'JOURNAL_FAILED' };
   }
-  try {
-    await io.rename(from, target);
-    return { ok: true, to: target };
-  } catch (error) {
-    if (code(error) === 'EXDEV') return copyVerifyDelete(from, target);
-    await releasePlaceholder(target);
-    return { ok: false, error: code(error) };
+  for (let attempt = 0; ; attempt += 1) {
+    try {
+      await io.rename(from, target);
+      return { ok: true, to: target };
+    } catch (error) {
+      if (code(error) === 'EXDEV') return copyVerifyDelete(from, target);
+      // Windows indexing and virus scanners can briefly hold the reserved target.
+      // Keep the exclusive placeholder during a bounded retry so no other file is overwritten.
+      if (code(error) === 'EPERM' && attempt < 5) {
+        await new Promise<void>((resolve) => setTimeout(resolve, 20));
+        continue;
+      }
+      await releasePlaceholder(target);
+      return { ok: false, error: code(error) };
+    }
   }
 }
 

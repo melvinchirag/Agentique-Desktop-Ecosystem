@@ -86,7 +86,8 @@ export class AgentRuntime implements SpecialistRunner {
     const tools: OpenAiTool[] = definition.tools.map((tool) => ({
       type: 'function', function: { name: tool.name, description: tool.description, parameters: tool.parameters },
     }));
-    if (ctx.kind === 'normal') tools.push(this.helpTool(agentId));
+    // Swarm plans only: it never hands work to another animal.
+    if (ctx.kind === 'normal' && agentId !== 'ants') tools.push(this.helpTool(agentId));
     const memory = entry.memory?.[ctx.kind] ?? (ctx.kind === 'help' ? 'Readonly' : 'Auto');
     const maxRounds = definition.maxToolRounds > 0 ? definition.maxToolRounds : DEFAULT_MAX_TOOL_ROUNDS;
 
@@ -114,8 +115,9 @@ export class AgentRuntime implements SpecialistRunner {
       if (this.deps.screen) {
         const source = { kind: 'summary' as const, name: AGENTS[agentId].displayName, taskId: ctx.taskId, jobId: ctx.jobId };
         const say = await this.deps.screen.screen(parsed.say, source);
+        const bubble = await this.deps.screen.screen(parsed.bubble, source);
         const summary = await this.deps.screen.screen(parsed.summary, source);
-        if (say.flagged || summary.flagged) {
+        if (say.flagged || bubble.flagged || summary.flagged) {
           parsed.say = 'Done, but Warden flagged something in it.';
           parsed.bubble = 'Review needed';
         }
@@ -158,7 +160,8 @@ export class AgentRuntime implements SpecialistRunner {
   ): Promise<string> {
     const { bus, gate, approvals, jobs } = this.deps;
     const tool = def.tools.find((candidate) => candidate.name === call.function.name);
-    const help = call.function.name === 'ask_teammate' && ctx.kind === 'normal';
+    const help = call.function.name === 'ask_teammate' && ctx.kind === 'normal' && agentId !== 'ants';
+    if (call.function.name === 'ask_teammate' && !help) return output({ error: 'UNKNOWN_TOOL' });
     let args: unknown;
     try { args = JSON.parse(call.function.arguments); }
     catch { return output({ error: 'INVALID_ARGUMENTS' }); }

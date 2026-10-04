@@ -1,0 +1,48 @@
+{
+  "agent": "ants",
+  "model": "eleven_v4_turbo",
+  "lines": [
+    {
+      "trigger": "assemble",
+      "text": "Swarm, assemble!",
+      "file": "assemble.mp3",
+      "alignment": "assemble.json",
+      "hash": "2c7e7e45dfdc708d"
+    },
+    {
+      "trigger": "plan-assembled",
+      "text": "Plan assembled!",
+      "file": "plan-assembled.mp3",
+      "alignment": "plan-assembled.json",
+      "hash": "fae989892ae5e472"
+    },
+    {
+      "trigger": "step-one",
+      "text": "Step one, on its way!",
+      "file": "step-one.mp3",
+      "alignment": "step-one.json",
+      "hash": "290adf2cf57bc913"
+    },
+    {
+      "trigger": "all-delivered",
+      "text": "All steps delivered!",
+      "file": "all-delivered.mp3",
+      "alignment": "all-delivered.json",
+      "hash": "48ba77490507c71d"
+    },
+    {
+      "trigger": "clearer-goal",
+      "text": "We need a clearer goal.",
+      "file": "clearer-goal.mp3",
+      "alignment": "clearer-goal.json",
+      "hash": "639e16446b51dd5b"
+    },
+    {
+      "trigger": "back-to-colony",
+      "text": "Back to the colony!",
+      "file": "back-to-colony.mp3",
+      "alignment": "back-to-colony.json",
+      "hash": "64ddd24ee637d9b4"
+    }
+  ]
+}

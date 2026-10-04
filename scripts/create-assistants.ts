@@ -2,6 +2,7 @@
 //   npx tsx scripts/create-assistants.ts            create the missing ones, write BB_ASSISTANT_* to .env
 //   npx tsx scripts/create-assistants.ts --force    delete and recreate all of them (their memories are lost)
 //   npx tsx scripts/create-assistants.ts --only chipmunk
+//   npx tsx scripts/create-assistants.ts --only ants --update   push new memory rules to the EXISTING assistant (same id)
 // The stored system prompt is a short stand-in: the runtime sends the real prompt on every turn.
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -27,6 +28,7 @@ const RULES: Record<AgentId, { FACT_EXTRACTION_PROMPT?: string; UPDATE_MEMORY_PR
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
   const force = args.includes('--force');
+  const update = args.includes('--update');
   const only = args.includes('--only') ? args[args.indexOf('--only') + 1] : undefined;
   const env = { ...readEnvFile(ENV_PATH), ...process.env };
   const client = new BackboardClient({ apiKey: env.BACKBOARD_API_KEY ?? '' });
@@ -35,6 +37,16 @@ async function main(): Promise<void> {
     if (only && id !== only) continue;
     const key = `BB_ASSISTANT_${id.toUpperCase()}`;
     const existing = env[key];
+    if (existing && update) {
+      // Same assistant, same id, same memories: only the memory rules change.
+      await client.updateAssistant(existing, {
+        factExtractionPrompt: RULES[id].FACT_EXTRACTION_PROMPT && RULES[id].FACT_EXAMPLE
+          ? withFactFormat(RULES[id].FACT_EXTRACTION_PROMPT!, RULES[id].FACT_EXAMPLE!) : undefined,
+        updateMemoryPrompt: RULES[id].UPDATE_MEMORY_PROMPT,
+      });
+      console.log(`updated ${id} memory rules in place (${key} unchanged)`);
+      continue;
+    }
     if (existing && !force) { console.log(`skip    ${id} (already in .env)`); continue; }
     const profile = AGENTS[id];
     const { assistantId } = await client.createAssistant({
