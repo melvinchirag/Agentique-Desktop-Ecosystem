@@ -1,0 +1,15 @@
+{
+  "chipmunk": {
+    "name": "Chip",
+    "description": "A tiny, bright, high-pitched cartoon chipmunk. Fast, excitable, warm, slightly squeaky, youthful, very expressive.",
+    "previews": [
+      {
+        "n": 3,
+        "file": "voices/previews/chipmunk-3.mp3",
+        "generated_voice_id": "zwHgyhSOMsEletx3ymIv"
+      }
+    ],
+    "voice_id": "zwHgyhSOMsEletx3ymIv",
+    "picked": 3
+  }
+}
