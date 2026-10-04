@@ -154,6 +154,31 @@ export interface CalendarSource { listEvents(from: Date, to: Date): Promise<Cale
 export type HistoryKind = 'recent_tasks' | 'warden_blocks' | 'agent_activity' | 'mood_history';
 export interface HistoryStore { query(kind: HistoryKind, sinceHours: number, agent?: AgentId): Promise<object[]> }
 
+// ── File operations (Archie) ─────────────────────────────
+
+/** One undoable filesystem operation. The local journal is primary; Tiger stores a copy. */
+export interface FileOp {
+  id: string;
+  ts: number;
+  jobId: string;
+  batchId: string;
+  op: 'move' | 'rename' | 'mkdir' | 'trash' | 'sweep';
+  fromPath?: string;
+  toPath?: string;
+  undone: boolean;
+  swept?: boolean;
+}
+
+export interface FileOpsJournal {
+  record(op: FileOp): Promise<void>;
+  lastBatch(): Promise<string | null>;
+  batchOps(batchId: string): Promise<FileOp[]>;
+  markUndone(batchId: string): Promise<void>;
+  recent(sinceHours: number): Promise<FileOp[]>;
+  trashBatchesOlderThan(days: number): Promise<string[]>;
+  markSwept(batchId: string): Promise<void>;
+}
+
 // ── Sponsor pieces built by Shafeen (agents/01-chip-SPONSOR-LANES-SHAFEEN.md) ──
 
 export interface EventSink { enqueue(e: BiomeEvent): void; flush(): Promise<void> }                       // Tiger writer; subscribed to the bus
@@ -163,6 +188,11 @@ export interface MemoryApi {
   update(agentId: AgentId, id: string, text: string): Promise<void>; remove(agentId: AgentId, id: string): Promise<void>;
 }
 export interface TigerQueries { taskEvents(taskId: string): Promise<BiomeEvent[]>; wardenAudit(limit: number): Promise<object[]>; pulse(): Promise<object> }
+/** Backboard thread-document API used by Archie's fs_ask_file tool. */
+export interface DocumentsApi {
+  uploadToThread(threadId: string, absPath: string): Promise<{ documentId: string }>;
+  waitIndexed(documentId: string, timeoutMs: number): Promise<{ status: 'indexed' | 'error'; chunks: number }>;
+}
 export interface VoiceService {
   speak(agentId: AgentId, text: string, mood: AgentMood): Promise<{ audio: ArrayBuffer; alignment?: object }>;
   transcribe(audio: ArrayBuffer, mime: string): Promise<{ text: string; cues: string[] }>;
