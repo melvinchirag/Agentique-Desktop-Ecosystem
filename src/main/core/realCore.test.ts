@@ -23,6 +23,8 @@ describe('real core startup fallback', () => {
     fallback.start?.();
     expect((await fallback.getSettings()).demoMode).toBe(true);
     expect(warnings).toEqual(['Running demo core: missing keys']);
+    expect(await fallback.getMemories('chipmunk')).toEqual([]);
+    expect(await fallback.searchMemories('chipmunk', 'sample')).toEqual([]);
     fallback.dispose?.();
   });
 });

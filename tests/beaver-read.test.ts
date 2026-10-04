@@ -141,6 +141,39 @@ describe('Archie read tools (lane T)', () => {
   });
 
   describe('fs_list and fs_info', () => {
+    it('sorts live entries by modified time or size, including files beyond the result cap', async () => {
+      const folder = path.join(dl, 'sorting');
+      await fs.mkdir(folder);
+      const old = new Date('2020-01-01T00:00:00Z');
+      const recent = new Date('2025-01-01T00:00:00Z');
+      for (let i = 0; i < 205; i++) {
+        const file = path.join(folder, `${String(i).padStart(3, '0')}.jpg`);
+        await fs.writeFile(file, 'x');
+        await fs.utimes(file, old, old);
+      }
+      await fs.mkdir(path.join(folder, 'a-folder'));
+      const newest = path.join(folder, 'zzz-newest.jpg');
+      await fs.writeFile(newest, 'the largest file');
+      await fs.utimes(newest, recent, recent);
+      const list = (sort: string) => run('fs_list', { path: folder, sort });
+      const descending = await list('modified_desc');
+      expect(descending).toMatchObject({ count: 200, truncated: true });
+      expect(descending.items.find((item: Out) => item.type === 'file').name).toBe('zzz-newest.jpg');
+      expect(descending.items.every((item: Out) => !Number.isNaN(Date.parse(item.modified)))).toBe(true);
+      expect((await list('modified_asc')).items[0].name).toBe('000.jpg');
+      expect((await list('size_desc')).items[0].name).toBe('zzz-newest.jpg');
+      expect((await list('name')).items[0].name).toBe('a-folder');
+      expect(await list('invalid')).toMatchObject({ error: 'INVALID_ARGUMENT' });
+    });
+
+    it('rescans on demand to find files added after the index was built', async () => {
+      const added = path.join(docs, 'newly-added.txt');
+      await fs.writeFile(added, 'new');
+      expect((await run('fs_search', { query: 'newly-added', folder: 'Documents' })).count).toBe(0);
+      const refreshed = await run('fs_search', { query: 'newly-added', folder: 'Documents', refresh: true });
+      expect(refreshed.results).toMatchObject([{ name: 'newly-added.txt', path: added }]);
+    });
+
     it('lists a folder, folders first, hiding .git, symlinks and ADE Trash', async () => {
       const top = await run('fs_list', { path: 'Documents' });
       expect(top.items.map((i: Out) => i.name)).toEqual(['resume.pdf']);

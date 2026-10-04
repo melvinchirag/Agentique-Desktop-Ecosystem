@@ -30,7 +30,7 @@ export interface BeaverSchema {
 export const BEAVER_SCHEMAS: readonly BeaverSchema[] = [
   {
     "name": "fs_list",
-    "description": "List a folder's contents (names, type, size, modified date).",
+    "description": "Read a folder live, returning each entry's name, type, size and modified time. For latest/newest/most recent, use sort:'modified_desc' and choose the first file (skip folders). Sorting happens before the 200-entry result limit.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -43,6 +43,11 @@ export const BEAVER_SCHEMAS: readonly BeaverSchema[] = [
           "minimum": 1,
           "maximum": 3,
           "description": "Default 1."
+        },
+        "sort": {
+          "type": "string",
+          "enum": ["name", "modified_desc", "modified_asc", "size_desc"],
+          "description": "Default name (folders first). modified_desc means newest modified time first; modified_asc means oldest first; size_desc means largest first."
         }
       },
       "required": [
@@ -52,7 +57,7 @@ export const BEAVER_SCHEMAS: readonly BeaverSchema[] = [
   },
   {
     "name": "fs_search",
-    "description": "Find files by name/path words, type, or how recently they changed.",
+    "description": "Find files by name/path words, type, or how recently they changed. Set refresh:true to rescan when new files are missing from the index.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -76,6 +81,10 @@ export const BEAVER_SCHEMAS: readonly BeaverSchema[] = [
         "limit": {
           "type": "integer",
           "maximum": 50
+        },
+        "refresh": {
+          "type": "boolean",
+          "description": "Rescan the specified folder (or all allowed folders) before searching. Use when newly added files were missed."
         }
       },
       "required": [
@@ -358,4 +367,3 @@ export const BEAVER_RISKS: Record<BeaverToolName, Risk> = {
   fs_trash: 'destructive',
   fs_undo: 'write',
 };
-

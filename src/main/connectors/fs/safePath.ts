@@ -52,7 +52,13 @@ export async function safePath(input: string, options: SafePathOptions): Promise
   }
   if (path.isAbsolute(raw) && !path.win32.isAbsolute(win) && process.platform === 'win32') return { ok: false, reason: 'INVALID_WINDOWS_PATH' };
   try {
-    const roots = await Promise.all(options.allowedRoots.map((root) => fs.realpath(root)));
+    const roots = (await Promise.all(options.allowedRoots.map(async root => {
+      try { return await fs.realpath(root); }
+      catch (error) {
+        if ((error as NodeJS.ErrnoException).code === 'ENOENT') return undefined;
+        throw error;
+      }
+    }))).filter((root): root is string => root !== undefined);
     if (options.documentsRoot) roots.push(await realpathNearest(path.join(options.documentsRoot, 'ADE Trash')));
     if (!roots.length) return { ok: false, reason: 'OUTSIDE_ALLOWED_FOLDERS' };
     let abs: string;

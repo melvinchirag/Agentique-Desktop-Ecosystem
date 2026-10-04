@@ -92,7 +92,8 @@ export function createReadToolBindings(deps: ReadToolDeps): BeaverBindings {
     return trashRootPromise;
   };
 
-  const outside = (reason: string): ToolError => ({ error: 'OUTSIDE_ALLOWED_FOLDERS', reason, allowed: [...safe.allowedRoots] });
+  const outside = (reason: string): ToolError => ({ error: 'OUTSIDE_ALLOWED_FOLDERS', reason,
+    hint: "I can't see that folder — it's outside my allowed folders or unavailable.", allowed: [...safe.allowedRoots] });
 
   async function resolve(input: unknown, key = 'path'): Promise<{ abs: string; root: string } | ToolError> {
     const raw = str(input, key);
@@ -173,15 +174,28 @@ export function createReadToolBindings(deps: ReadToolDeps): BeaverBindings {
 
   // ── fs_list ──────────────────────────────────────────────────────────────
   async function list(input: unknown, ctx: ToolContext): Promise<unknown> {
+    const sort = isRecord(input) ? input.sort ?? 'name' : 'name';
+    if (!['name', 'modified_desc', 'modified_asc', 'size_desc'].includes(sort as string)) {
+      return { error: 'INVALID_ARGUMENT', hint: 'sort must be name, modified_desc, modified_asc, or size_desc' };
+    }
     const found = await locate(input);
     if ('error' in found) return found;
     if (!found.stat.isDirectory()) return { error: 'NOT_A_FOLDER' } satisfies ToolError;
+    try { await fs.readdir(found.abs); }
+    catch (error) { return { error: 'READ_FAILED', reason: (error as NodeJS.ErrnoException).code ?? 'UNKNOWN', hint: "I can't see that folder." }; }
     const depth = int(input, 'depth', 1, 3, 1);
     const trash = await trashRoot();
     const hideTrash = trash !== undefined && !isWithin(found.abs, trash) ? trash : undefined;
     status(ctx, beaverStatus.sniffing(path.basename(found.abs)));
     const items: { name: string; type: 'file' | 'folder'; sizeBytes?: number; modified: string }[] = [];
-    let truncated = false;
+    const compare = (a: typeof items[number], b: typeof items[number]): number => {
+      const order = sort === 'modified_desc' ? Date.parse(b.modified) - Date.parse(a.modified)
+        : sort === 'modified_asc' ? Date.parse(a.modified) - Date.parse(b.modified)
+        : sort === 'size_desc' ? (b.sizeBytes ?? 0) - (a.sizeBytes ?? 0)
+        : Number(b.type === 'folder') - Number(a.type === 'folder');
+      return order || a.name.localeCompare(b.name);
+    };
+    let total = 0;
     const queue = [{ dir: found.abs, level: 1 }];
     while (queue.length) {
       const { dir, level } = queue.shift()!;
@@ -192,17 +206,24 @@ export function createReadToolBindings(deps: ReadToolDeps): BeaverBindings {
         const abs = path.join(dir, child.name);
         if (child.isSymbolicLink() || isExcludedPath(abs, found.root, hideTrash)) continue;
         if (!child.isDirectory() && !child.isFile()) continue;
-        if (items.length >= LIST_CAP) { truncated = true; break; }
         let stat: Stats;
         try { stat = await fs.stat(abs); } catch { continue; }
         const name = path.relative(found.abs, abs).split(path.sep).join('/');
         items.push(child.isDirectory()
           ? { name, type: 'folder', modified: iso(stat.mtimeMs) }
           : { name, type: 'file', sizeBytes: stat.size, modified: iso(stat.mtimeMs) });
+        total++;
+        // Scan every entry before choosing the top results; alphabetic truncation misses newer files.
+        if (items.length >= LIST_CAP * 2) {
+          if (sort !== 'name') items.sort(compare);
+          items.splice(LIST_CAP);
+        }
         if (child.isDirectory() && level < depth) queue.push({ dir: abs, level: level + 1 });
       }
     }
-    return { path: found.abs, count: items.length, truncated, items };
+    if (sort !== 'name') items.sort(compare);
+    items.splice(LIST_CAP);
+    return { path: found.abs, count: items.length, truncated: total > LIST_CAP, sort, items };
   }
 
   // ── fs_search ────────────────────────────────────────────────────────────
@@ -237,24 +258,60 @@ export function createReadToolBindings(deps: ReadToolDeps): BeaverBindings {
     return hits.sort((a, b) => b.score - a.score || b.entry.modifiedAt - a.entry.modifiedAt).slice(0, limit).map((h) => h.entry);
   }
 
+  /** Downloads recency must not depend on a partial background index or name matching. */
+  async function latestDownloads(folder: string, root: string, limit: number, exts: string[], within: number | undefined): Promise<FileEntry[]> {
+    const children = await fs.readdir(folder, { withFileTypes: true });
+    const found: FileEntry[] = [];
+    const cutoff = within === undefined ? -Infinity : clock.now() - within * 86_400_000;
+    for (const child of children) {
+      const abs = path.join(folder, child.name);
+      if (!child.isFile() || isExcludedPath(abs, root)) continue;
+      try {
+        const stat = await fs.stat(abs);
+        const ext = path.extname(child.name).toLowerCase();
+        if ((exts.length && !exts.includes(ext)) || stat.mtimeMs < cutoff) continue;
+        found.push({ path: abs, name: child.name, ext, sizeBytes: stat.size, modifiedAt: stat.mtimeMs, kind: kindOf(ext) });
+      } catch { /* A download can disappear while we scan. */ }
+    }
+    return found.sort((a, b) => b.modifiedAt - a.modifiedAt).slice(0, limit);
+  }
+
   async function search(input: unknown, ctx: ToolContext): Promise<unknown> {
-    const query = str(input, 'query');
-    if (query === undefined) return { error: 'INVALID_ARGUMENT', hint: '"query" must be a string' } satisfies ToolError;
+    const rawQuery = str(input, 'query');
+    if (rawQuery === undefined) return { error: 'INVALID_ARGUMENT', hint: '"query" must be a string' } satisfies ToolError;
+    // "Latest downloaded file" describes recency and location, not words in a filename.
+    const latestDownload = /\b(latest|newest|most recent)\b/i.test(rawQuery) && /\b(downloaded|downloads?)\b/i.test(rawQuery);
+    const query = latestDownload ? '' : rawQuery;
     const limit = int(input, 'limit', 1, SEARCH_MAX_LIMIT, SEARCH_DEFAULT_LIMIT);
     const rawExt = isRecord(input) && Array.isArray(input.ext) ? input.ext.filter((e): e is string => typeof e === 'string') : [];
     const exts = rawExt.map((e) => `.${e.replace(/^\./, '').toLowerCase()}`).filter((e) => e.length > 1);
     const within = isRecord(input) && typeof input.modified_within_days === 'number' && Number.isFinite(input.modified_within_days)
       ? Math.max(0, Math.floor(input.modified_within_days)) : undefined;
     let folder: string | undefined;
-    if (str(input, 'folder')) {
-      const resolved = await resolve(input, 'folder');
+    let folderRoot: string | undefined;
+    if (str(input, 'folder') || latestDownload) {
+      const resolved = await resolve(str(input, 'folder') ? input : { folder: 'Downloads' }, 'folder');
       if ('error' in resolved) return resolved;
       folder = resolved.abs;
+      folderRoot = resolved.root;
+      try { await fs.readdir(folder); }
+      catch (error) { return { error: 'READ_FAILED', reason: (error as NodeJS.ErrnoException).code ?? 'UNKNOWN', hint: "I can't see that folder." }; }
     }
     status(ctx, beaverStatus.sniffing(folder ? path.basename(folder) : 'your files'));
+    if (isRecord(input) && input.refresh === true) {
+      try { await index.rescan(folder); }
+      catch (error) { return { error: 'READ_FAILED', reason: (error as NodeJS.ErrnoException).code ?? 'UNKNOWN', hint: "I couldn't refresh the file index." }; }
+    }
 
     let entries: FileEntry[];
-    if (index.isReady) {
+    if (folder && folderRoot && !query.trim() && path.basename(folder).toLowerCase() === 'downloads') {
+      const folders = latestDownload && !str(input, 'folder')
+        ? (await Promise.all(safe.allowedRoots.filter(root => path.basename(root).toLowerCase() === 'downloads')
+          .map(root => safePath(root, safe)))).filter((result): result is { ok: true; abs: string; root: string } => result.ok)
+        : [{ ok: true as const, abs: folder, root: folderRoot }];
+      entries = (await Promise.all(folders.map(async item => latestDownloads(item.abs, item.root, limit, exts, within))))
+        .flat().sort((a, b) => b.modifiedAt - a.modifiedAt).slice(0, limit);
+    } else if (index.isReady) {
       const run = (ext?: string) => index.search(query, { ...(ext ? { ext } : {}), ...(within !== undefined ? { modifiedWithinDays: within } : {}), ...(folder ? { folder } : {}), limit });
       if (exts.length <= 1) entries = run(exts[0]);
       else {
@@ -264,7 +321,8 @@ export function createReadToolBindings(deps: ReadToolDeps): BeaverBindings {
         entries = [...merged.values()].sort((a, b) => b.modifiedAt - a.modifiedAt).slice(0, limit);
       }
     } else {
-      const roots = folder ? [folder] : await Promise.all(safe.allowedRoots.map((root) => fs.realpath(root)));
+      const roots = folder ? [folder] : (await Promise.all(safe.allowedRoots.map(root => safePath(root, safe))))
+        .flatMap(result => result.ok ? [result.abs] : []);
       entries = await liveSearch(roots, query, exts, within, limit);
     }
     return { count: entries.length, indexReady: index.isReady, results: entries.map(info) };

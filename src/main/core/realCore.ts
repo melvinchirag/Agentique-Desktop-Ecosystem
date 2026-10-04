@@ -1,6 +1,5 @@
 import { randomUUID } from 'node:crypto';
 import { join } from 'node:path';
-import { homedir } from 'node:os';
 import type { AgentId } from '../../shared/agents';
 import { AGENTS } from '../../shared/config';
 import type { BiomeEvent } from '../../shared/events';
@@ -49,6 +48,7 @@ import { createWardenClassifier } from '../sponsors/wardenClassifier';
 import { handleStandInSendPost, StandInSpecialists } from './standInSpecialists';
 import { ElevenLabsVoice } from '../voice/elevenlabs';
 import { ShippedLines } from '../voice/cache';
+import { defaultFolders } from './defaultFolders';
 
 const ids = Object.keys(AGENTS) as AgentId[];
 const silent = () => new ArrayBuffer(0);
@@ -68,9 +68,10 @@ export function missingRealCoreKeys(env: Env): string[] {
 
 function defaultSettings(options: RealCoreOptions): AdeSettings {
   const model = { llm_provider: 'google', model_name: 'gemini-2.5-flash' };
+  const folders = defaultFolders({ desktop: options.desktopRoot, documents: options.documentsRoot, downloads: options.downloadsRoot });
   return {
     models: Object.fromEntries(ids.map(id => [id, { ...model }])) as AdeSettings['models'],
-    voiceEnabled: true, allowedFolders: [options.desktopRoot ?? join(homedir(), 'Desktop'), options.documentsRoot ?? join(homedir(), 'Documents'), options.downloadsRoot ?? join(homedir(), 'Downloads')], biome: 'forest', demoMode: !!options.demoTimers,
+    voiceEnabled: true, allowedFolders: folders.allowed, biome: 'forest', demoMode: !!options.demoTimers,
     installed: Object.fromEntries(ids.map(id => [id, AGENTS[id].tier === 'core'])) as AdeSettings['installed'],
     timers: { sleepAfterSec: options.demoTimers ? 30 : 180, dockAfterSec: options.demoTimers ? 60 : 600, moodDecaySec: 20 },
     nudges: { enabled: true, quietStart: '23:00', quietEnd: '08:00', maxPerHour: 3 },
@@ -84,9 +85,16 @@ function fallbackCore(resourcesDir: string | undefined, warning: boolean): CoreA
   const sessionId = randomUUID();
   return {
     ...fake,
+    // Missing live credentials must never expose FakeCore's sample memories as user memories.
+    getMemories: async () => [],
+    searchMemories: async () => [],
+    updateMemory: async () => { throw new Error('Backboard memories are unavailable: missing live credentials'); },
+    deleteMemory: async () => { throw new Error('Backboard memories are unavailable: missing live credentials'); },
+    sendMessage: async () => { throw new Error('Live services are unavailable: missing credentials'); },
+    sendVoice: async () => { throw new Error('Live services are unavailable: missing credentials'); },
     subscribe(cb) {
       listeners.add(cb);
-      const off = fake.subscribe(cb);
+      const off = fake.subscribe(event => { if (event.type !== 'agent.recall') cb(event); });
       return () => { listeners.delete(cb); off(); };
     },
     start() {
@@ -104,6 +112,7 @@ export interface RealCoreOptions {
   demoMode?: boolean;
   resourcesDir?: string;
   env?: Env;
+  envPaths?: string[];
   openExternal?: (url: string) => Promise<void>;
   documentsRoot?: string;
   desktopRoot?: string;
@@ -117,7 +126,8 @@ export interface RealCoreOptions {
 /** Main-process adapter. registerCoreIpc forwards this bus to the overlay and Hub. */
 export function createRealCore(options: RealCoreOptions = {}): CoreAdapter {
   if (options.demoMode) return fallbackCore(options.resourcesDir, false);
-  const env = options.env ?? { ...readEnvFile(join(adeDataDir(), '.env')), ...readEnvFile(join(process.cwd(), '.env')), ...process.env };
+  const env = options.env ?? { ...readEnvFile(join(adeDataDir(), '.env')), ...readEnvFile(join(process.cwd(), '.env')),
+    ...Object.assign({}, ...(options.envPaths ?? []).map(readEnvFile)), ...process.env };
   if (missingRealCoreKeys(env).length) return fallbackCore(options.resourcesDir, true);
 
   let settings = defaultSettings(options);
@@ -142,8 +152,8 @@ export function createRealCore(options: RealCoreOptions = {}): CoreAdapter {
   const standIns = new StandInSpecialists(clock);
   let pixelTools: readonly ToolDefinition[] | undefined;
   const runner: SpecialistRunner = standIns;
-  const documentsRoot = options.documentsRoot ?? join(homedir(), 'Documents');
-  const safe = { allowedRoots: settings.allowedFolders, documentsRoot };
+  const documentsRoot = defaultFolders({ desktop: options.desktopRoot, documents: options.documentsRoot, downloads: options.downloadsRoot }).documentsRoot;
+  const safe = { allowedRoots: settings.allowedFolders, documentsRoot, watch: true };
   const index = new FileIndex(safe);
   const documents = new BackboardDocuments({ apiKey: env.BACKBOARD_API_KEY! });
   const googleStore = options.safeStorage ? new SafeStorageTokenStore(options.safeStorage) : undefined;
