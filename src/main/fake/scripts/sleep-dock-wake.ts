@@ -1,0 +1,1 @@
+export { sleepDockWake } from './index';
