@@ -1,0 +1,91 @@
+.overlay-ui {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  color: #252a31;
+  font: 14px/1.4 Inter, ui-sans-serif, system-ui, sans-serif;
+  background: transparent;
+}
+
+.overlay-bubble,
+.overlay-effect,
+.overlay-card,
+.overlay-flight,
+.overlay-replay {
+  position: absolute;
+  pointer-events: auto;
+  will-change: transform;
+}
+
+.overlay-bubble {
+  width: 224px;
+  min-height: 42px;
+  box-sizing: border-box;
+  padding: 10px 14px;
+  border: 1px solid rgb(255 255 255 / 75%);
+  border-radius: 16px;
+  background: rgb(255 255 255 / 92%);
+  box-shadow: 0 5px 20px rgb(22 31 40 / 22%);
+  backdrop-filter: blur(8px);
+  overflow-wrap: anywhere;
+  white-space: pre-line;
+  animation: ui-pop 160ms ease-out both;
+}
+
+.bubble-status { width: 190px; min-height: 38px; padding: 8px 12px; color: #525d68; background: rgb(245 247 249 / 88%); font-size: 12px; }
+.bubble-waiting { width: 96px; text-align: center; color: #596574; }
+.bubble-warning { color: #7b3510; border-color: #f2bd76; background: rgb(255 244 218 / 95%); }
+.waiting-dots { display: inline-block; margin-left: 4px; animation: dots 900ms steps(3, end) infinite; }
+
+.overlay-effect {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  font-size: 24px;
+  font-weight: 750;
+  animation: ui-rise 800ms ease-out both;
+}
+.effect-sparkle { color: #8a63d2; animation-duration: 1200ms; font-size: 30px; }
+.effect-ok { color: #21864a; }
+.effect-no { color: #c23e45; }
+
+.overlay-card {
+  box-sizing: border-box;
+  width: 284px;
+  padding: 14px;
+  border: 1px solid rgb(255 255 255 / 75%);
+  border-radius: 16px;
+  background: rgb(255 255 255 / 94%);
+  box-shadow: 0 8px 28px rgb(22 31 40 / 28%);
+  backdrop-filter: blur(10px);
+  animation: ui-pop 160ms ease-out both;
+}
+.card-header { display: flex; min-height: 24px; align-items: center; gap: 8px; margin: -2px -2px 10px; cursor: grab; touch-action: none; user-select: none; font-weight: 700; }
+.card-header:active { cursor: grabbing; }
+.warden-dot, .agent-dot { width: 10px; height: 10px; flex: 0 0 10px; border-radius: 50%; background: #5b6770; box-shadow: 0 0 0 3px rgb(91 103 112 / 14%); }
+.icon-close { margin-left: auto; border: 0; background: transparent; color: #68717a; font-size: 20px; line-height: 1; cursor: pointer; pointer-events: auto; }
+.overlay-card h2 { margin: 0 0 8px; font-size: 16px; line-height: 1.25; }
+.approval-preview { max-height: 126px; overflow: auto; padding: 8px; border-radius: 9px; background: #f1f3f5; color: #4c5661; white-space: pre-wrap; overflow-wrap: anywhere; }
+.card-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
+.card-actions button { min-height: 32px; padding: 5px 11px; border: 1px solid #ccd2d8; border-radius: 9px; background: #fff; color: #303942; font: inherit; font-weight: 650; cursor: pointer; pointer-events: auto; }
+.card-actions button:disabled { color: #89919a; cursor: not-allowed; }
+.card-actions .allow-button { border-color: #207747; background: #287f4c; color: white; }
+.card-actions .deny-button { border-color: #d3b6b8; color: #a43039; }
+.inspect-card { width: 284px; }
+.inspect-card .card-header { margin-bottom: 6px; }
+.agent-role, .job-line { margin: 8px 0; color: #49545f; }
+.presence-line { color: #717b85; font-size: 12px; text-transform: capitalize; }
+.inspect-actions { flex-wrap: wrap; justify-content: flex-start; }
+.overlay-flight { padding: 6px 10px; border-radius: 999px; background: #fff; box-shadow: 0 4px 14px rgb(22 31 40 / 22%); white-space: nowrap; }
+.overlay-replay { z-index: 100; top: 16px; padding: 8px 16px; border: 1px solid rgb(255 255 255 / 70%); border-radius: 999px; background: rgb(49 62 79 / 90%); box-shadow: 0 5px 20px rgb(0 0 0 / 25%); color: white; font-size: 12px; font-weight: 800; letter-spacing: .12em; white-space: nowrap; }
+
+@keyframes ui-pop { from { opacity: 0; scale: .94; } to { opacity: 1; scale: 1; } }
+@keyframes ui-rise { from { opacity: 0; translate: 0 9px; scale: .85; } 25% { opacity: 1; } to { opacity: 0; translate: 0 -18px; scale: 1.05; } }
+@keyframes dots { 0% { opacity: .2; } 66% { opacity: 1; } 100% { opacity: .2; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .overlay-bubble, .overlay-card, .overlay-effect { animation-duration: 1ms; }
+  .waiting-dots { animation: none; }
+}

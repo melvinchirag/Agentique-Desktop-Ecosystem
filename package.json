@@ -4,22 +4,46 @@
   "private": true,
   "description": "ADE: Agentique Desktop Ecosystem",
   "type": "module",
+  "main": "./out/main/index.js",
   "scripts": {
     "test": "vitest run",
+    "test:e2e": "npm run build && playwright test tests/e2e",
     "test:watch": "vitest",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "perf:models": "tsx tools/perf-six-models.ts",
+    "preview": "electron-vite preview",
+    "build:win": "electron-vite build && electron-builder --win"
   },
   "engines": {
     "node": ">=20"
   },
   "devDependencies": {
+    "@playwright/test": "^1.63.0",
+    "@testing-library/react": "^16.3.3",
     "@types/node": "^26.6.4",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@types/three": "^0.186.0",
+    "@vitejs/plugin-react": "^5.1.4",
+    "electron": "^44.5.1",
+    "electron-builder": "^26.15.3",
+    "electron-vite": "^5.0.0",
+    "jsdom": "^30.1.1",
     "@types/pg": "^8.23.1",
     "tsx": "^4.23.15",
     "typescript": "^7.0.2",
+    "vite": "^7.3.1",
     "vitest": "^5.0.3"
   },
   "dependencies": {
+    "@react-three/drei": "^10.7.9",
+    "@react-three/fiber": "^9.8.1",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "three": "^0.186.1",
+    "zustand": "^5.0.15",
     "pg": "^8.23.1"
   }
 }

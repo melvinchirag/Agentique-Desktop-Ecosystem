@@ -63,6 +63,8 @@ interface Turn {
   taskId: string;
   moodReported: boolean;
   acked: boolean;
+  actionAttempted: boolean;
+  delegationSucceeded: boolean;
   recalled: Set<string>;
 }
 
@@ -182,7 +184,7 @@ export function createOrchestrator(deps: OrchestratorDeps, opts: OrchestratorOpt
     const turn: Turn = {
       kind: item.kind,
       taskId: item.kind === 'result' ? item.taskId : newId(),
-      moodReported: false, acked: false, recalled: new Set(),
+      moodReported: false, acked: false, actionAttempted: false, delegationSucceeded: false, recalled: new Set(),
     };
 
     let busy = false;
@@ -214,7 +216,23 @@ export function createOrchestrator(deps: OrchestratorDeps, opts: OrchestratorOpt
 
       const content = buildContent(item);
       const memory = item.kind === 'user' ? 'Auto' : 'Readonly';
-      const text = await converse(turn, content, memory);
+      let text = await converse(turn, content, memory);
+      // A silent response is only valid after delegation. Retry once only when no action
+      // was attempted, so a recovery cannot repeat an already executed side effect.
+      const unanswered = (): boolean => parseChipOutput(text).silent || !text.trim();
+      if (item.kind === 'user' && !turn.actionAttempted && unanswered()) {
+        // Mood is only dropped from the corrective turn when it was already reported (a model that
+        // repeats the mood tool instead of acting failed C3). If it was never reported, ask for it:
+        // a skipped mood read means an angry user would get no reaction from the biome.
+        const moodNote = turn.moodReported
+          ? 'Mood reporting is already handled; do not repeat it.'
+          : 'You have not reported the user\'s mood yet: call report_user_mood first, and in the SAME response also call the tool the request needs or answer it.';
+        text = await converse(turn, `${content}\n[runtime_feedback]\nYou returned no answer without attempting an action. The user request is still pending. ${moodNote} Call the appropriate tool now, or answer with the one clarification needed. Do not merely promise to act.`, 'Readonly', true);
+      }
+      // (silent) is only valid after a successful delegation; anything else must not leave the user hearing nothing.
+      if (item.kind === 'user' && !turn.delegationSucceeded && unanswered()) {
+        text = "[bubble: Try again]\nI couldn't finish that request. Please try again.";
+      }
 
       if (item.kind === 'user' && !turn.moodReported) moodFallback(turn, item.voiceCues);
 
@@ -346,14 +364,14 @@ export function createOrchestrator(deps: OrchestratorDeps, opts: OrchestratorOpt
   }
 
   /** Returns Chip's final text (§11 format). */
-  async function converse(turn: Turn, content: string, memory: 'Auto' | 'Readonly'): Promise<string> {
+  async function converse(turn: Turn, content: string, memory: 'Auto' | 'Readonly', recovery = false): Promise<string> {
     const s = settings();
     let res = await guard(() => llm.send({
       assistantId: chipAssistantId,
       ...(chipThreadId !== undefined ? { threadId: chipThreadId } : {}),
       content,
       systemPrompt: chipSystemPrompt(),
-      tools: chipTools(installedSpecialists()),
+      tools: chipTools(installedSpecialists()).filter((tool) => !(recovery && turn.moodReported) || tool.function.name !== 'report_user_mood'),
       model: s.models.chipmunk,
       memory,
       timeoutMs: llmTimeoutMs,
@@ -381,6 +399,7 @@ export function createOrchestrator(deps: OrchestratorDeps, opts: OrchestratorOpt
     try {
       // The tool name comes from the model: own keys only, so 'constructor' / 'toString' count as unknown.
       const name = call.function.name;
+      if (name !== 'report_user_mood') turn.actionAttempted = true;
       if (!Object.hasOwn(EXECUTORS, name)) throw new Error(`unknown tool: ${name}`);
       result = await EXECUTORS[name]!(parseArgs(call.function.arguments), turn);
     } catch (err) {
@@ -420,6 +439,7 @@ export function createOrchestrator(deps: OrchestratorDeps, opts: OrchestratorOpt
         ...(nextStep ? { nextStep } : {}),
         ...(args.plan_step !== undefined && Number.isInteger(planStep) ? { planStep } : {}),
       });
+      if (res.status !== 'not_installed') turn.delegationSucceeded = true;
 
       if (turn.kind === 'user' && !turn.acked) {
         turn.acked = true;
