@@ -24,6 +24,7 @@ export interface ToolContext {
   taskId: string;
   jobId: string;
   sessionId: string;
+  /** Fresh specialist-job thread; fs_ask_file uploads documents to this thread only. */
   threadId: string;
   emit: (e: DistributiveOmit<BiomeEvent, 'id' | 'ts' | 'sessionId'>) => void;
   signal: AbortSignal;
