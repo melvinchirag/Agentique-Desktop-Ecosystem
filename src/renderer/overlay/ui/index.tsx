@@ -83,9 +83,16 @@ export const OverlayUiLayer: OverlayUiComponent = (props) => {
 
   useEffect(() => {
     let frame = 0;
+    let lastUpdate = -Infinity;
     let running = true;
     const update = () => {
       if (!running) return;
+      const now = performance.now();
+      if (now - lastUpdate < (flights.length ? 1000 / 30 : 1000 / 10)) {
+        frame = requestAnimationFrame(update);
+        return;
+      }
+      lastUpdate = now;
       const current = propsRef.current;
       const putAnchor = (key: string, id: AgentId, width: number, height: number, mode: 'bubble' | 'effect' | 'card', offset = { x: 0, y: 0 }) => {
         const anchor = current.getRect(id);

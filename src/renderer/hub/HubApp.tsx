@@ -51,14 +51,6 @@ export const HubApp: HubAppComponent = ({ store, api, shell }) => {
       }
     });
 
-    const unsubHotkey = shell.onDemoHotkey((key) => {
-      if (key === 'hideAnimals') {
-        const next = !store.getState().animalsHidden;
-        store.getState().setAnimalsHidden(next);
-        shell.hideAnimals(next);
-      }
-    });
-
     const unsubLayout = shell.onLayoutChanged((layout) => {
       store.getState().setAnimalsHidden(layout.animalsHidden);
       if (layout.hubCollapsed !== undefined) {
@@ -73,7 +65,6 @@ export const HubApp: HubAppComponent = ({ store, api, shell }) => {
     return () => {
       unsubFocus();
       unsubTab();
-      unsubHotkey();
       unsubLayout();
       unsubSettings();
     };

@@ -11,6 +11,7 @@
     "typecheck": "tsc --noEmit",
     "dev": "electron-vite dev",
     "build": "electron-vite build",
+    "perf:models": "tsx tools/perf-six-models.ts",
     "preview": "electron-vite preview",
     "build:win": "electron-vite build && electron-builder --win"
   },
