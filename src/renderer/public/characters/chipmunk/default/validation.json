@@ -1,0 +1,125 @@
+{
+  "animal": "chipmunk",
+  "triangles": 12092,
+  "bones": 29,
+  "height": 0.3500000241737451,
+  "clips": {
+    "Idle": {
+      "loop": true,
+      "duration": 3.0
+    },
+    "Talk": {
+      "loop": true,
+      "duration": 1.5
+    },
+    "Run": {
+      "loop": true,
+      "duration": 0.6
+    },
+    "Handoff": {
+      "loop": false,
+      "duration": 1.2
+    },
+    "Happy": {
+      "loop": false,
+      "duration": 1.2
+    },
+    "Scared": {
+      "loop": true,
+      "duration": 1.5
+    },
+    "Listen": {
+      "loop": true,
+      "duration": 2.0
+    },
+    "Think": {
+      "loop": true,
+      "duration": 2.0
+    },
+    "Nervous": {
+      "loop": true,
+      "duration": 2.0
+    },
+    "Sad": {
+      "loop": true,
+      "duration": 3.0
+    },
+    "Excited": {
+      "loop": true,
+      "duration": 1.0
+    },
+    "Relief": {
+      "loop": false,
+      "duration": 1.5
+    },
+    "Celebrate": {
+      "loop": false,
+      "duration": 2.0
+    },
+    "Yawn": {
+      "loop": false,
+      "duration": 1.5
+    },
+    "Sleep": {
+      "loop": true,
+      "duration": 4.0
+    },
+    "WakeUp": {
+      "loop": false,
+      "duration": 1.2
+    },
+    "Greet": {
+      "loop": false,
+      "duration": 1.5
+    },
+    "Nudge": {
+      "loop": false,
+      "duration": 2.0
+    },
+    "Dizzy": {
+      "loop": false,
+      "duration": 1.5
+    },
+    "Walk": {
+      "loop": true,
+      "duration": 1.0
+    }
+  },
+  "morphs": [
+    "Blink",
+    "MouthOpen",
+    "Smile",
+    "TailHugScared",
+    "TailWrapSleep",
+    "Worried"
+  ],
+  "errors": [],
+  "manual_checks": [
+    "Facing -Y",
+    "Visual quality of every clip",
+    "Playback in ADE Asset Lab"
+  ],
+  "glb_bytes": 1473596,
+  "exported_clips": [
+    "Celebrate",
+    "Dizzy",
+    "Excited",
+    "Greet",
+    "Handoff",
+    "Happy",
+    "Idle",
+    "Listen",
+    "Nervous",
+    "Nudge",
+    "Relief",
+    "Run",
+    "Sad",
+    "Scared",
+    "Sleep",
+    "Talk",
+    "Think",
+    "WakeUp",
+    "Walk",
+    "Yawn"
+  ]
+}

@@ -8,6 +8,7 @@ export interface AdeApi {
   speak(agentId: AgentId, text: string, mood: AgentMood): Promise<ArrayBuffer>;  // ElevenLabs TTS (mp3)
   resolveApproval(callId: string, approved: boolean): Promise<void>;
   wakeAgent(agentId: AgentId): Promise<void>;                                     // Agent Hub dropdown
+  sleepAgent(agentId: AgentId): Promise<void>;                                    // inspect card: Send to Hub
   setDoNotDisturb(on: boolean): Promise<void>;
   demoFireNudge(): Promise<void>;                                                 // demo hotkey Ctrl+Shift+N
   getSettings(): Promise<AdeSettings>;
@@ -40,7 +41,7 @@ export interface AdeSettings {
 export const IPC = {
   sendMessage: 'ade:send-message', sendVoice: 'ade:send-voice', speak: 'ade:speak',
   resolveApproval: 'ade:approval', getSettings: 'ade:settings:get', setSettings: 'ade:settings:set',
-  wakeAgent: 'ade:hub:wake', setDoNotDisturb: 'ade:hub:dnd', demoFireNudge: 'ade:demo:nudge',
+  wakeAgent: 'ade:hub:wake', sleepAgent: 'ade:hub:sleep', setDoNotDisturb: 'ade:hub:dnd', demoFireNudge: 'ade:demo:nudge',
   connectGoogle: 'ade:google:connect', learnEmailStyle: 'ade:google:learn-style',
   getTimeline: 'ade:tiger:timeline', getTaskEvents: 'ade:tiger:task', getMemories: 'ade:bb:memories',
   deleteMemory: 'ade:bb:memory-delete', searchMemories: 'ade:bb:memory-search', updateMemory: 'ade:bb:memory-update',

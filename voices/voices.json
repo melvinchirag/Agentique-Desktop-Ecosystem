@@ -11,5 +11,24 @@
     ],
     "voice_id": "zwHgyhSOMsEletx3ymIv",
     "picked": 3
+  },
+  "beaver": {
+    "name": "Archie",
+    "description": "A calm, clear, trustworthy builder and engineer. Smooth mid-low pitch, never squeaky or shrill. Soft-spoken and relaxed volume, steady pace, crisp clear articulation. Quietly confident and optimistic, reassuring, sounds like an expert who knows exactly what he is talking about. Warm and friendly.",
+    "previews": [
+      {
+        "n": 4,
+        "file": "voices/previews/beaver-4.mp3",
+        "generated_voice_id": "qjo483caefs7BgFZzbgJ"
+      }
+    ],
+    "voice_id": "qjo483caefs7BgFZzbgJ",
+    "picked": 4,
+    "baseSettings": {
+      "stability": 0.7,
+      "style": 0.2,
+      "speed": 0.97,
+      "note": "Archie speaks calmly; avoid exclamation marks in his lines. Team pick, Oct 4."
+    }
   }
 }

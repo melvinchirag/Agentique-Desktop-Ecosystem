@@ -2,6 +2,8 @@
 
 **Engine:** Claude Sonnet 5.5, high. **Branch:** `lane/beaver-logic-i`.
 
+**Fallback execution (Oct 4):** Codex will implement this lane with the planned backup, GPT-6 Sol medium, once its Wave 1 and Wave 2 dependencies are merged. Claude's session quota is exhausted until 7:00 AM; this substitution is approved by Melvin.
+
 ## Objective
 
 Replace the fake Beaver with real Archie in Chip’s core and prove the Archie scenarios against the fixture.
