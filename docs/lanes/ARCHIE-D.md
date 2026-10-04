@@ -2,6 +2,8 @@
 
 **Engine:** Claude Sonnet 5.5, high. **Branch:** `lane/beaver-logic-d`.
 
+**Fallback execution (Oct 4):** Codex is implementing this lane with the planned backup, GPT-6 Sol medium. Claude's session quota is exhausted until 7:00 AM; this substitution is approved by Melvin.
+
 ## Objective
 
 Define Archie’s Backboard-facing personality, tools, schemas, and status copy without implementing filesystem behavior.
