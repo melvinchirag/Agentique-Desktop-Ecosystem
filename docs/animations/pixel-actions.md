@@ -1,3 +1,8 @@
+> **FINAL PLAN (Oct 4)**
+> REQUIRED: Idle, Walk, Talk, Happy, Write, Handoff. Every other clip is OPTIONAL. Pixel concept is done.
+> Ship order: push the STATIC model first (the app animates static models procedurally), then add clips one at a time and push after each clip.
+> Everything else in this document is optional.
+
 # Pixel (Workspace) — Animation Actions for Zarin ✅ APPROVED (Oct 4)
 
 Graphics must be fast (Chanuth, Oct 4): **only 6 clips are required.** Everything else is done procedurally in code by the app shell.
