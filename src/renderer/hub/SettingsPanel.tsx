@@ -29,6 +29,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   const [newFolder, setNewFolder] = useState('');
   const [connectingGoogle, setConnectingGoogle] = useState(false);
   const [googleError, setGoogleError] = useState('');
+  const [styleStatus, setStyleStatus] = useState('');
 
   const currentModels = settings?.models ?? ({} as Record<AgentId, ModelChoice>);
   const voiceEnabled = settings?.voiceEnabled ?? true;
@@ -98,6 +99,11 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
       const res = await api.connectGoogle();
       if (res?.email && settings) {
         store.getState().setSettings({ ...settings, googleEmail: res.email });
+      }
+      if (res?.email && !settings?.styleLearnedAt) {
+        setStyleStatus('Pixel is learning how you write...');
+        try { const result = await api.learnEmailStyle(); setStyleStatus(`Pixel learned from ${result.sampled} emails.`); }
+        catch (error) { setStyleStatus(`Style learning failed: ${error instanceof Error ? error.message : String(error)}`); }
       }
     } catch (error) {
       setGoogleError(error instanceof Error ? error.message : 'Google connection failed.');
@@ -283,6 +289,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
           {googleEmail && <button type="button" className="hub-tray-btn" onClick={handleDisconnectGoogle} aria-label="Disconnect Google">Disconnect</button>}
         </div>
         {googleError && <div role="alert" style={{ fontSize: 11, color: '#f29b9b', marginTop: 5 }}>{googleError}</div>}
+        {styleStatus && <div role="status" style={{ fontSize: 11, marginTop: 5 }}>{styleStatus}</div>}
       </div>
 
       {/* Asset Lab Button */}

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import type { AdeApi } from '../../shared/ipc';
 import type { AgentId } from '../../shared/agents';
 import { AGENTS } from '../../shared/config';
+import type { HubStoreHook } from '../shell/contracts';
 
 interface MemoryItem {
   id: string;
@@ -10,23 +11,26 @@ interface MemoryItem {
 
 interface MemoriesTabProps {
   api: AdeApi;
+  store: HubStoreHook;
   selectedAgentId: AgentId;
   onSelectAgent: (id: AgentId) => void;
 }
 
 export const MemoriesTab: React.FC<MemoriesTabProps> = ({
   api,
+  store,
   selectedAgentId,
   onSelectAgent,
 }) => {
-  // Core animals for memory picker
-  const memoryAgentIds: AgentId[] = ['chipmunk', 'workspace', 'beaver', 'eagle', 'ants'];
+  const installed = store(state => state.settings?.installed);
+  const memoryAgentIds = (Object.keys(AGENTS) as AgentId[]).filter(id => id !== 'wolf' && installed?.[id]);
 
   const [memories, setMemories] = useState<MemoryItem[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const isWarden = selectedAgentId === 'wolf';
 
@@ -36,11 +40,13 @@ export const MemoriesTab: React.FC<MemoriesTabProps> = ({
       return;
     }
     setIsLoading(true);
+    setError('');
     try {
       const data = await api.getMemories(agentId);
       setMemories(Array.isArray(data) ? data : []);
-    } catch {
+    } catch (cause) {
       setMemories([]);
+      setError(cause instanceof Error ? cause.message : String(cause));
     } finally {
       setIsLoading(false);
     }
@@ -63,11 +69,13 @@ export const MemoriesTab: React.FC<MemoriesTabProps> = ({
     }
 
     setIsLoading(true);
+    setError('');
     try {
       const data = await api.searchMemories(selectedAgentId, trimmed);
       setMemories(Array.isArray(data) ? data : []);
-    } catch {
+    } catch (cause) {
       setMemories([]);
+      setError(cause instanceof Error ? cause.message : String(cause));
     } finally {
       setIsLoading(false);
     }
@@ -77,8 +85,8 @@ export const MemoriesTab: React.FC<MemoriesTabProps> = ({
     try {
       await api.deleteMemory(selectedAgentId, memoryId);
       setMemories((prev) => prev.filter((m) => m.id !== memoryId));
-    } catch {
-      // Ignore
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : String(cause));
     }
   };
 
@@ -96,8 +104,8 @@ export const MemoriesTab: React.FC<MemoriesTabProps> = ({
         prev.map((m) => (m.id === memoryId ? { ...m, memory: trimmed } : m))
       );
       setEditingId(null);
-    } catch {
-      // Ignore
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : String(cause));
     }
   };
 
@@ -152,12 +160,13 @@ export const MemoriesTab: React.FC<MemoriesTabProps> = ({
           </form>
 
           {/* Memory items */}
+          {error && <div role="alert" style={{ color: '#f29b9b', padding: 12 }}>{error}</div>}
           <div className="hub-memory-list">
             {isLoading ? (
               <div style={{ color: 'var(--hub-text-muted)', padding: 12, textAlign: 'center' }}>
                 Loading memories...
               </div>
-            ) : memories.length === 0 ? (
+            ) : error ? null : memories.length === 0 ? (
               <div style={{ color: 'var(--hub-text-muted)', padding: 12, textAlign: 'center' }}>
                 No memories found for {AGENTS[selectedAgentId]?.displayName ?? selectedAgentId}.
               </div>
