@@ -11,5 +11,26 @@
     ],
     "voice_id": "zwHgyhSOMsEletx3ymIv",
     "picked": 3
+  },
+  "wolf": {
+    "name": "Warden",
+    "description": "A deep, calm, gravelly guardian wolf. Slow, steady, few words, protective, never mean.",
+    "previews": [
+      {
+        "n": 1,
+        "file": "voices/previews/wolf-1.mp3",
+        "generated_voice_id": "mkAP9iLL4Whre1zyv7jp"
+      },
+      {
+        "n": 2,
+        "file": "voices/previews/wolf-2.mp3",
+        "generated_voice_id": "fhu1e0dTp6W39ARpKsz7"
+      },
+      {
+        "n": 3,
+        "file": "voices/previews/wolf-3.mp3",
+        "generated_voice_id": "kAEj7YFC1uxzcysihuC9"
+      }
+    ]
   }
 }
