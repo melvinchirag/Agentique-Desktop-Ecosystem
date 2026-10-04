@@ -1,0 +1,55 @@
+{
+  "animal": "wolf",
+  "triangles": 6608,
+  "bones": 29,
+  "height": 1.0676943087019026,
+  "clips": {
+    "Idle": {
+      "loop": true,
+      "duration": 3.0
+    },
+    "Walk": {
+      "loop": true,
+      "duration": 1.0
+    },
+    "Talk": {
+      "loop": true,
+      "duration": 1.5
+    },
+    "Growl": {
+      "loop": false,
+      "duration": 1.2
+    },
+    "Block": {
+      "loop": false,
+      "duration": 1.0
+    },
+    "Sit": {
+      "loop": true,
+      "duration": 2.0
+    }
+  },
+  "morphs": [],
+  "errors": [],
+  "manual_checks": [
+    "Facing -Y",
+    "Visual quality of every clip",
+    "Playback in ADE Asset Lab"
+  ],
+  "glb_bytes": 493604,
+  "exported_clips": [
+    "Block",
+    "Greet",
+    "Growl",
+    "Guard",
+    "Idle",
+    "Proud",
+    "Run",
+    "Sit",
+    "Sleep",
+    "Talk",
+    "WakeUp",
+    "Walk",
+    "Yawn"
+  ]
+}
