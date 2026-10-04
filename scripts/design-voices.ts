@@ -1,5 +1,5 @@
 // Designs original ElevenLabs voices for the ADE animals (Voice Design, no cloning).
-//   npx tsx scripts/design-voices.ts --agent chipmunk     design previews for one animal
+//   npx tsx scripts/design-voices.ts --agent chipmunk     design previews for one animal (--only works too)
 //   npx tsx scripts/design-voices.ts --all                design previews for every animal without previews
 //   npx tsx scripts/design-voices.ts --pick chipmunk=2    create the permanent voice from preview 2
 // Add --force to redo an animal that already has previews.
@@ -35,8 +35,8 @@ const VOICES: Record<string, VoiceSpec> = {
   },
   beaver: {
     name: 'Archie', env: 'EL_VOICE_BEAVER',
-    description: 'A friendly, practical working-guy beaver. Upbeat, a bit goofy, mid-range, proud of tidy work.',
-    text: "Dam's built! Thirty-seven files, five folders. Everything from your Downloads is sorted nice and neat. Just say undo and I'll put it all right back."
+    description: 'Friendly, practical working-guy voice; upbeat, a bit goofy, warm, mid-range, proud of tidy work.',   // 02-archie-files.md §9
+    text: "Dam's built! Thirty-seven files, five folders, and not one out of place. Everything from your Downloads is sorted nice and neat. Just say undo and I'll put it all right back."
   },
   eagle: {
     name: 'Scout', env: 'EL_VOICE_EAGLE',
@@ -125,7 +125,8 @@ async function main(): Promise<void> {
   if (!key) throw new Error('ELEVENLABS_API_KEY is missing from .env');
   const force = args.includes('--force');
   if (value('--pick')) return pick(value('--pick')!, key);
-  if (value('--agent')) return design(value('--agent')!, key, force);
+  const one = value('--agent') ?? value('--only');
+  if (one) return design(one, key, force);
   if (args.includes('--all')) { for (const agent of ORDER) await design(agent, key, force); return; }
   console.log('Usage: --agent <id> | --all | --pick <id>=<n>   [--force]');
 }

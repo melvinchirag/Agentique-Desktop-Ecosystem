@@ -1,175 +1,175 @@
 [
   {
-    "id": "chip.chirp",
-    "file": "resources/sfx/chip/chirp.mp3",
+    "id": "chipmunk.chirp",
+    "file": "resources/sfx/chipmunk/chirp.mp3",
     "durationMs": 1074,
     "prompt": "tiny cartoon chipmunk chirp, cute, bright, short, clean, no background"
   },
   {
-    "id": "chip.squeak",
-    "file": "resources/sfx/chip/squeak.mp3",
+    "id": "chipmunk.squeak",
+    "file": "resources/sfx/chipmunk/squeak.mp3",
     "durationMs": 1074,
     "prompt": "small scared cartoon chipmunk squeak, high pitched, startled, short, clean"
   },
   {
-    "id": "chip.happy-trill",
-    "file": "resources/sfx/chip/happy-trill.mp3",
+    "id": "chipmunk.happy-trill",
+    "file": "resources/sfx/chipmunk/happy-trill.mp3",
     "durationMs": 1544,
     "prompt": "happy cartoon chipmunk trill, cheerful rising chitter, cute, clean"
   },
   {
-    "id": "chip.knock-knock",
-    "file": "resources/sfx/chip/knock-knock.mp3",
+    "id": "chipmunk.knock-knock",
+    "file": "resources/sfx/chipmunk/knock-knock.mp3",
     "durationMs": 1544,
     "prompt": "two quick light knocks on a glass window, playful, close, clean"
   },
   {
-    "id": "chip.boing",
-    "file": "resources/sfx/chip/boing.mp3",
+    "id": "chipmunk.boing",
+    "file": "resources/sfx/chipmunk/boing.mp3",
     "durationMs": 1074,
     "prompt": "cartoon spring boing, bouncy, comedic, short, clean"
   },
   {
-    "id": "chip.snore",
-    "file": "resources/sfx/chip/snore.mp3",
+    "id": "chipmunk.snore",
+    "file": "resources/sfx/chipmunk/snore.mp3",
     "durationMs": 2537,
     "prompt": "tiny cute cartoon animal snore, soft, small, sleepy, one breath in and out"
   },
   {
-    "id": "chip.poke",
-    "file": "resources/sfx/chip/poke.mp3",
+    "id": "chipmunk.poke",
+    "file": "resources/sfx/chipmunk/poke.mp3",
     "durationMs": 1074,
     "prompt": "tiny cartoon chipmunk surprised giggle squeak when poked, cute, playful, short"
   },
   {
-    "id": "warden.growl",
-    "file": "resources/sfx/warden/growl.mp3",
+    "id": "wolf.growl",
+    "file": "resources/sfx/wolf/growl.mp3",
     "durationMs": 2066,
     "prompt": "low wolf growl, deep, protective warning, close, clean, no background"
   },
   {
-    "id": "warden.howl",
-    "file": "resources/sfx/warden/howl.mp3",
+    "id": "wolf.howl",
+    "file": "resources/sfx/wolf/howl.mp3",
     "durationMs": 3059,
     "prompt": "single wolf howl, clear, alert, noble, clean"
   },
   {
-    "id": "warden.sniff",
-    "file": "resources/sfx/warden/sniff.mp3",
+    "id": "wolf.sniff",
+    "file": "resources/sfx/wolf/sniff.mp3",
     "durationMs": 1074,
     "prompt": "wolf sniffing the air twice, close, short, clean"
   },
   {
-    "id": "warden.poke",
-    "file": "resources/sfx/warden/poke.mp3",
+    "id": "wolf.poke",
+    "file": "resources/sfx/wolf/poke.mp3",
     "durationMs": 1074,
     "prompt": "short friendly low wolf huff, gentle gruff grunt, calm, not aggressive"
   },
   {
-    "id": "archie.tail-slap",
-    "file": "resources/sfx/archie/tail-slap.mp3",
+    "id": "beaver.tail-slap",
+    "file": "resources/sfx/beaver/tail-slap.mp3",
     "durationMs": 1074,
     "prompt": "beaver tail slap on water, one sharp wet smack, clean"
   },
   {
-    "id": "archie.wood-gnaw",
-    "file": "resources/sfx/archie/wood-gnaw.mp3",
+    "id": "beaver.wood-gnaw",
+    "file": "resources/sfx/beaver/wood-gnaw.mp3",
     "durationMs": 2066,
     "prompt": "beaver gnawing on wood, quick crunchy chewing, close, clean"
   },
   {
-    "id": "archie.log-thunk",
-    "file": "resources/sfx/archie/log-thunk.mp3",
+    "id": "beaver.log-thunk",
+    "file": "resources/sfx/beaver/log-thunk.mp3",
     "durationMs": 1074,
     "prompt": "heavy wooden log dropped on a wooden pile, solid thunk, short"
   },
   {
-    "id": "archie.poke",
-    "file": "resources/sfx/archie/poke.mp3",
+    "id": "beaver.poke",
+    "file": "resources/sfx/beaver/poke.mp3",
     "durationMs": 1074,
     "prompt": "cute cartoon beaver surprised chuckle grunt, goofy, friendly, short"
   },
   {
-    "id": "scout.screech",
-    "file": "resources/sfx/scout/screech.mp3",
+    "id": "eagle.screech",
+    "file": "resources/sfx/eagle/screech.mp3",
     "durationMs": 1544,
     "prompt": "eagle screech, sharp, clear, single call, clean, no background"
   },
   {
-    "id": "scout.wing-flaps",
-    "file": "resources/sfx/scout/wing-flaps.mp3",
+    "id": "eagle.wing-flaps",
+    "file": "resources/sfx/eagle/wing-flaps.mp3",
     "durationMs": 2066,
     "prompt": "large bird wing flaps, three strong flaps taking off, close, clean"
   },
   {
-    "id": "scout.whoosh",
-    "file": "resources/sfx/scout/whoosh.mp3",
+    "id": "eagle.whoosh",
+    "file": "resources/sfx/eagle/whoosh.mp3",
     "durationMs": 1074,
     "prompt": "fast airy whoosh passing by, swift flight, clean"
   },
   {
-    "id": "scout.poke",
-    "file": "resources/sfx/scout/poke.mp3",
+    "id": "eagle.poke",
+    "file": "resources/sfx/eagle/poke.mp3",
     "durationMs": 1074,
     "prompt": "short surprised eagle chirp, sharp quick single note, clean"
   },
   {
-    "id": "swarm.skitter",
-    "file": "resources/sfx/swarm/skitter.mp3",
+    "id": "ants.skitter",
+    "file": "resources/sfx/ants/skitter.mp3",
     "durationMs": 1544,
     "prompt": "tiny insect legs skittering quickly across a hard surface, light, many small ticks"
   },
   {
-    "id": "swarm.marching-patter",
-    "file": "resources/sfx/swarm/marching-patter.mp3",
+    "id": "ants.marching-patter",
+    "file": "resources/sfx/ants/marching-patter.mp3",
     "durationMs": 2537,
     "prompt": "hundreds of tiny ants marching in rhythm, miniature footsteps patter, cute, steady"
   },
   {
-    "id": "swarm.poke",
-    "file": "resources/sfx/swarm/poke.mp3",
+    "id": "ants.poke",
+    "file": "resources/sfx/ants/poke.mp3",
     "durationMs": 1074,
     "prompt": "many tiny high pitched cartoon voices squeaking together in surprise, very small, cute, short"
   },
   {
-    "id": "pixel.blip",
-    "file": "resources/sfx/pixel/blip.mp3",
+    "id": "workspace.blip",
+    "file": "resources/sfx/workspace/blip.mp3",
     "durationMs": 656,
     "prompt": "friendly digital blip, soft clean UI tone, single short note"
   },
   {
-    "id": "pixel.stamp",
-    "file": "resources/sfx/pixel/stamp.mp3",
+    "id": "workspace.stamp",
+    "file": "resources/sfx/workspace/stamp.mp3",
     "durationMs": 1074,
     "prompt": "rubber stamp pressed on paper, satisfying thud, short, clean"
   },
   {
-    "id": "pixel.poke",
-    "file": "resources/sfx/pixel/poke.mp3",
+    "id": "workspace.poke",
+    "file": "resources/sfx/workspace/poke.mp3",
     "durationMs": 1074,
     "prompt": "cute playful digital bloop giggle, two quick rising synth notes, friendly"
   },
   {
-    "id": "iris.flutter-sparkle",
-    "file": "resources/sfx/iris/flutter-sparkle.mp3",
+    "id": "butterfly.flutter-sparkle",
+    "file": "resources/sfx/butterfly/flutter-sparkle.mp3",
     "durationMs": 1544,
     "prompt": "delicate butterfly wing flutter with a soft magical sparkle chime, light, airy"
   },
   {
-    "id": "iris.poke",
-    "file": "resources/sfx/iris/poke.mp3",
+    "id": "butterfly.poke",
+    "file": "resources/sfx/butterfly/poke.mp3",
     "durationMs": 1074,
     "prompt": "tiny magical sparkle giggle, light twinkling chime, playful, short"
   },
   {
-    "id": "celene.trill",
-    "file": "resources/sfx/celene/trill.mp3",
+    "id": "nightingale.trill",
+    "file": "resources/sfx/nightingale/trill.mp3",
     "durationMs": 2066,
     "prompt": "nightingale bird song trill, melodic, sweet, clear, clean, no background"
   },
   {
-    "id": "celene.poke",
-    "file": "resources/sfx/celene/poke.mp3",
+    "id": "nightingale.poke",
+    "file": "resources/sfx/nightingale/poke.mp3",
     "durationMs": 1074,
     "prompt": "short surprised melodic bird chirp, two sweet notes, elegant"
   },

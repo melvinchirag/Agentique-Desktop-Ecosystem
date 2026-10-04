@@ -1,6 +1,6 @@
 // Generates ADE's sound effects, biome ambience, and the Celene music test with ElevenLabs. Run once; files ship in resources/.
 //   npx tsx scripts/generate-sfx.ts                  generate everything that is missing
-//   npx tsx scripts/generate-sfx.ts --only chip      one group
+//   npx tsx scripts/generate-sfx.ts --only chipmunk      one group
 //   npx tsx scripts/generate-sfx.ts --music          also compose the Celene test track (paid plans only)
 // Add --force to regenerate files that already exist.
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
@@ -19,37 +19,40 @@ const BITRATE = 128_000; // output_format mp3_44100_128
 interface Sound { group: string; name: string; seconds: number; prompt: string; loop?: boolean }
 const S = (group: string, name: string, seconds: number, prompt: string, loop = false): Sound => ({ group, name, seconds, prompt, loop });
 
-// Sounds: docs/SPONSORS.md §3.4, plus one "poke" (clicked) reaction per animal.
+// Sounds: docs/SPONSORS.md §3.4, plus one "poke" (clicked) reaction per animal. Groups are agent ids (plus system, biome).
 const SOUNDS: Sound[] = [
-  S('chip', 'chirp', 1, 'tiny cartoon chipmunk chirp, cute, bright, short, clean, no background'),
-  S('chip', 'squeak', 1, 'small scared cartoon chipmunk squeak, high pitched, startled, short, clean'),
-  S('chip', 'happy-trill', 1.5, 'happy cartoon chipmunk trill, cheerful rising chitter, cute, clean'),
-  S('chip', 'knock-knock', 1.5, 'two quick light knocks on a glass window, playful, close, clean'),
-  S('chip', 'boing', 1, 'cartoon spring boing, bouncy, comedic, short, clean'),
-  S('chip', 'snore', 2.5, 'tiny cute cartoon animal snore, soft, small, sleepy, one breath in and out'),
-  S('chip', 'poke', 1, 'tiny cartoon chipmunk surprised giggle squeak when poked, cute, playful, short'),
-  S('warden', 'growl', 2, 'low wolf growl, deep, protective warning, close, clean, no background'),
-  S('warden', 'howl', 3, 'single wolf howl, clear, alert, noble, clean'),
-  S('warden', 'sniff', 1, 'wolf sniffing the air twice, close, short, clean'),
-  S('warden', 'poke', 1, 'short friendly low wolf huff, gentle gruff grunt, calm, not aggressive'),
-  S('archie', 'tail-slap', 1, 'beaver tail slap on water, one sharp wet smack, clean'),
-  S('archie', 'wood-gnaw', 2, 'beaver gnawing on wood, quick crunchy chewing, close, clean'),
-  S('archie', 'log-thunk', 1, 'heavy wooden log dropped on a wooden pile, solid thunk, short'),
-  S('archie', 'poke', 1, 'cute cartoon beaver surprised chuckle grunt, goofy, friendly, short'),
-  S('scout', 'screech', 1.5, 'eagle screech, sharp, clear, single call, clean, no background'),
-  S('scout', 'wing-flaps', 2, 'large bird wing flaps, three strong flaps taking off, close, clean'),
-  S('scout', 'whoosh', 1, 'fast airy whoosh passing by, swift flight, clean'),
-  S('scout', 'poke', 1, 'short surprised eagle chirp, sharp quick single note, clean'),
-  S('swarm', 'skitter', 1.5, 'tiny insect legs skittering quickly across a hard surface, light, many small ticks'),
-  S('swarm', 'marching-patter', 2.5, 'hundreds of tiny ants marching in rhythm, miniature footsteps patter, cute, steady'),
-  S('swarm', 'poke', 1, 'many tiny high pitched cartoon voices squeaking together in surprise, very small, cute, short'),
-  S('pixel', 'blip', 0.6, 'friendly digital blip, soft clean UI tone, single short note'),
-  S('pixel', 'stamp', 1, 'rubber stamp pressed on paper, satisfying thud, short, clean'),
-  S('pixel', 'poke', 1, 'cute playful digital bloop giggle, two quick rising synth notes, friendly'),
-  S('iris', 'flutter-sparkle', 1.5, 'delicate butterfly wing flutter with a soft magical sparkle chime, light, airy'),
-  S('iris', 'poke', 1, 'tiny magical sparkle giggle, light twinkling chime, playful, short'),
-  S('celene', 'trill', 2, 'nightingale bird song trill, melodic, sweet, clear, clean, no background'),
-  S('celene', 'poke', 1, 'short surprised melodic bird chirp, two sweet notes, elegant'),
+  S('chipmunk', 'chirp', 1, 'tiny cartoon chipmunk chirp, cute, bright, short, clean, no background'),
+  S('chipmunk', 'squeak', 1, 'small scared cartoon chipmunk squeak, high pitched, startled, short, clean'),
+  S('chipmunk', 'happy-trill', 1.5, 'happy cartoon chipmunk trill, cheerful rising chitter, cute, clean'),
+  S('chipmunk', 'knock-knock', 1.5, 'two quick light knocks on a glass window, playful, close, clean'),
+  S('chipmunk', 'boing', 1, 'cartoon spring boing, bouncy, comedic, short, clean'),
+  S('chipmunk', 'snore', 2.5, 'tiny cute cartoon animal snore, soft, small, sleepy, one breath in and out'),
+  S('chipmunk', 'poke', 1, 'tiny cartoon chipmunk surprised giggle squeak when poked, cute, playful, short'),
+  S('wolf', 'growl', 2, 'low wolf growl, deep, protective warning, close, clean, no background'),
+  S('wolf', 'howl', 3, 'single wolf howl, clear, alert, noble, clean'),
+  S('wolf', 'sniff', 1, 'wolf sniffing the air twice, close, short, clean'),
+  S('wolf', 'poke', 1, 'short friendly low wolf huff, gentle gruff grunt, calm, not aggressive'),
+  S('beaver', 'tail-slap', 1, 'beaver tail slap on water, one sharp wet smack, clean'),
+  S('beaver', 'wood-gnaw', 2, 'beaver gnawing on wood, quick crunchy chewing, close, clean'),
+  S('beaver', 'log-thunk', 1, 'heavy wooden log dropped on a wooden pile, solid thunk, short'),
+  S('beaver', 'wood-gnaw-loop', 4, 'beaver gnawing on wood continuously, steady crunchy chewing rhythm, close, clean, seamless', true),
+  S('beaver', 'paper-rustle', 1.2, 'a sheet of paper being picked up and rustled, soft, close, clean'),
+  S('beaver', 'reverse-whoosh', 1, 'reversed whoosh, airy sound sucking backwards, rewind feel, short, clean'),
+  S('beaver', 'poke', 1, 'cute cartoon beaver surprised chuckle grunt, goofy, friendly, short'),
+  S('eagle', 'screech', 1.5, 'eagle screech, sharp, clear, single call, clean, no background'),
+  S('eagle', 'wing-flaps', 2, 'large bird wing flaps, three strong flaps taking off, close, clean'),
+  S('eagle', 'whoosh', 1, 'fast airy whoosh passing by, swift flight, clean'),
+  S('eagle', 'poke', 1, 'short surprised eagle chirp, sharp quick single note, clean'),
+  S('ants', 'skitter', 1.5, 'tiny insect legs skittering quickly across a hard surface, light, many small ticks'),
+  S('ants', 'marching-patter', 2.5, 'hundreds of tiny ants marching in rhythm, miniature footsteps patter, cute, steady'),
+  S('ants', 'poke', 1, 'many tiny high pitched cartoon voices squeaking together in surprise, very small, cute, short'),
+  S('workspace', 'blip', 0.6, 'friendly digital blip, soft clean UI tone, single short note'),
+  S('workspace', 'stamp', 1, 'rubber stamp pressed on paper, satisfying thud, short, clean'),
+  S('workspace', 'poke', 1, 'cute playful digital bloop giggle, two quick rising synth notes, friendly'),
+  S('butterfly', 'flutter-sparkle', 1.5, 'delicate butterfly wing flutter with a soft magical sparkle chime, light, airy'),
+  S('butterfly', 'poke', 1, 'tiny magical sparkle giggle, light twinkling chime, playful, short'),
+  S('nightingale', 'trill', 2, 'nightingale bird song trill, melodic, sweet, clear, clean, no background'),
+  S('nightingale', 'poke', 1, 'short surprised melodic bird chirp, two sweet notes, elegant'),
   S('system', 'scroll-pass', 1, 'paper scroll handed over, soft papery swish, short, clean'),
   S('system', 'pop', 0.6, 'soft bubbly pop, pleasant UI sound, single, clean'),
   S('system', 'dock-whoomp', 1, 'soft low whoomp, object settling into a dock, cushioned, short'),
