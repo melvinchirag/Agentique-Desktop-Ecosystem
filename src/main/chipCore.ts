@@ -288,8 +288,7 @@ export function createChipCore(config: ChipCoreConfig): ChipCore {
     eagleRuntime = {
       async run(agentId, task, runCtx) {
         bus.emit({ type: 'agent.status', agentId: 'eagle', taskId: runCtx.taskId, status: 'away', detail: 'Scanning the web…' });
-        try { return await runtime.run(agentId, task, runCtx); }
-        finally { bus.emit({ type: 'agent.status', agentId: 'eagle', taskId: runCtx.taskId, status: 'done' }); }
+        return runtime.run(agentId, task, runCtx);
       },
     };
     eagle = { runtime: eagleRuntime, gate, approvals };
