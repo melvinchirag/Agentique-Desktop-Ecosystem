@@ -30,6 +30,8 @@ export interface AdeApi {
 export interface AdeSettings {
   models: Record<AgentId, ModelChoice>;
   voiceEnabled: boolean;
+  sfxEnabled?: boolean;
+  ambienceEnabled?: boolean;
   allowedFolders: string[];      // Beaver's sandbox
   googleEmail?: string;
   styleLearnedAt?: number;
