@@ -17,7 +17,7 @@ Checked on 2026-10-04 with small real calls against Shafeen's accounts. No key v
 | E4 | Fallback `eleven_flash_v2_5` | ✅ Works |
 | E5 | Plan is paid (Music) | ✅ Creator tier, active |
 | E6 | Voice Design model + endpoints | ✅ Verified (Chip's voice created) |
-| E7 | SFX model id, looping, Music endpoint | See lane S4 notes at the bottom |
+| E7 | SFX model id, looping, Music endpoint | ✅ Verified (35 sounds + ambience + music generated) |
 | T1 | Compression / retention / continuous-aggregate syntax | ✅ Verified on TimescaleDB 2.30.2 |
 | T2 | TLS | ⚠ **Tiger Cloud needs its own CA certificate** (not in the plan) |
 
@@ -118,4 +118,9 @@ The CA file used so far was captured from the server's own handshake. Replace it
 ---
 
 ## Lane S4 notes (sound effects, looping, music)
-Filled in by lane S4 after its first real calls.
+Verified with real calls on 2026-10-04.
+- `POST /sound-generation` with `{ text, model_id: 'eleven_text_to_sound_v2', duration_seconds }` → 200, `audio/mpeg`.
+- **Looping is supported:** `loop: true` was accepted for the 25 s forest ambience. Whether the seam is inaudible still needs a human listen; the renderer can crossfade if not.
+- `POST /music/compose` with `{ prompt, music_length_ms: 20000, model_id: 'music_v2_5' }` → 200 on the Creator plan (`resources/music/test-calm.mp3`).
+- Mood samples of Chip's voice, one per tag, are in `voices/previews/moods/` for listening.
+- One extra "poke" (clicked) sound per animal was added beyond the plan's list; playing it on click is the app shell's decision.
