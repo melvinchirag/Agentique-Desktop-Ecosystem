@@ -523,3 +523,18 @@ Reuse what exists (eagle assistant, EL_VOICE_EAGLE, eagle SFX, research_log tabl
 Never edit src/shared/* or src/main/runtime/types.ts. Never commit .env or keys.
 Run npx tsc --noEmit and npm test (fewer workers if it times out). Commit, push eagle/sponsors, open a PR into main.
 ```
+
+---
+
+## Shafeen — Swarm sponsor tech + graphics (quick)
+*Paste into: Codex (GPT-6 Sol, medium), repo root. Two windows in parallel: one for sponsors, one for graphics.*
+
+```text
+SPONSORS window:
+git switch main && git pull && git switch -c ants/sponsors
+Read docs/agents/06-swarm-QUICK-SHAFEEN.md and do lanes W1, W2, W3 exactly (small, fast). Reuse the existing ants assistant, EL_VOICE_ANTS, ants SFX, and the plan_items table; never create duplicates. Never edit src/shared/* or src/main/runtime/types.ts; never commit .env. Run npx tsc --noEmit + npm test; commit, push ants/sponsors, open a PR into main.
+
+GRAPHICS window:
+git switch main && git pull && git switch -c ants/graphics
+Read the Graphics section of docs/agents/06-swarm-QUICK-SHAFEEN.md. Build ONE ant: static model first (art/ants/ant.blend -> src/renderer/public/characters/ants/default/model.glb), run tools/blender/check_character.py -- ants, commit + push; then add Idle, Walk, Carry, Happy, Talk one at a time (check + export + push after each). Stay inside art/ants and src/renderer/public/characters/ants. Open a PR into main when done.
+```
