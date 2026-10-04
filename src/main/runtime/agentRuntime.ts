@@ -108,7 +108,7 @@ export class AgentRuntime implements SpecialistRunner {
           tool_call_id: call.id,
           output: await this.execute(agentId, definition, call, ctx, threadId, artifacts),
         })));
-        response = await this.retry(() => this.deps.llm.submitToolOutputs(threadId, outputs, ctx.signal), ctx.signal);
+        response = await this.retry(() => this.deps.llm.submitToolOutputs(threadId, outputs, ctx.signal, this.deps.settings().models[agentId]), ctx.signal);
       }
       if (response.status !== 'COMPLETED') return this.failure(`Backboard ${response.status ?? 'did not complete'}.`, artifacts);
       const parsed = parseSpecialistOutput(response.content, AGENTS[agentId].displayName);

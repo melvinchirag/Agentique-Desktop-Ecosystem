@@ -95,6 +95,23 @@ function setup(o: SetupOpts = {}) {
 }
 
 const mood = (m = 'calm', intensity = 0.4, reason = 'plain words') => toolCall('report_user_mood', { mood: m, intensity, reason });
+
+it('uses changed Settings for every Chip send and tool continuation on the same thread', async () => {
+  const models = makeTestSettings().models;
+  const selected = { llm_provider: 'openai', model_name: 'gpt-4o' };
+  const switched = { llm_provider: 'anthropic', model_name: 'claude-sonnet-4-20250514' };
+  models.chipmunk = selected;
+  const s = setup({ settings: { models }, script: [
+    () => { models.chipmunk = switched; return requiresAction([mood()], 'same-thread'); },
+    completed('[bubble: Hello]\nHi!', 'same-thread'),
+    requiresAction([mood()], 'same-thread'), completed('[bubble: Hello]\nHello again!', 'same-thread'),
+  ] });
+  await s.user('Hi');
+  await s.user('Hello again');
+  expect(s.sends().map(call => call.model)).toEqual([selected, switched]);
+  expect(s.sends()[1]!.threadId).toBe('same-thread');
+  expect(s.toolOutputs().map(call => call.model)).toEqual([switched, switched]);
+});
 const delegate = (agent: SpecialistId, title: string, extra: Record<string, unknown> = {}) =>
   toolCall('delegate', { agent, task: `Please do: ${title}`, title, ...extra });
 const outputOf = (call: FakeLlmCall | undefined, i = 0): Record<string, unknown> => {
@@ -109,6 +126,14 @@ function deferred<T>() {
 }
 
 describe('orchestrator', () => {
+  it('recovers a textual mood report and never speaks the leaked preamble', async () => {
+    const t = setup({ script: [completed("tool_code print(default_api.report_user_mood(mood='happy', intensity=0.6, reason='greeting')) thought The user said hi ... [bubble: Hi!] Hello there!")] });
+    await t.user('hi');
+    expect(t.ofType('user.mood')[0]).toMatchObject({ mood: 'happy', intensity: 0.6, reason: 'greeting' });
+    expect(t.chipSays('chip')).toMatchObject([{ text: 'Hello there!', bubble: 'Hi!' }]);
+    expect(t.sends()).toHaveLength(1);
+  });
+
   it('delegates a downloaded-file request when Chip tries to answer from its own turn', async () => {
     const t = setup({ script: [completed("[bubble: Missing]\nI couldn't find that file."),
       completed('[bubble: Found]\nArchie found the newest file.')] });

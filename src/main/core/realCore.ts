@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { loadModelPreferences, saveModelPreferences } from './modelPreferences';
 import { dirname, join } from 'node:path';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import type { AgentId } from '../../shared/agents';
@@ -69,7 +70,7 @@ export function missingRealCoreKeys(env: Env): string[] {
 }
 
 function defaultSettings(options: RealCoreOptions): AdeSettings {
-  const model = { llm_provider: 'google', model_name: 'gemini-2.5-flash' };
+  const model = { llm_provider: 'openai', model_name: 'gpt-4o' };
   const folders = defaultFolders({ desktop: options.desktopRoot, documents: options.documentsRoot, downloads: options.downloadsRoot });
   return {
     models: Object.fromEntries(ids.map(id => [id, { ...model }])) as AdeSettings['models'],
@@ -164,8 +165,10 @@ export function createRealCore(options: RealCoreOptions = {}): CoreAdapter {
   const { env, baseDir } = loadRealCoreEnv(options);
   if (missingRealCoreKeys(env).length) return fallbackCore(options.resourcesDir, true);
 
-  const settingsFile = join(options.dataDir ?? adeDataDir(), 'settings.json');
+  const modelPreferencesPath = join(options.dataDir ?? adeDataDir(env), 'model-preferences.json');
+  const settingsFile = join(options.dataDir ?? adeDataDir(env), 'settings.json');
   let settings = loadPersistedSettings(settingsFile, defaultSettings(options));
+  settings.models = { ...settings.models, ...loadModelPreferences(modelPreferencesPath) };
   const persistSettings = () => {
     try { savePersistedSettings(settingsFile, settings); }
     catch (error) { console.warn('[core] Could not save settings', error); }
@@ -173,7 +176,11 @@ export function createRealCore(options: RealCoreOptions = {}): CoreAdapter {
   };
   const clock = new RealClock();
   const assistantIds = assistantIdsFromEnv(env);
-  const llm = new BackboardClient({ apiKey: env.BACKBOARD_API_KEY!, defaultModel: settings.models.chipmunk });
+  const llm = new BackboardClient({ apiKey: env.BACKBOARD_API_KEY!, defaultModel: assistantId => {
+    const agentId = assistantId && assistantId === env.BB_ASSISTANT_WARDEN_SCREEN
+      ? 'wolf' : (assistantId ? ids.find(id => assistantIds[id] === assistantId) : undefined) ?? 'chipmunk';
+    return settings.models[agentId];
+  } });
   const db = createTigerPool(env, baseDir);
   const plans = new TigerPlanStore(db, () => clock.now());
   const research = new TigerResearchStore(db);
@@ -313,6 +320,7 @@ export function createRealCore(options: RealCoreOptions = {}): CoreAdapter {
       settings = { ...settings, ...patch, models: { ...settings.models, ...patch.models },
         installed: { ...settings.installed, ...patch.installed },
         timers: { ...settings.timers, ...patch.timers }, nudges: { ...settings.nudges, ...patch.nudges } };
+      if (patch.models) saveModelPreferences(modelPreferencesPath, settings.models);
       if (patch.demoMode !== undefined) settings.timers = patch.demoMode
         ? { ...settings.timers, sleepAfterSec: 30, dockAfterSec: 60 }
         : { ...settings.timers, sleepAfterSec: 180, dockAfterSec: 600 };

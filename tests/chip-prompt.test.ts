@@ -250,6 +250,17 @@ describe('pickAck', () => {
 });
 
 describe('parseChipOutput', () => {
+  it('strips the live inline tool and thought leak and finds a later bubble', () => {
+    const leak = "tool_code print(default_api.report_user_mood(mood='calm', intensity=0.3, reason='greeting')) thought The user said hi ... [bubble: Hi!] Hello there!";
+    expect(parseChipOutput(leak)).toEqual({ silent: false, bubble: 'Hi!', speech: 'Hello there!' });
+  });
+
+  it('strips fenced tool code and reasoning without eating normal speech', () => {
+    expect(parseChipOutput("```tool_code\nprint(default_api.report_user_mood(mood='calm', intensity=0.3, reason='hi'))\n```\nthought: I should answer.\n[bubble: Hi!]\nI thought you might say hi!")).toEqual({
+      silent: false, bubble: 'Hi!', speech: 'I thought you might say hi!',
+    });
+  });
+
   it('treats (silent) as silence, trimmed and case-insensitive', () => {
     expect(parseChipOutput('(silent)')).toEqual({ silent: true, bubble: '', speech: '' });
     expect(parseChipOutput('  (Silent)\n')).toEqual({ silent: true, bubble: '', speech: '' });

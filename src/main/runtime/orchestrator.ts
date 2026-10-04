@@ -4,6 +4,7 @@ import { AGENTS } from '../../shared/config';
 import { pickAck } from '../agents/chipmunk/acks';
 import { SPECIALIST_IDS, nameOf, specialistFromWord } from '../agents/chipmunk/names';
 import { parseChipOutput } from '../agents/chipmunk/parse';
+import { pseudoMoodArgs } from './sanitizeLlmText';
 import {
   buildNudgeTurn, buildResultTurn, buildUserTurn, chipSystemPrompt, type ChipContextState, type ResultItem,
 } from '../agents/chipmunk/prompt';
@@ -226,6 +227,7 @@ export function createOrchestrator(deps: OrchestratorDeps, opts: OrchestratorOpt
       const content = buildContent(item);
       const memory = item.kind === 'user' ? 'Auto' : 'Readonly';
       let text = await converse(turn, content, memory);
+      if (item.kind === 'user') recoverPseudoMood(text, turn);
       if (item.kind === 'user' && !turn.delegationSucceeded && !turn.actionAttempted) {
         const agent = requiredSpecialist(item.text);
         if (agent) {
@@ -249,6 +251,7 @@ export function createOrchestrator(deps: OrchestratorDeps, opts: OrchestratorOpt
           ? 'Mood reporting is already handled; do not repeat it.'
           : 'You have not reported the user\'s mood yet: call report_user_mood first, and in the SAME response also call the tool the request needs or answer it.';
         text = await converse(turn, `${content}\n[runtime_feedback]\nYou returned no answer without attempting an action. The user request is still pending. ${moodNote} Call the appropriate tool now, or answer with the one clarification needed. Do not merely promise to act.`, 'Readonly', true);
+        recoverPseudoMood(text, turn);
       }
       // (silent) is only valid after a successful delegation; anything else must not leave the user hearing nothing.
       if (item.kind === 'user' && !turn.delegationSucceeded && unanswered()) {
@@ -278,6 +281,14 @@ export function createOrchestrator(deps: OrchestratorDeps, opts: OrchestratorOpt
       if (busy) presence.setBusy('chipmunk', false);
       status(turn.taskId, 'idle');
     }
+  }
+
+  function recoverPseudoMood(text: string, turn: Turn): void {
+    if (turn.moodReported) return;
+    const args = pseudoMoodArgs(text);
+    if (!args) return;
+    try { EXECUTORS.report_user_mood!(args, turn); }
+    catch { /* Invalid textual tool arguments use the existing mood fallback. */ }
   }
 
   function foggyMood(taskId: string): void {
@@ -393,14 +404,13 @@ export function createOrchestrator(deps: OrchestratorDeps, opts: OrchestratorOpt
 
   /** Returns Chip's final text (§11 format). */
   async function converse(turn: Turn, content: string, memory: 'Auto' | 'Readonly', recovery = false): Promise<string> {
-    const s = settings();
     let res = await guard(() => llm.send({
       assistantId: chipAssistantId,
       ...(chipThreadId !== undefined ? { threadId: chipThreadId } : {}),
       content,
       systemPrompt: chipSystemPrompt(),
       tools: chipTools(installedSpecialists()).filter((tool) => !(recovery && turn.moodReported) || tool.function.name !== 'report_user_mood'),
-      model: s.models.chipmunk,
+      model: settings().models.chipmunk,
       memory,
       timeoutMs: llmTimeoutMs,
     }));
@@ -414,9 +424,9 @@ export function createOrchestrator(deps: OrchestratorDeps, opts: OrchestratorOpt
       }
       const outputs = await Promise.all(calls.map(async (call) => ({ tool_call_id: call.id, output: await runTool(call, turn) })));
       const threadId = res.thread_id;
-      // send() gets timeoutMs; submitToolOutputs only takes a signal, so give it the same deadline.
+      // Give tool continuations the same deadline and the latest Settings model.
       // A request that never settles would otherwise hold Chip's only loop forever.
-      res = await guard(() => llm.submitToolOutputs(threadId, outputs, AbortSignal.timeout(llmTimeoutMs)));
+      res = await guard(() => llm.submitToolOutputs(threadId, outputs, AbortSignal.timeout(llmTimeoutMs), settings().models.chipmunk));
       noteResponse(turn, res);
     }
     return res.content ?? '';

@@ -15,7 +15,7 @@ export class BackboardError extends Error {
 export interface BackboardOptions {
   apiKey: string;
   /** Used when a call does not pass `model`. */
-  defaultModel?: ModelChoice;
+  defaultModel?: ModelChoice | ((assistantId?: string) => ModelChoice | undefined);
   baseUrl?: string;
   fetch?: typeof fetch;
 }
@@ -51,6 +51,8 @@ function toLlmResponse(raw: Record<string, unknown>): LlmResponse {
     status: (raw.status as LlmResponse['status']) ?? null,
     thread_id: String(raw.thread_id ?? ''),
     content: (raw.content as string | null | undefined) ?? null,
+    model_provider: (raw.model_provider as string | null | undefined) ?? null,
+    model_name: (raw.model_name as string | null | undefined) ?? null,
     tool_calls: (raw.tool_calls as LlmToolCall[] | null | undefined) ?? null,
     retrieved_memories: normalizeMemories(raw.retrieved_memories),
   };
@@ -64,7 +66,7 @@ export class BackboardClient implements LlmClient {
   private readonly apiKey: string;
   private readonly baseUrl: string;
   private readonly fetchFn: typeof fetch;
-  private readonly defaultModel: ModelChoice | undefined;
+  private readonly defaultModel: BackboardOptions['defaultModel'];
 
   constructor(opts: BackboardOptions) {
     if (!opts.apiKey) throw new Error('BACKBOARD_API_KEY is missing');
@@ -75,7 +77,7 @@ export class BackboardClient implements LlmClient {
   }
 
   async send(p: SendParams): Promise<LlmResponse> {
-    const model = p.model ?? this.defaultModel;
+    const model = p.model ?? this.resolveDefaultModel(p.assistantId);
     const body: Record<string, unknown> = { assistant_id: p.assistantId, content: p.content, stream: false };
     if (p.threadId) body.thread_id = p.threadId;
     if (p.systemPrompt !== undefined) body.system_prompt = p.systemPrompt;
@@ -89,9 +91,16 @@ export class BackboardClient implements LlmClient {
   }
 
   /** Every tool call of the previous response must get an output. */
-  async submitToolOutputs(threadId: string, outputs: { tool_call_id: string; output: string }[], signal?: AbortSignal): Promise<LlmResponse> {
-    const raw = await this.request('/threads/tool-outputs', { method: 'POST', body: { thread_id: threadId, tool_outputs: outputs }, signal, retry: true });
+  async submitToolOutputs(threadId: string, outputs: { tool_call_id: string; output: string }[], signal?: AbortSignal, model?: ModelChoice): Promise<LlmResponse> {
+    const choice = model ?? this.resolveDefaultModel();
+    const body: Record<string, unknown> = { thread_id: threadId, tool_outputs: outputs };
+    if (choice) { body.llm_provider = choice.llm_provider; body.model_name = choice.model_name; }
+    const raw = await this.request('/threads/tool-outputs', { method: 'POST', body, signal, retry: true });
     return toLlmResponse(raw);
+  }
+
+  private resolveDefaultModel(assistantId?: string): ModelChoice | undefined {
+    return typeof this.defaultModel === 'function' ? this.defaultModel(assistantId) : this.defaultModel;
   }
 
   /** Tool-capable chat models for the Settings dropdown. The full list is huge, so always pass a limit. */

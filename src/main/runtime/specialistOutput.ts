@@ -1,10 +1,11 @@
 import type { AgentResult } from './types';
+import { sanitizeLlmText } from './sanitizeLlmText';
 
 type Speech = Pick<AgentResult, 'say' | 'bubble' | 'summary'>;
 
 /** Backboard web search may return prose instead of the requested labelled fields. */
 export function parseSpecialistOutput(content: string | null | undefined, agentName: string): Speech {
-  const text = (content ?? '').trim();
+  const text = sanitizeLlmText(content);
   const fields: Partial<Record<'BUBBLE' | 'SAY' | 'SUMMARY', string>> = {};
   const prose: string[] = [];
   let current: keyof typeof fields | undefined;

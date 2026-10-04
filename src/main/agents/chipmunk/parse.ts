@@ -1,3 +1,5 @@
+import { sanitizeLlmText } from '../../runtime/sanitizeLlmText';
+
 export interface ChipOutput { silent: boolean; bubble: string; speech: string }
 
 const SILENT: ChipOutput = { silent: true, bubble: '', speech: '' };
@@ -5,14 +7,13 @@ const MAX_SENTENCES = 3;
 
 /** Chip spec §11 output parsing, rules 1–4. */
 export function parseChipOutput(text: string | null | undefined): ChipOutput {
-  const trimmed = (text ?? '').trim();
+  const trimmed = sanitizeLlmText(text);
   if (!trimmed || trimmed.toLowerCase() === '(silent)') return { ...SILENT };
 
-  const lines = trimmed.split(/\r?\n/);
-  const bubbleMatch = /^\[bubble:\s*(.+?)\]$/.exec(lines[0].trim());
-  const body = bubbleMatch ? lines.slice(1) : lines;
+  const bubbleMatch = /\[bubble:\s*([^\]\r\n]+?)\]/i.exec(trimmed);
+  const body = bubbleMatch ? trimmed.replace(bubbleMatch[0], '') : trimmed;
 
-  const speech = firstSentences(stripMarkdown(body.join('\n')), MAX_SENTENCES);
+  const speech = firstSentences(stripMarkdown(body), MAX_SENTENCES);
   if (!speech) return { ...SILENT };
 
   const bubble = bubbleMatch ? bubbleMatch[1].trim() : speech.split(/\s+/).slice(0, 2).join(' ');

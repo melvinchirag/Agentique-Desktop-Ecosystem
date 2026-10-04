@@ -85,13 +85,15 @@ export interface LlmToolCall { id: string; type: 'function'; function: { name: s
 export interface LlmResponse {
   status?: 'IN_PROGRESS' | 'REQUIRES_ACTION' | 'COMPLETED' | 'FAILED' | 'CANCELLED' | null;
   thread_id: string; content?: string | null;
+  /** Actual serving model reported by Backboard, which can differ from the requested model. */
+  model_provider?: string | null; model_name?: string | null;
   tool_calls?: LlmToolCall[] | null;
   /** Memory texts Backboard used for this answer, normalized by the LlmClient (raw shape: see the S1 spike). Non-empty → emit agent.recall. */
   retrieved_memories?: string[] | null;
 }
 export interface LlmClient {
   send(p: SendParams): Promise<LlmResponse>;
-  submitToolOutputs(threadId: string, outputs: { tool_call_id: string; output: string }[], signal?: AbortSignal): Promise<LlmResponse>;
+  submitToolOutputs(threadId: string, outputs: { tool_call_id: string; output: string }[], signal?: AbortSignal, model?: ModelChoice): Promise<LlmResponse>;
 }
 
 // ── Specialists ───────────────────────────────────────────

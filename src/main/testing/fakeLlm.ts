@@ -1,8 +1,9 @@
 import type { LlmClient, LlmResponse, LlmToolCall, SendParams } from '../runtime/types';
+import type { ModelChoice } from '../../shared/agents';
 
 export type FakeLlmCall =
   | { kind: 'send'; params: SendParams }
-  | { kind: 'toolOutputs'; threadId: string; outputs: { tool_call_id: string; output: string }[] };
+  | { kind: 'toolOutputs'; threadId: string; outputs: { tool_call_id: string; output: string }[]; model?: ModelChoice };
 
 export type FakeLlmStep = LlmResponse | Error | ((call: FakeLlmCall) => LlmResponse | Promise<LlmResponse>);
 
@@ -27,8 +28,8 @@ export class FakeLlm implements LlmClient {
     return this.handle({ kind: 'send', params }, params.signal);
   }
 
-  submitToolOutputs(threadId: string, outputs: { tool_call_id: string; output: string }[], signal?: AbortSignal): Promise<LlmResponse> {
-    return this.handle({ kind: 'toolOutputs', threadId, outputs }, signal);
+  submitToolOutputs(threadId: string, outputs: { tool_call_id: string; output: string }[], signal?: AbortSignal, model?: ModelChoice): Promise<LlmResponse> {
+    return this.handle({ kind: 'toolOutputs', threadId, outputs, model }, signal);
   }
 
   private async handle(call: FakeLlmCall, signal?: AbortSignal): Promise<LlmResponse> {
