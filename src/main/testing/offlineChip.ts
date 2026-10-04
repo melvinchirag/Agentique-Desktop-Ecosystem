@@ -1,14 +1,9 @@
 import type { BiomeEvent } from '../../shared/events';
 import type { AdeSettings } from '../../shared/ipc';
-import { EventBus } from '../bus/eventBus';
+import type { EventBus } from '../bus/eventBus';
+import { createChipCore } from '../chipCore';
 import { FakeClock, type RealClock } from '../runtime/clock';
-import { MemoryHistoryStore } from '../runtime/history';
-import { createJobScheduler } from '../runtime/jobs';
-import { createMoodEngine } from '../runtime/mood';
 import { MemoryNudgeStore } from '../runtime/nudgeStore';
-import { createNudgeEngine } from '../runtime/nudges';
-import { createOrchestrator } from '../runtime/orchestrator';
-import { createPresenceManager } from '../runtime/presence';
 import type {
   CalendarSource, Clock, HistoryStore, JobScheduler, LlmClient, LlmResponse, MoodEngine, NudgeEngine, Orchestrator, PresenceManager,
 } from '../runtime/types';
@@ -18,8 +13,9 @@ import { FakeSpecialists } from './fakeSpecialists';
 import { makeTestSettings } from './settings';
 
 /**
- * The whole Chip stack on fakes: bus → presence → jobs → mood → nudges → history → orchestrator.
- * Used by the scenario tests (C1–C19) and by scripts/chip-cli.ts. Lane J1 later turns this into createChipCore().
+ * The whole Chip stack on fakes: a thin wrapper around createChipCore() (src/main/chipCore.ts),
+ * so the tests exercise exactly the wiring the app uses.
+ * Used by the scenario tests (C1–C19) and by scripts/chip-cli.ts.
  */
 
 export interface OfflineChipOptions {
@@ -43,7 +39,6 @@ export interface OfflineChip {
 }
 
 const CHIP_ASSISTANT_ID = 'chip-asst';
-const USER_BUSY_MS = 20_000;                   // spec §14.4: not within 20 s of the user's last message
 
 /** The planner's default client: no nudges, ever. It must never share Chip's scripted client (lane G audit). */
 const noNudgesPlanner: LlmClient = {
@@ -67,48 +62,21 @@ export function buildOfflineChip(opts: OfflineChipOptions = {}): OfflineChip {
     current = makeTestSettings({ ...current, ...patch });           // merges installed / timers / nudges one level deep
   };
 
-  const bus = new EventBus({ clock });
-
-  // "Is the user busy": a Chip turn is running (agent.status listening/thinking → idle/error) or they spoke < 20 s ago.
-  let chipTurnRunning = false;
-  let lastUserMessageAt = Number.NEGATIVE_INFINITY;
-  const unsubscribeBusy = bus.subscribe((e) => {
-    if (e.type === 'user.message') lastUserMessageAt = e.ts;
-    else if (e.type === 'agent.status' && e.agentId === 'chipmunk') {
-      if (e.status === 'listening' || e.status === 'thinking') chipTurnRunning = true;
-      else if (e.status === 'idle' || e.status === 'error') chipTurnRunning = false;
-    }
-  });
-  const isUserBusy = (): boolean => chipTurnRunning || clock.now() - lastUserMessageAt < USER_BUSY_MS;
-
-  const presence = createPresenceManager({ bus, clock, settings });
-  const jobs = createJobScheduler({ bus, clock, runner: specialists, presence, settings });
-  const mood = createMoodEngine({ bus, clock, settings, presence });
-
   const nudgeStore = new MemoryNudgeStore();
-  const nudges = createNudgeEngine({
-    bus, clock, settings, store: nudgeStore, calendar, llm: opts.plannerLlm ?? noNudgesPlanner,
-    chipAssistantId: CHIP_ASSISTANT_ID, isUserBusy,
+  const core = createChipCore({
+    llm, plannerLlm: opts.plannerLlm ?? noNudgesPlanner, runner: specialists, calendar, settings,
+    chipAssistantId: CHIP_ASSISTANT_ID, clock, nudgeStore,
+    timeZone: opts.timeZone ?? 'America/Detroit',
+    ...(opts.startNudges !== undefined ? { startNudges: opts.startNudges } : {}),
   });
-
-  const history = new MemoryHistoryStore({ bus, clock });
-  const orchestrator = createOrchestrator({
-    bus, clock, llm, jobs, presence, mood, nudges, history, settings,
-    chipAssistantId: CHIP_ASSISTANT_ID, timeZone: opts.timeZone ?? 'America/Detroit',
-  });
-
-  presence.start();
-  if (opts.startNudges !== false) nudges.start();
 
   return {
-    bus, clock, llm, specialists, jobs, presence, mood, nudges, nudgeStore, history, orchestrator, settings, setSettings,
-    events: () => bus.recent(),
+    bus: core.bus, clock: core.clock, llm, specialists,
+    jobs: core.jobs, presence: core.presence, mood: core.mood, nudges: core.nudges,
+    nudgeStore, history: core.history, orchestrator: core.orchestrator, settings, setSettings,
+    events: () => core.bus.recent(),
     dispose() {
-      orchestrator.dispose();
-      nudges.dispose();
-      mood.dispose();
-      presence.dispose();
-      unsubscribeBusy();
+      void core.dispose();
     },
   };
 }
