@@ -28,7 +28,7 @@ The parent merged lanes sequentially X, L, J, A, G into warden/logic. Full suite
 
 ## Integration status
 
-Implementation complete locally; final parent typecheck and diff whitespace check passed. Publication is recorded below after it succeeds. The 20-minute target was missed. The user subsequently instructed the parent to stop repeated broad test runs and finish; no final integration-wide full suite was run after that instruction.
+Implementation committed as b8267fe and pushed on warden/logic. Review PR #41: https://github.com/melvinchirag/Agentique-Desktop-Ecosystem/pull/41. Final parent typecheck, diff whitespace check and staged high-confidence secret scan passed. No merge into main. The 20-minute target was missed. The user subsequently instructed the parent to stop repeated broad test runs and finish; no final integration-wide full suite was run after that instruction.
 
 - Real-Warden Chip C1-C19: 22 tests across 19 files passed. These use fake specialist/model responses with the real Warden installed.
 - Archie A1-A20 through Chip/runtime: 36 tests passed across both stand-in and real-Warden variants. Real acceptance includes approval, plan execution and undo after restart.
