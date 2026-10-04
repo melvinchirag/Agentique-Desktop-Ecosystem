@@ -1,7 +1,7 @@
 import { mkdtemp, readFile, rm, stat } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { FakeClock } from '../src/main/runtime/clock';
 import type { FileOp } from '../src/main/runtime/types';
 import { makeSandbox } from './fixtures/makeSandbox';
@@ -72,14 +72,34 @@ describe('LocalFileOpsJournal', () => {
     ]);
   });
 
-  it('treats a missing journal as empty and rejects malformed JSONL', async () => {
+  it('treats a missing journal as empty, and skips unreadable lines instead of failing every read', async () => {
     const dir = await makeTempDir();
     const journalPath = path.join(dir, 'missing.jsonl');
     const journal = new LocalFileOpsJournal(journalPath);
     expect(await journal.lastBatch()).toBeNull();
     expect(await journal.recent(2)).toEqual([]);
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     await import('node:fs/promises').then(({ writeFile }) => writeFile(journalPath, '{bad json}\n'));
-    await expect(journal.lastBatch()).rejects.toThrow('Invalid journal JSON on line 1');
+    expect(await journal.lastBatch()).toBeNull();                 // used to throw: one torn line made every batch un-undoable
+    expect(warn).toHaveBeenCalled();
+    warn.mockRestore();
+  });
+
+  it('a torn last line (crash mid-append) loses only that row, and the next append starts on its own line', async () => {
+    const dir = await makeTempDir();
+    const journalPath = path.join(dir, 'torn.jsonl');
+    const first = new LocalFileOpsJournal(journalPath);
+    await first.record({ id: 'one', ts: 1, jobId: 'j', batchId: 'batch-1', op: 'move', fromPath: 'a', toPath: 'b', undone: false });
+    const { appendFile } = await import('node:fs/promises');
+    await appendFile(journalPath, '{"id":"two","ts":2,"jobId":"j","batchId":"batch-2","op":"mov');   // power cut: no closing, no newline
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+    const restarted = new LocalFileOpsJournal(journalPath);
+    expect(await restarted.lastBatch()).toBe('batch-1');          // the intact earlier batch is still undoable
+    await restarted.record({ id: 'three', ts: 3, jobId: 'j', batchId: 'batch-3', op: 'move', fromPath: 'c', toPath: 'd', undone: false });
+    expect(await restarted.lastBatch()).toBe('batch-3');          // the new row was not glued onto the torn line
+    expect((await restarted.batchOps('batch-1')).map((op) => op.id)).toEqual(['one']);
+    warn.mockRestore();
   });
 });
 
