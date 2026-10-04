@@ -191,6 +191,8 @@ Owner of this file: Chanuth (with Claude). Last updated: Sun Oct 4, 2026, early 
 | `animations/Zarin_Graphics_and_Git_Plan.txt` | Zarin's setup, branches, saving, Codex tools, order of work |
 | `GIT-WORKFLOW.md` | Branches and merges for everyone |
 | `PROMPTS.md` | Copy-paste prompts for each person's AI (Melvin, Shafeen, Zarin; more per agent) |
+| `app-shell/00-APP-SHELL-SPEC.md` | App shell spec (real-desktop overlay + Agent Hub window) ✅ |
+| `app-shell/01-APP-SHELL-BUILD-LANES.md` | App shell build plan for Chanuth's Codex + AGY ✅ |
 | `agents/02-archie-files.md` | Archie (beaver, files) spec v1 ✅ **approved**; also defines the shared **AgentRuntime** |
 | `agents/02-archie-BUILD-LANES.md` | Melvin's lanes for Archie + AgentRuntime |
 | `agents/02-archie-SPONSOR-LANES-SHAFEEN.md` | Shafeen's lanes for Archie |
@@ -227,6 +229,17 @@ Owner of this file: Chanuth (with Claude). Last updated: Sun Oct 4, 2026, early 
 - Chanuth plans one agent at a time with Claude while the team builds the previous one. Each finished plan goes straight to Melvin (logic), Shafeen (sponsors), and Zarin (graphics).
 - Plan order: **Chip ✅ → Pixel → Warden → Archie → Scout** → app shell plan → Swarm → extras.
 - **The app shell is built by Chanuth's idle Codex + AGY seats** (Claude stays on planning). Its plan gets written **only when Chanuth says so**.
+
+## 15e. App shell plan ✅ APPROVED (Oct 4)
+- Spec: `app-shell/00-APP-SHELL-SPEC.md`; build plan: `app-shell/01-APP-SHELL-BUILD-LANES.md` (Codex GPT-6 Astra orchestrates; Codex Sol/Luna + AGY Gemini 3.8 Flash High build; X0 spike first).
+- ✅ S1 the Agent Hub is a separate small, movable, focusable window; the overlay never takes focus.
+- ✅ S2 animals start on the taskbar's top edge (Chip center-left, right side clear under the Hub). User-dragging animals anywhere = **post-MVP**.
+- ✅ S3 orthographic camera, 1 unit = 1 px.
+- ✅ S4 demo/dev hotkeys Ctrl+Shift+N (next nudge), Ctrl+Shift+A (Asset Lab), Ctrl+Shift+H (hide/show animals): system-wide, registered only in demo/dev mode. User shortcuts stay deferred.
+- ✅ S5 the app shell owns the Electron main entry + preload; Chip's Lane J2 shrinks to an adapter + one-line swap. Melvin's plan is adjusted after his Chip work lands.
+- ✅ S6 `sleepAgent(id)` ("Send to Hub" on the inspect card), in the follow-up contracts PR after Melvin's `contracts/shared` PR.
+- ✅ S7 no cross-subscription backup: if Codex hits a usage limit, the dispatcher stops and reports to Chanuth. Dispatch always runs from a separate parallel agent, never the main chat.
+- The black-window GPU risk is tested on Chanuth's own PC (lane X0, first).
 
 ## 16. Next up
 1. Push all docs to the team GitHub (Chanuth sends the link; inspect the existing files first).
