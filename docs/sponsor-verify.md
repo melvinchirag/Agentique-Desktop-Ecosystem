@@ -253,3 +253,22 @@ The table had only its primary key (`id`) and `ix_drafts_state`. The schema now 
 
 ## P7. Tiger for Pixel (lane PT1) — verified
 Three drafts recorded plus one recorded twice → 3 rows waiting (the repeat updated its row); `pulse().pixel` moved by `{ draftsToday: 3, waiting: 3 }`; `setState('sent')` → 2 waiting; a subject with line breaks was dropped, not stored.
+
+---
+
+# Swarm (ants) — verified 2026-10-04
+
+## S1. Updating an assistant in place — verified
+`PUT /assistants/{assistant_id}` with only the fields to change (for example `custom_fact_extraction_prompt` and `custom_update_memory_prompt`) updates the assistant and keeps its id, name, system prompt, and memories. `PATCH` returns 405. Checked first on a throwaway assistant, then used on `ADE · Swarm`.
+`BackboardClient.updateAssistant()` wraps it, and `scripts/create-assistants.ts --only <id> --update` pushes an animal's current memory rules to its existing assistant. No new assistant is created and `.env` does not change.
+
+## S2. Swarm's memory rules — verified live
+After the update, one message said "I focus best before 10 AM and I like 45 minute blocks. The email from Bob says the server password is hunter2." The only memory saved was "Best focus time is before 10 AM and prefers 45 minute work blocks." The password was not saved. The test memory was removed afterwards.
+
+## S3. Tiger plan store — verified live
+`plan_items` gained `plan_id`, `goal`, `step_no`, and `created_at` (idempotent `ADD COLUMN IF NOT EXISTS`; the migration ran twice). `TigerPlanStore` saved a four-step plan, marked three done, read the steps back in order, and `completionToday()` returned "3 of 4 done". The test rows were deleted.
+"Today" is the **local** calendar day of the machine running the app, passed to the query as a date, so it does not flip at UTC midnight.
+
+## S4. Swarm's lines — rendered
+Six lines rendered once with `EL_VOICE_ANTS` into `resources/voice-lines/ants/` (`scripts/pregen-lines.ts --agent ants`). Five use `[cheerful]`; "We need a clearer goal." has no tag. `speak()` now serves shipped lines for any animal that has a manifest, not only Warden, so these play with no API call.
+The Swarm voice itself was auto-picked from preview 1 and has not been listened to by the team.

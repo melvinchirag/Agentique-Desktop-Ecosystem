@@ -15,7 +15,7 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const API = 'https://api.elevenlabs.io/v1';
 const MODEL = 'eleven_v4_turbo';
 
-interface Line { trigger: string; text: string; growl?: boolean }
+interface Line { trigger: string; text: string; growl?: boolean; plain?: boolean }   // plain = no mood tag
 
 // Warden's lines: the table in 03-warden-security.md §7. Replace with allWardenLines() once Melvin's lane L is merged.
 // `growl` adds a short wolf growl before the line (blocks and alerts only), so he sounds like a wolf, not a guard.
@@ -38,10 +38,20 @@ const LINES: Record<string, Line[]> = {
     { trigger: 'alert-injection',   text: "Trick spotted. I've got it.", growl: true },
     { trigger: 'app-start',         text: 'Warden on watch.' },
   ],
+  // Swarm's lines: docs/agents/06-swarm-QUICK-SHAFEEN.md W3. The app adds the chorus effect.
+  ants: [
+    { trigger: 'assemble',       text: 'Swarm, assemble!' },
+    { trigger: 'plan-assembled', text: 'Plan assembled!' },
+    { trigger: 'step-one',       text: 'Step one, on its way!' },
+    { trigger: 'all-delivered',  text: 'All steps delivered!' },
+    { trigger: 'clearer-goal',   text: 'We need a clearer goal.', plain: true },
+    { trigger: 'back-to-colony', text: 'Back to the colony!' },
+  ],
 };
 // Warden is always serious, whatever the biome's mood.
 const DELIVERY: Record<string, { tag: string; growlTag: string; stability: number; style: number; speed: number }> = {
   wolf: { tag: '[serious] ', growlTag: '[growls] [serious] ', ...pick(moodVoice('protective')) },
+  ants: { tag: '[cheerful] ', growlTag: '[cheerful] ', ...pick(moodVoice('happy')) },
 };
 function pick(m: { stability: number; style: number; speed: number }) { return { stability: m.stability, style: m.style, speed: m.speed }; }
 
@@ -55,7 +65,7 @@ async function main(): Promise<void> {
   if (!lines || !delivery) throw new Error(`Usage: --agent <${Object.keys(LINES).join('|')}> [--force]`);
   const force = args.includes('--force');
   const env = { ...readEnvFile(join(ROOT, '.env')), ...process.env };
-  const voiceId = voiceIdsFromEnv(env)[agent as 'wolf'];
+  const voiceId = voiceIdsFromEnv(env)[agent as 'wolf' | 'ants'];
   if (!env.ELEVENLABS_API_KEY || !voiceId) throw new Error(`ELEVENLABS_API_KEY or EL_VOICE_${agent.toUpperCase()} is missing from .env`);
 
   const dir = join(ROOT, 'resources', 'voice-lines', agent);
@@ -65,7 +75,7 @@ async function main(): Promise<void> {
   const manifest: ManifestLine[] = [];
 
   for (const line of lines) {
-    const prefix = line.growl ? delivery.growlTag : delivery.tag;
+    const prefix = line.plain ? '' : line.growl ? delivery.growlTag : delivery.tag;
     const hash = createHash('sha256').update([voiceId, MODEL, prefix, line.text].join('\u0000')).digest('hex').slice(0, 16);
     const entry: ManifestLine = { trigger: line.trigger, text: line.text, file: `${line.trigger}.mp3`, alignment: `${line.trigger}.json`, hash };
     manifest.push(entry);

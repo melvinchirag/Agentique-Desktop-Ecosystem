@@ -68,12 +68,10 @@ export class ElevenLabsVoice implements VoiceService {
   async speak(agentId: AgentId, text: string, mood: AgentMood): Promise<{ audio: ArrayBuffer; alignment?: object }> {
     const line = text.trim();
     if (!this.voiceEnabled() || !line) return EMPTY;
-    if (agentId === 'wolf') {
-      // Warden ignores the biome's mood: he is always [serious]. His template lines ship as mp3s, so try those first.
-      mood = WARDEN_MOOD;
-      const shipped = this.shipped.get('wolf', line);
-      if (shipped) return shipped;
-    }
+    // Template lines rendered at build time ship as mp3s (resources/voice-lines/<agent>): play those with no API call.
+    const shipped = this.shipped.get(agentId, line);
+    if (shipped) return shipped;
+    if (agentId === 'wolf') mood = WARDEN_MOOD;             // Warden ignores the biome's mood: he is always [serious]
     const voiceId = this.voiceIds[agentId];
     if (!voiceId) throw new Error(`No ElevenLabs voice for "${agentId}". Run scripts/design-voices.ts (EL_VOICE_${agentId.toUpperCase()}).`);
 
