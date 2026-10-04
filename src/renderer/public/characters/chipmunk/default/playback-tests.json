@@ -1,0 +1,25 @@
+{
+  "glb_reimport": {
+    "Idle": "PASS: imported rig, morphs, motion and loop/one-shot evaluation",
+    "Talk": "PASS: imported rig, morphs, motion and loop/one-shot evaluation",
+    "Run": "PASS: imported rig, morphs, motion and loop/one-shot evaluation",
+    "Handoff": "PASS: imported rig, morphs, motion and loop/one-shot evaluation",
+    "Happy": "PASS: imported rig, morphs, motion and loop/one-shot evaluation",
+    "Scared": "PASS: imported rig, morphs, motion and loop/one-shot evaluation",
+    "Listen": "PASS: imported rig, morphs, motion and loop/one-shot evaluation",
+    "Think": "PASS: imported rig, morphs, motion and loop/one-shot evaluation",
+    "Nervous": "PASS: imported rig, morphs, motion and loop/one-shot evaluation",
+    "Sad": "PASS: imported rig, morphs, motion and loop/one-shot evaluation",
+    "Excited": "PASS: imported rig, morphs, motion and loop/one-shot evaluation",
+    "Relief": "PASS: imported rig, morphs, motion and loop/one-shot evaluation",
+    "Celebrate": "PASS: imported rig, morphs, motion and loop/one-shot evaluation",
+    "Yawn": "PASS: imported rig, morphs, motion and loop/one-shot evaluation",
+    "Sleep": "PASS: imported rig, morphs, motion and loop/one-shot evaluation",
+    "WakeUp": "PASS: imported rig, morphs, motion and loop/one-shot evaluation",
+    "Greet": "PASS: imported rig, morphs, motion and loop/one-shot evaluation",
+    "Nudge": "PASS: imported rig, morphs, motion and loop/one-shot evaluation",
+    "Dizzy": "PASS: imported rig, morphs, motion and loop/one-shot evaluation",
+    "Walk": "PASS: imported rig, morphs, motion and loop/one-shot evaluation"
+  },
+  "asset_lab": "Pending: renderer/Asset Lab absent from checked main revision"
+}
