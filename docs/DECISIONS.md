@@ -190,6 +190,7 @@ Owner of this file: Chanuth (with Claude). Last updated: Sun Oct 4, 2026, early 
 | `animations/chip-actions.md`, `animations/Chip_Animations_for_Zarin.txt` | Chip's animation list |
 | `animations/Zarin_Graphics_and_Git_Plan.txt` | Zarin's setup, branches, saving, Codex tools, order of work |
 | `GIT-WORKFLOW.md` | Branches and merges for everyone |
+| `PROMPTS.md` | Copy-paste prompts for each person's AI (Melvin, Shafeen, Zarin; more per agent) |
 
 ## 15a. Melvin's original docs (repo)
 - `VISION.md` stays as the vision contract (north star, principles, Thronglets framing, demo safety, long-term phases), updated to match these decisions. `concept.md` is archived as `docs/archive/concept-v0.md`.
