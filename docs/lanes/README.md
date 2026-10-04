@@ -41,7 +41,7 @@ The orchestrator (Melvin's Claude Opus session) wrote your lane file, will audit
 ## Done means
 1. `npx tsc --noEmit` is clean and `npm test` is green (all tests, not just yours).
 2. Every test your lane file lists exists and passes. Tests use fakes only and finish in well under 10 s.
-3. Commit on your lane branch: `chip(logic): lane <X> <what>`. **Do not push. Do not merge.**
+3. **Do not commit, push, or merge.** Leave your changes uncommitted in the worktree; the orchestrator audits and commits them.
 4. Final message: files changed, test count, anything you decided that the lane file didn't say, and any STOP.
 
 ## STOP means
