@@ -16,7 +16,9 @@
 
 **Every agent gets the same three:**
 - `pixel/logic`, `pixel/sponsors`, `pixel/graphics`
-- `warden/…`, `archie/…`, `scout/…`, `swarm/…`, `iris/…`, `celene/…`
+- `warden/…`, `beaver/…` (Archie), `scout/…`, `swarm/…`, `iris/…`, `celene/…`
+
+Archie uses `beaver/*` branches (already in use); all other agents use their character name, e.g. `warden/*`.
 
 **Other branches:**
 
