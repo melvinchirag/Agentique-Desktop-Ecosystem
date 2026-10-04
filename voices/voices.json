@@ -4,16 +4,6 @@
     "description": "A tiny, bright, high-pitched cartoon chipmunk. Fast, excitable, warm, slightly squeaky, youthful, very expressive.",
     "previews": [
       {
-        "n": 1,
-        "file": "voices/previews/chipmunk-1.mp3",
-        "generated_voice_id": "A4nthsKETOzq7bpuEAEG"
-      },
-      {
-        "n": 2,
-        "file": "voices/previews/chipmunk-2.mp3",
-        "generated_voice_id": "YcZks653DPO5ghZZz7xW"
-      },
-      {
         "n": 3,
         "file": "voices/previews/chipmunk-3.mp3",
         "generated_voice_id": "zwHgyhSOMsEletx3ymIv"
