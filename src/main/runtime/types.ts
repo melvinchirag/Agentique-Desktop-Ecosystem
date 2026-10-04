@@ -107,6 +107,8 @@ export interface PresenceManager {
   start(): void;
   get(id: AgentId): Presence;
   touch(id: AgentId): void;                               // resets that animal's idle timer
+  /** While busy (running a job, or Chip mid-turn) the idle timers are held; setBusy(id, false) restarts them. */
+  setBusy(id: AgentId, busy: boolean): void;
   wake(id: AgentId, reason: 'user' | 'job'): Promise<void>; // resolves when the animal is back in the biome (max 3 s)
   onChange(cb: (id: AgentId, p: Presence) => void): void;
   dispose(): void;                                        // clears all timers
