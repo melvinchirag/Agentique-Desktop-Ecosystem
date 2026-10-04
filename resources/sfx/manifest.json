@@ -169,6 +169,19 @@
     "prompt": "rubber stamp pressed on paper, satisfying thud, short, clean"
   },
   {
+    "id": "workspace.typing-loop",
+    "file": "resources/sfx/workspace/typing-loop.mp3",
+    "durationMs": 2328,
+    "prompt": "soft quick keyboard typing, light mechanical key clicks, steady rhythm, close, clean, seamless",
+    "loop": true
+  },
+  {
+    "id": "workspace.paper-shuffle",
+    "file": "resources/sfx/workspace/paper-shuffle.mp3",
+    "durationMs": 1544,
+    "prompt": "a small stack of paper letters being shuffled and squared up, soft, close, clean"
+  },
+  {
     "id": "workspace.poke",
     "file": "resources/sfx/workspace/poke.mp3",
     "durationMs": 1257,

@@ -30,7 +30,7 @@ const VOICES: Record<string, VoiceSpec> = {
   },
   workspace: {
     name: 'Pixel', env: 'EL_VOICE_WORKSPACE',
-    description: 'A friendly, crisp, clever, upbeat assistant character. A little techy and precise, bright and helpful.',
+    description: 'A small, cute, very friendly helper character. Warm, sweet, bright and cheerful voice with a gentle smile in it, light and a little bouncy. Clever and upbeat, clear and easy to understand, slightly techy and tidy. Kind and welcoming, never robotic, never shrill.',   // tuned from 04-pixel-workspace.md §11 after the first previews
     text: "Inbox sorted! Three letters need you. I drafted a reply in your style and left it waiting in your drafts, so you can read it and hit send yourself."
   },
   beaver: {

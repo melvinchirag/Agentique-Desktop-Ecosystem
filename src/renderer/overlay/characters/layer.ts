@@ -156,9 +156,15 @@ export class CharacterController implements CharacterLayer {
     void this.load(a);
   }
   private async load(a: Animal): Promise<void> {
-    const url = `${this.assetBase.replace(/\/$/, '')}/${a.id}/default`;
+    const characterUrl = `${this.assetBase.replace(/\/$/, '')}/${a.id}`;
+    const url = `${characterUrl}/default`;
     let tuning: Tuning = {};
-    try { const response = await fetch(`${url}/character.json`); if (response.ok) tuning = tuningFrom(await response.json()); } catch { /* optional */ }
+    for (const manifest of [`${characterUrl}/character.json`, `${url}/character.json`]) {
+      try {
+        const response = await fetch(manifest);
+        if (response.ok) { tuning = tuningFrom(await response.json()); break; }
+      } catch { /* optional manifest */ }
+    }
     if (this.animals.get(a.id) !== a) return;
     a.tuning = tuning;
     try {

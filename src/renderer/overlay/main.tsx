@@ -10,6 +10,7 @@ import { createHubStore } from '../shell/hubStore';
 import type { CharacterLayer, OverlayUi } from '../shell/contracts';
 import { CharacterCanvas } from './characters';
 import { createAnimationDirector } from './director';
+import { pokeSound } from './director/sounds';
 import { computeLayout } from './layout';
 import { OverlayUiLayer } from './ui';
 
@@ -44,11 +45,15 @@ function OverlayApp({ display }: { display: DisplayLayout }) {
     const offLayout = window.adeShell.onLayoutChanged(next => director.setLayout(computeLayout(next)));
     const offSettings = window.adeShell.onSettingsChanged(settings => {
       store.getState().setSettings(settings); speech.setVoiceEnabled(settings.voiceEnabled);
+      sfx.setEnabled(settings.voiceEnabled && settings.sfxEnabled !== false);
+      sfx.setAmbienceEnabled(settings.ambienceEnabled === true);
     });
     const offInspect = window.adeShell.onInspectAgent(id => ui.openInspect(id));
     const offReplay = window.adeShell.onReplayTask(taskId => { void director.replay(taskId); });
     void window.ade.getSettings().then(settings => {
       store.getState().setSettings(settings); speech.setVoiceEnabled(settings.voiceEnabled);
+      sfx.setEnabled(settings.voiceEnabled && settings.sfxEnabled !== false);
+      sfx.setAmbienceEnabled(settings.ambienceEnabled === true);
     });
     const point = (event: PointerEvent | MouseEvent) => ({ x: event.clientX, y: event.clientY });
     const move = (event: MouseEvent) => hit.pointerMove(point(event));
@@ -57,6 +62,7 @@ function OverlayApp({ display }: { display: DisplayLayout }) {
       const shape = hit.hitTest(point(event));
       if (shape?.kind !== 'animal') return;
       const id = shape.id.slice('animal:'.length) as AgentId;
+      sfx.play(pokeSound(id));
       hit.setCaptured(true);
       if (id === 'chipmunk') talk.pointerDown();
       else ui.openInspect(id);
@@ -72,7 +78,7 @@ function OverlayApp({ display }: { display: DisplayLayout }) {
       window.removeEventListener('pointerdown', down);
       window.removeEventListener('pointerup', up);
       window.removeEventListener('pointercancel', up);
-      director.dispose(); speech.dispose();
+      director.dispose(); speech.dispose(); sfx.dispose();
     };
   }, [layer, ui, hit]);
   useEffect(() => () => hit.dispose(), [hit]);

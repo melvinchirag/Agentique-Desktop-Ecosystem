@@ -3,6 +3,7 @@ import type { BiomeEvent } from '../../../shared/events';
 import type { Clock } from '../../../main/runtime/types';
 import type { EventPlayer } from '../../../main/shell/contracts';
 import type { AnimationDirector, CreateAnimationDirector, DesktopLayout, DirectorDeps, SpeechItem } from '../../shell/contracts';
+import { soundsForEvent } from './sounds';
 
 const IDS: AgentId[] = ['chipmunk', 'workspace', 'wolf', 'beaver', 'eagle', 'ants', 'butterfly', 'nightingale'];
 const systemClock: Clock = {
@@ -117,6 +118,9 @@ export const createAnimationDirector: CreateAnimationDirector = (deps: DirectorD
   function handleEvent(e: BiomeEvent): void {
     const id = e.agentId;
     const a = agents[id];
+    if (!(e.type === 'agent.presence' && e.presence === a.presence && (e.presence === 'sleeping' || e.presence === 'active'))) {
+      for (const sound of soundsForEvent(e)) sfx.play(sound);
+    }
     switch (e.type) {
       case 'user.message':
         queue(['chipmunk'], async () => {
@@ -270,7 +274,6 @@ export const createAnimationDirector: CreateAnimationDirector = (deps: DirectorD
           await layer.moveTo('chipmunk', layout.centerX, { gait: 'walk' });
           if (disposed) return;
           const nudge = layer.play('chipmunk', 'Nudge', { once: true });
-          sfx.play('knock');
           await nudge;
           if (disposed) return;
           await wait(3000);
@@ -300,7 +303,6 @@ export const createAnimationDirector: CreateAnimationDirector = (deps: DirectorD
               await layer.moveTo('wolf', xOf(target), { gait: 'run' });
               if (disposed) return;
               const block = layer.play('wolf', 'Block', { once: true });
-              sfx.play('growl');
               await block;
               if (disposed) return;
               agents.wolf.mood = 'protective';

@@ -22,6 +22,7 @@ const api: AdeApi = {
   getSettings: () => ipcRenderer.invoke(IPC.getSettings),
   setSettings: patch => ipcRenderer.invoke(IPC.setSettings, patch),
   connectGoogle: () => ipcRenderer.invoke(IPC.connectGoogle),
+  disconnectGoogle: () => ipcRenderer.invoke(IPC.disconnectGoogle),
   learnEmailStyle: () => ipcRenderer.invoke(IPC.learnEmailStyle),
   getTimeline: (fromTs, toTs) => ipcRenderer.invoke(IPC.getTimeline, fromTs, toTs),
   getTaskEvents: taskId => ipcRenderer.invoke(IPC.getTaskEvents, taskId),

@@ -154,6 +154,8 @@ export interface SfxPlayer {
   play(name: string): void;
   setVolume(v: number): void;
   setEnabled(on: boolean): void;
+  setAmbienceEnabled(on: boolean): void;
+  dispose(): void;
 }
 /** src/renderer/audio/sfx.ts exports `createSfxPlayer`. baseUrl: where manifest.json and the files live. */
 export type CreateSfxPlayer = (opts?: { baseUrl?: string; audioContext?: () => AudioContext }) => SfxPlayer;

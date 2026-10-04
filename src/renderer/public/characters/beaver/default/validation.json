@@ -1,0 +1,54 @@
+{
+  "animal": "beaver",
+  "triangles": 5328,
+  "bones": 29,
+  "height": 0.6000000266358256,
+  "clips": {
+    "Idle": {
+      "loop": true,
+      "duration": 3.0
+    },
+    "Walk": {
+      "loop": true,
+      "duration": 1.0
+    },
+    "Talk": {
+      "loop": true,
+      "duration": 1.5
+    },
+    "Happy": {
+      "loop": false,
+      "duration": 1.2
+    }
+  },
+  "morphs": [],
+  "errors": [],
+  "manual_checks": [
+    "Facing -Y",
+    "Visual quality of every clip",
+    "Playback in ADE Asset Lab"
+  ],
+  "glb_bytes": 660984,
+  "exported_clips": [
+    "Celebrate",
+    "Dizzy",
+    "Excited",
+    "Greet",
+    "Handoff",
+    "Happy",
+    "Idle",
+    "Listen",
+    "Nervous",
+    "Nudge",
+    "Relief",
+    "Run",
+    "Sad",
+    "Scared",
+    "Sleep",
+    "Talk",
+    "Think",
+    "WakeUp",
+    "Walk",
+    "Yawn"
+  ]
+}

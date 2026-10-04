@@ -218,6 +218,13 @@ export interface MemoryApi {
   list(agentId: AgentId): Promise<Memory[]>; search(agentId: AgentId, q: string): Promise<Memory[]>;
   update(agentId: AgentId, id: string, text: string): Promise<void>; remove(agentId: AgentId, id: string): Promise<void>;
 }
+export interface MemoryWriter { add(agentId: AgentId, text: string): Promise<{ id: string }> }
+export interface DraftRecord { gmailDraftId: string; ts: number; toCount: number; subject: string; state: 'waiting' | 'sent' | 'deleted' }
+export interface DraftsLog {
+  record(d: Omit<DraftRecord, 'state'>): Promise<void>;
+  setState(gmailDraftId: string, state: 'sent' | 'deleted'): Promise<void>;
+  waiting(olderThanMs: number): Promise<DraftRecord[]>;
+}
 export interface TigerQueries { taskEvents(taskId: string): Promise<BiomeEvent[]>; wardenAudit(limit: number): Promise<object[]>; pulse(): Promise<object> }
 /** Backboard thread-document API used by Archie's fs_ask_file tool. */
 export interface DocumentsApi {

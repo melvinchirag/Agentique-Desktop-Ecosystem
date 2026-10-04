@@ -1,0 +1,15 @@
+{
+  "displayName": "Warden",
+  "scale": 1.0,
+  "yOffset": 0,
+  "bubbleHeight": 0.5,
+  "walkSpeed": 1.0,
+  "clipMap": {
+    "Idle": "Idle", "Walk": "Walk", "Run": "Run", "Talk": "Talk",
+    "Think": "Idle", "Work": "Idle", "Scared": "Growl", "Nervous": "Guard",
+    "Happy": "Sit", "Excited": "Proud", "Sad": "Idle", "Sit": "Sit",
+    "Guard": "Guard", "Block": "Block", "Howl": "Growl", "Handoff": "Talk",
+    "Greet": "Greet", "Sleep": "Sleep", "Yawn": "Yawn", "WakeUp": "WakeUp",
+    "SleepWalk": "Walk", "Carry": "Run"
+  }
+}

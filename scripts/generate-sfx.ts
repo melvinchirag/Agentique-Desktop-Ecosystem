@@ -49,6 +49,8 @@ const SOUNDS: Sound[] = [
   S('ants', 'poke', 1.2, 'dozens of tiny dry insect clicks and ticks scattering quickly, miniature mandible clicking, no voices'),
   S('workspace', 'blip', 0.6, 'friendly digital blip, soft clean UI tone, single short note'),
   S('workspace', 'stamp', 1, 'rubber stamp pressed on paper, satisfying thud, short, clean'),
+  S('workspace', 'typing-loop', 2, 'soft quick keyboard typing, light mechanical key clicks, steady rhythm, close, clean, seamless', true),
+  S('workspace', 'paper-shuffle', 1.5, 'a small stack of paper letters being shuffled and squared up, soft, close, clean'),
   S('workspace', 'poke', 1.2, 'friendly small robot double beep, two short clean synth tones boop-beep, digital assistant reacting'),
   S('butterfly', 'flutter-sparkle', 1.5, 'delicate butterfly wing flutter with a soft magical sparkle chime, light, airy'),
   S('butterfly', 'poke', 1.2, 'very soft rapid wing flutter burst then a single tiny glass chime twinkle, delicate, airy, no voice'),

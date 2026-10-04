@@ -111,6 +111,11 @@ export class BackboardClient implements LlmClient {
     return { assistantId: raw.assistant_id };
   }
 
+  /** Deletes a thread and its messages (confirmed: DELETE /threads/{id}, docs/sponsor-verify.md §P3). Pixel's style learner calls this so writing samples do not linger. */
+  async deleteThread(threadId: string): Promise<void> {
+    await this.request(`/threads/${encodeURIComponent(threadId)}`, { method: 'DELETE' });
+  }
+
   async deleteAssistant(assistantId: string): Promise<void> {
     await this.request(`/assistants/${encodeURIComponent(assistantId)}`, { method: 'DELETE' });
   }
