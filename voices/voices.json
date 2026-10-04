@@ -11,5 +11,26 @@
     ],
     "voice_id": "zwHgyhSOMsEletx3ymIv",
     "picked": 3
+  },
+  "beaver": {
+    "name": "Archie",
+    "description": "Friendly, practical working-guy voice; upbeat, a bit goofy, warm, mid-range, proud of tidy work.",
+    "previews": [
+      {
+        "n": 1,
+        "file": "voices/previews/beaver-1.mp3",
+        "generated_voice_id": "83mdEHHYiWyfNG4ShO8a"
+      },
+      {
+        "n": 2,
+        "file": "voices/previews/beaver-2.mp3",
+        "generated_voice_id": "KanYohjW0B1ZJIg4fDXW"
+      },
+      {
+        "n": 3,
+        "file": "voices/previews/beaver-3.mp3",
+        "generated_voice_id": "FO5duYkPmdxMq23n1kWp"
+      }
+    ]
   }
 }

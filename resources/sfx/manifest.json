@@ -84,6 +84,25 @@
     "prompt": "heavy wooden log dropped on a wooden pile, solid thunk, short"
   },
   {
+    "id": "beaver.wood-gnaw-loop",
+    "file": "resources/sfx/beaver/wood-gnaw-loop.mp3",
+    "durationMs": 4078,
+    "prompt": "beaver gnawing on wood continuously, steady crunchy chewing rhythm, close, clean, seamless",
+    "loop": true
+  },
+  {
+    "id": "beaver.paper-rustle",
+    "file": "resources/sfx/beaver/paper-rustle.mp3",
+    "durationMs": 1257,
+    "prompt": "a sheet of paper being picked up and rustled, soft, close, clean"
+  },
+  {
+    "id": "beaver.reverse-whoosh",
+    "file": "resources/sfx/beaver/reverse-whoosh.mp3",
+    "durationMs": 1074,
+    "prompt": "reversed whoosh, airy sound sucking backwards, rewind feel, short, clean"
+  },
+  {
     "id": "beaver.poke",
     "file": "resources/sfx/beaver/poke.mp3",
     "durationMs": 1074,
