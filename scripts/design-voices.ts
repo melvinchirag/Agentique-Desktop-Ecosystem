@@ -25,7 +25,7 @@ const VOICES: Record<string, VoiceSpec> = {
   },
   wolf: {
     name: 'Warden', env: 'EL_VOICE_WOLF',
-    description: 'A deep, calm, gravelly guardian wolf. Slow, steady, few words, protective, never mean.',
+    description: 'A deep, calm, clear guardian with a wolf in his voice: a low rumbling growl sits under every word, slightly gravelly and husky, with a faint wolfish rasp at the start of phrases. Slow, steady, few words, protective, serious, never mean. Clear and easy to understand.',   // tuned from SPONSORS §3.2 after the first previews
     text: "Not on my watch. Drafts only. I check every action before it happens, and I always ask you first. Nothing leaves this desktop without your say."
   },
   workspace: {
