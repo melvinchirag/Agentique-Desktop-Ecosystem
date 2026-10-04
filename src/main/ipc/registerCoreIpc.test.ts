@@ -31,9 +31,27 @@ describe('registerCoreIpc', () => {
     for (const [key, channel] of channels) {
       const method = vi.fn().mockResolvedValue(key);
       (f.adapter as unknown as Record<string, unknown>)[key] = method;
-      expect(await f.handlers.get(channel)?.({}, 'first', 17)).toBe(key);
-      expect(method).toHaveBeenCalledWith('first', 17);
+      if (key === 'sendVoice') {
+        const args = [new ArrayBuffer(4), 'audio/test'];
+        expect(await f.handlers.get(channel)?.({}, ...args)).toBe(key);
+        expect(method).toHaveBeenCalledWith(...args);
+      } else if (key === 'sendMessage') {
+        const args = ['hello', 'text'];
+        expect(await f.handlers.get(channel)?.({}, ...args)).toBe(key);
+        expect(method).toHaveBeenCalledWith(...args);
+      } else {
+        expect(await f.handlers.get(channel)?.({}, 'first', 17)).toBe(key);
+        expect(method).toHaveBeenCalledWith('first', 17);
+      }
     }
+    f.dispose(); f.consoleSpy.mockRestore();
+  });
+
+  it('rejects invalid message and voice payloads', async () => {
+    const f = fixture();
+    await expect(f.handlers.get(IPC.sendMessage)?.({}, 'x'.repeat(4001), 'text')).rejects.toThrow();
+    await expect(f.handlers.get(IPC.sendVoice)?.({}, new Uint8Array(4), 'audio/test')).rejects.toThrow();
+    await expect(f.handlers.get(IPC.sendVoice)?.({}, new ArrayBuffer(10 * 1024 * 1024 + 1), 'audio/test')).rejects.toThrow();
     f.dispose(); f.consoleSpy.mockRestore();
   });
 
@@ -53,3 +71,5 @@ describe('registerCoreIpc', () => {
     f.consoleSpy.mockRestore();
   });
 });
+
+
