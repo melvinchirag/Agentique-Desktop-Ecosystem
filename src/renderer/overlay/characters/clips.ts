@@ -53,6 +53,7 @@ export class ClipPlayer {
     const next = clip ? this.mixer.clipAction(clip) : null;
     if (next) {
       next.reset();
+      next.timeScale = name === 'SleepWalk' && clip?.name === 'Fly' ? 0.5 : 1;
       if (once) { next.setLoop(LoopOnce, 1); next.clampWhenFinished = true; }
       else { next.setLoop(LoopRepeat, Infinity); next.clampWhenFinished = false; }
       next.enabled = true;

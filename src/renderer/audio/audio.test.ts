@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createSpeechQueue } from './speechQueue';
 import { createSfxPlayer } from './sfx';
+import { applyAudioSettings } from './settings';
 import { createMicRecorder } from './mic';
 import { createPushToTalk } from './pushToTalk';
 import type { SpeechItem } from '../shell/contracts';
@@ -59,6 +60,16 @@ describe('speech queue', () => {
 });
 
 describe('SFX, mic, and push to talk', () => {
+  it('applies Voices and Sound effects independently', () => {
+    const speech = { setVoiceEnabled: vi.fn() };
+    const sfx = { setEnabled: vi.fn(), setAmbienceEnabled: vi.fn() };
+    applyAudioSettings({ voiceEnabled: false, sfxEnabled: true, ambienceEnabled: false }, speech, sfx);
+    expect(speech.setVoiceEnabled).toHaveBeenLastCalledWith(false);
+    expect(sfx.setEnabled).toHaveBeenLastCalledWith(true);
+    applyAudioSettings({ voiceEnabled: true, sfxEnabled: false, ambienceEnabled: false }, speech, sfx);
+    expect(speech.setVoiceEnabled).toHaveBeenLastCalledWith(true);
+    expect(sfx.setEnabled).toHaveBeenLastCalledWith(false);
+  });
   it('resolves manifest IDs, limits simultaneous effects to two, and loops ambience quietly on demand', async () => {
     const audio = fakeAudio();
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(async url =>

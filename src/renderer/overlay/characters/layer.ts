@@ -159,14 +159,17 @@ export class CharacterController implements CharacterLayer {
     const characterUrl = `${this.assetBase.replace(/\/$/, '')}/${a.id}`;
     const url = `${characterUrl}/default`;
     let tuning: Tuning = {};
+    let hasManifest = false;
     for (const manifest of [`${characterUrl}/character.json`, `${url}/character.json`]) {
       try {
         const response = await fetch(manifest);
-        if (response.ok) { tuning = tuningFrom(await response.json()); break; }
+        if (response.ok) { tuning = tuningFrom(await response.json()); hasManifest = true; break; }
       } catch { /* optional manifest */ }
     }
     if (this.animals.get(a.id) !== a) return;
     a.tuning = tuning;
+    // Swarm's model and manifest arrive together; keep its animated 12-ant placeholder until then.
+    if (a.id === 'ants' && !hasManifest) return;
     try {
       const gltf = await new GLTFLoader().loadAsync(`${url}/model.glb`);
       if (this.animals.get(a.id) !== a) return;

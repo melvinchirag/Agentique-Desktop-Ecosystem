@@ -4,5 +4,14 @@
   "yOffset": 0,
   "bubbleHeight": 0.5,
   "walkSpeed": 1.0,
-  "clipMap": { "Perch": "Idle", "Glide": "Fly" }
+  "clipMap": {
+    "Idle": "Idle", "Perch": "Idle", "Walk": "Walk", "Run": "Run",
+    "Fly": "Fly", "Glide": "Fly", "SleepWalk": "Fly",
+    "Talk": "Talk", "Think": "Think", "Work": "Fly", "Listen": "Listen",
+    "Happy": "Happy", "Celebrate": "Celebrate", "Greet": "Greet",
+    "Scared": "Scared", "Nervous": "Nervous", "Sad": "Sad", "Excited": "Excited",
+    "Relief": "Relief", "Handoff": "Handoff", "Nudge": "Nudge", "Dizzy": "Dizzy",
+    "Sleep": "Sleep", "Yawn": "Yawn", "WakeUp": "WakeUp",
+    "Takeoff": "Takeoff", "Land": "Land"
+  }
 }
