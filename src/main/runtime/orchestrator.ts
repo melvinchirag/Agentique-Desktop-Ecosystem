@@ -43,6 +43,15 @@ const STOP_RE = /^(?:stop|cancel|never\s+mind|nvm)(?![\p{L}\p{N}'])/iu;
 const SNOOZE_RE = /^(later|not now|maybe later|remind me later)\b/i;
 const STOP_ASKING_RE = /stop asking/i;
 
+/** Route clear external-information requests even if Chip's model skips its delegation tool. */
+function requiredSpecialist(text: string): SpecialistId | undefined {
+  if (!/\b(find|show|list|open|read|check|search|look up|what|which|where|latest|newest)\b/i.test(text)) return undefined;
+  if (/\b(files?|folders?|downloads?|downloaded|desktop|documents|pdfs?|on my computer)\b/i.test(text)) return 'beaver';
+  if (/\b(emails?|inbox|gmail)\b/i.test(text)) return 'workspace';
+  if (/\b(web|websites?|internet|online|news|sources?)\b/i.test(text)) return 'eagle';
+  return undefined;
+}
+
 const USER_MOODS: readonly UserMood[] = ['calm', 'happy', 'excited', 'stressed', 'angry', 'sad'];
 const HISTORY_KINDS: readonly HistoryKind[] = ['recent_tasks', 'warden_blocks', 'agent_activity', 'mood_history'];
 const AGENT_IDS = Object.keys(AGENTS) as AgentId[];
@@ -219,6 +228,18 @@ export function createOrchestrator(deps: OrchestratorDeps, opts: OrchestratorOpt
       const memory = item.kind === 'user' ? 'Auto' : 'Readonly';
       let text = await converse(turn, content, memory);
       if (item.kind === 'user') recoverPseudoMood(text, turn);
+      if (item.kind === 'user' && !turn.delegationSucceeded && !turn.actionAttempted) {
+        const agent = requiredSpecialist(item.text);
+        if (agent) {
+          if (installedSpecialists().includes(agent)) {
+            EXECUTORS.delegate({ agent, task: item.text, title: item.text.slice(0, 80) }, turn);
+            turn.actionAttempted = true;
+            text = '(silent)';
+          } else {
+            text = `[bubble: Unavailable]\n${nameOf(agent)} isn't available right now.`;
+          }
+        }
+      }
       // A silent response is only valid after delegation. Retry once only when no action
       // was attempted, so a recovery cannot repeat an already executed side effect.
       const unanswered = (): boolean => parseChipOutput(text).silent || !text.trim();
@@ -240,6 +261,9 @@ export function createOrchestrator(deps: OrchestratorDeps, opts: OrchestratorOpt
         text = `[bubble: Results ready]\n${item.finished.map(({ job, result }) =>
           `${nameOf(job.agent)}: ${result.say || result.summary}`).join('\n')}`;
       }
+
+      // A delegated job has not returned yet. Never speak a speculative finding from this turn.
+      if (item.kind === 'user' && turn.delegationSucceeded) text = '(silent)';
 
       if (item.kind === 'user' && !turn.moodReported) moodFallback(turn, item.voiceCues);
 
