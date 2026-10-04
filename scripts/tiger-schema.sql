@@ -61,13 +61,22 @@ SELECT add_continuous_aggregate_policy('job_stats_daily',
   schedule_interval => INTERVAL '5 minutes', if_not_exists => TRUE);
 
 -- ── Views ────────────────────────────────────────────────────────────────────
--- Warden's audit trail
+-- Warden's audit trail. The first nine columns are the original ones, in order; asking_agent, tool, and how
+-- are appended (03-warden-security.md §10). asking_agent + tool come from the tool.request with the same callId
+-- (agent_id here is always Warden himself).
+CREATE INDEX IF NOT EXISTS ix_events_call ON biome_events ((payload->>'callId'), ts DESC) WHERE type = 'tool.request';
 CREATE OR REPLACE VIEW wolf_audit AS
-SELECT ts, task_id, agent_id, type,
-       payload->>'callId' AS call_id, payload->>'verdict' AS verdict,
-       payload->>'rule' AS rule, payload->>'reason' AS reason, payload->>'approved' AS approved
-FROM biome_events
-WHERE type IN ('wolf.verdict', 'wolf.alert', 'approval.resolve');
+SELECT e.ts, e.task_id, e.agent_id, e.type,
+       e.payload->>'callId' AS call_id, e.payload->>'verdict' AS verdict,
+       e.payload->>'rule' AS rule, e.payload->>'reason' AS reason, e.payload->>'approved' AS approved,
+       r.agent_id AS asking_agent, r.tool AS tool, e.payload->>'how' AS how
+FROM biome_events e
+LEFT JOIN LATERAL (
+  SELECT q.agent_id, q.payload->>'tool' AS tool FROM biome_events q
+  WHERE q.type = 'tool.request' AND q.payload->>'callId' = e.payload->>'callId'
+  ORDER BY q.ts DESC LIMIT 1
+) r ON true
+WHERE e.type IN ('wolf.verdict', 'wolf.alert', 'approval.resolve');
 
 -- Jobs (Agent Hub status history)
 CREATE OR REPLACE VIEW job_history AS
@@ -97,6 +106,12 @@ CREATE TABLE IF NOT EXISTS file_ops (
   from_path TEXT, to_path TEXT, batch_id UUID, undone BOOLEAN DEFAULT false
 );
 CREATE INDEX IF NOT EXISTS ix_file_ops_batch ON file_ops (batch_id, ts DESC);
+-- Archie's journal (02-archie-files.md §5): a 'swept' flag, and op may also be 'trash' or 'sweep' (op is free text).
+-- Ids come from the local journal and are not guaranteed to be UUIDs, so they are stored as text.
+ALTER TABLE file_ops ADD COLUMN IF NOT EXISTS swept BOOLEAN DEFAULT false;
+ALTER TABLE file_ops ALTER COLUMN id TYPE TEXT;
+ALTER TABLE file_ops ALTER COLUMN job_id TYPE TEXT;
+ALTER TABLE file_ops ALTER COLUMN batch_id TYPE TEXT;
 
 -- Swarm's plans (status: planned | done | moved | skipped)
 CREATE TABLE IF NOT EXISTS plan_items (
