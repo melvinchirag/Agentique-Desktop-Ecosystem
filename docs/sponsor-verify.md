@@ -115,6 +115,9 @@ What this proves: the model accepts every tag in the §3.3 table and does not sp
 **Important:** `alignment.characters` includes the audio tag itself (`[`, `e`, `x`, `c`, ... `]`). The voice service must drop the tag's characters before handing alignment to the renderer, and take "first word" timing from the first character after the tag.
 Audio arrives as base64 in JSON here, not as raw bytes.
 
+### E3b. Speech-to-text cues — verified
+`scribe_v2` with `tag_audio_events: true` returns words of `type: 'audio_event'` written with square brackets: `[sighs]`, `[laughs]` (the plan's examples use round brackets). `VoiceService.transcribe` returns them as-is in `cues`.
+
 ### E4–E6
 - `eleven_flash_v2_5` returns 200 for the same line (use without tags).
 - Subscription: tier `creator`, status `active`, 131,000 credits per period.
@@ -130,6 +133,7 @@ Text to Speech, Speech to Text, Voices (Read; Write to create designed voices), 
 ### T1. Syntax — verified on TimescaleDB 2.30.2
 `scripts/tiger-schema.sql` ran twice with no error: hypertable, `timescaledb.compress` + `add_compression_policy`, `add_retention_policy`, three continuous aggregates with refresh policies, three views, five tables. Events were written and read back through `wolf_audit`, `job_history`, and `user_mood_timeline`.
 Notes: continuous aggregates must be created outside a transaction and use `WITH NO DATA`; the daily aggregates need `start_offset` of several days.
+On this version aggregates are materialized-only by default, so today's rows would not show until tomorrow. The schema sets `timescaledb.materialized_only = false` on all three; verified that a just-written event appears in `mood_daily` and `job_stats_daily` at once.
 
 ### T2. TLS — needs a change in the plan
 The Tiger Cloud server certificate is signed by Tiger's own CA (`ca.timescale.com`), which Node does not trust. With default settings `pg` fails with a certificate error.
