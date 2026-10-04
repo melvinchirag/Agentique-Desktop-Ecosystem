@@ -1,4 +1,4 @@
-import { appendFile, mkdir, readFile } from 'node:fs/promises';
+import { appendFile, mkdir, open, readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
 import type { FileOp, FileOpsJournal } from '../../runtime/types';
 import { RealClock } from '../../runtime/clock';
@@ -95,7 +95,10 @@ export class LocalFileOpsJournal implements FileOpsJournal {
 
   private async append(row: JournalRow): Promise<void> {
     await mkdir(path.dirname(path.resolve(this.filePath)), { recursive: true });
-    await appendFile(this.filePath, `${JSON.stringify(row)}\n`, 'utf8');
+    // After a crash mid-write the last line can be cut short with no newline; start on a fresh line so the new
+    // row is never glued onto (and lost with) the torn one.
+    const prefix = (await endsWithoutNewline(this.filePath)) ? '\n' : '';
+    await appendFile(this.filePath, `${prefix}${JSON.stringify(row)}\n`, 'utf8');
   }
 
   private async readState(): Promise<{ ops: FileOp[]; undone: Set<string>; swept: Set<string> }> {
@@ -116,7 +119,9 @@ export class LocalFileOpsJournal implements FileOpsJournal {
       try {
         row = JSON.parse(line);
       } catch {
-        throw new Error(`Invalid journal JSON on line ${index + 1}`);
+        // A torn line (power cut or kill during an append) must not make every batch un-undoable: skip it.
+        console.warn(`[journal] skipping unreadable line ${index + 1} of ${path.basename(this.filePath)}`);
+        continue;
       }
       if (isMarker(row)) {
         if (row.kind === 'undone') undone.add(row.batchId);
@@ -126,7 +131,7 @@ export class LocalFileOpsJournal implements FileOpsJournal {
         if (row.swept || row.op === 'sweep') swept.add(row.batchId);
         if (row.undone) undone.add(row.batchId);
       } else {
-        throw new Error(`Invalid journal row on line ${index + 1}`);
+        console.warn(`[journal] skipping unrecognised row on line ${index + 1} of ${path.basename(this.filePath)}`);
       }
     }
     return { ops, undone, swept };
@@ -136,6 +141,21 @@ export class LocalFileOpsJournal implements FileOpsJournal {
 /** Short constructor for callers that prefer a factory. */
 export function createLocalFileOpsJournal(filePath: string, options?: LocalFileOpsJournalOptions): FileOpsJournal {
   return new LocalFileOpsJournal(filePath, options);
+}
+
+/** True when the file exists, is not empty, and its last byte is not a newline (a write was cut short). */
+async function endsWithoutNewline(file: string): Promise<boolean> {
+  let size: number;
+  try { size = (await stat(file)).size; } catch (error) { if (isMissingFile(error)) return false; throw error; }
+  if (size === 0) return false;
+  const handle = await open(file, 'r');
+  try {
+    const last = Buffer.alloc(1);
+    await handle.read(last, 0, 1, size - 1);
+    return last[0] !== 0x0a;
+  } finally {
+    await handle.close();
+  }
 }
 
 function isMissingFile(error: unknown): boolean {
