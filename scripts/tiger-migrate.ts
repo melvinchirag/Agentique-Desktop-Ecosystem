@@ -4,9 +4,10 @@
 //   npx tsx scripts/tiger-migrate.ts --schema ade_test --drop   drop that schema
 // TLS stays verified. Tiger Cloud signs with its own CA, so set TIGER_CA_FILE to the CA certificate (.pem).
 import { readFileSync, existsSync } from 'node:fs';
-import { dirname, join, isAbsolute } from 'node:path';
+import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import pg from 'pg';
+import { redact, tigerPoolConfig } from '../src/main/store/tiger';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -19,22 +20,6 @@ function readEnv(): Record<string, string> {
     if (m) out[m[1]] = m[2].trim().replace(/^"(.*)"$/, '$1');
   }
   return out;
-}
-
-/** Never let a connection string reach the console. */
-export function redact(message: string): string {
-  return String(message).replace(/postgres(?:ql)?:\/\/\S+/gi, '[database url]');
-}
-
-/** Build pg options with verified TLS. Shared by the runtime stores. */
-export function tigerPoolConfig(env: Record<string, string | undefined> = { ...readEnv(), ...process.env }): pg.PoolConfig {
-  const raw = env.TIGER_DATABASE_URL;
-  if (!raw) throw new Error('TIGER_DATABASE_URL is missing from .env');
-  const url = new URL(raw);
-  for (const key of ['sslmode', 'ssl', 'sslcert', 'sslkey', 'sslrootcert']) url.searchParams.delete(key);
-  const caFile = env.TIGER_CA_FILE;
-  const ca = caFile ? readFileSync(isAbsolute(caFile) ? caFile : join(ROOT, caFile), 'utf8') : undefined;
-  return { connectionString: url.toString(), ssl: { rejectUnauthorized: true, ...(ca ? { ca } : {}) }, connectionTimeoutMillis: 10_000 };
 }
 
 /** Split a SQL file into statements. The schema has no functions or DO blocks, so splitting on ';' is safe. */
@@ -50,7 +35,7 @@ async function main(): Promise<void> {
   const at = args.indexOf('--schema');
   const schema = at >= 0 ? args[at + 1] : undefined;
   if (schema !== undefined && !/^[a-z_][a-z0-9_]*$/.test(schema)) throw new Error('--schema must be a plain lowercase name');
-  const client = new pg.Client(tigerPoolConfig());
+  const client = new pg.Client(tigerPoolConfig({ ...readEnv(), ...process.env }, ROOT));
   try { await client.connect(); }
   catch (e: any) {
     const hint = /certificate|self.signed/i.test(e.message)
