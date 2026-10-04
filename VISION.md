@@ -78,7 +78,7 @@ Every agent is a character. Each creature's animal fits its job.
 ### How you interact
 - **You talk to Chip**: click-and-hold Chip to speak, or type in the Agent Hub. Chip hands the work to the others, and you **watch the creatures react and work**: an ant carries each step, Scout takes off for the web, Archie gets to work on files.
 - **The Agent Hub**: a small draggable box, the only app-like UI. It shows what every animal is doing, wakes animals that went to sleep, and holds the chat and memories.
-- **Clicking another animal** shows what it's doing (proposed).
+- **Clicking another animal** opens its inspect card: what it's doing, wake/sleep, what it remembers (not a chat).
 - **Keyboard shortcuts**: later (not for the hackathon).
 
 ### Look and feel

@@ -52,8 +52,8 @@ Owner of this file: Chanuth (with Claude). Last updated: Sun Oct 4, 2026, early 
 - **Non-blocking delegation:** Chip hands off and is free immediately; results come back as new Chip turns. Chains use `next_step`.
 - **Clarifying questions:** Chip is interactive and asks one short question when anything important is unclear.
 - **You only ever talk to Chip** ✅. Other animals never take direct conversation.
-- **Clicking another animal** → its **inspect card** (what it's doing, its queue, wake/sleep, its memories), not a chat. *(Recommendation; awaiting Chanuth's OK.)*
-- **How you talk to Chip:** no global hotkeys. **Click-and-hold Chip to speak** (or the Hub's mic button), and type in the Hub's chat box. *(Recommendation; awaiting Chanuth's OK.)*
+- **Clicking another animal** → its **inspect card** (what it's doing, its queue, wake/sleep, its memories), not a chat. ✅
+- **How you talk to Chip:** no global hotkeys. **Click-and-hold Chip to speak** (or the Hub's mic button), and type in the Hub's chat box. ✅
 - **Multi-step goals:** Chip asks **Swarm for the plan first**, then delegates each step itself. **Swarm never hands out work.** Each step is shown as **one ant walking from Swarm's colony to the animal doing that step**, carrying the task ✅.
 - **Keyboard shortcuts:** **deferred** (too much testing tonight) ✅.
 - **Talking files** (Melvin's "object agents"): Archie reads a desktop file and the file "speaks" a one-line summary. Low priority ✅.

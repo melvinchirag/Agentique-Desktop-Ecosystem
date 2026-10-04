@@ -381,7 +381,7 @@ Subscribes to `window.ade.onEvent`. Keeps a per-agent state machine plus an **ac
 
 ### 5.4 Overlay UI (`renderer/ui`)
 - **Chat:** lives in the Agent Hub (transcript + text box). **Voice: click-and-hold on Chip (or the Hub's mic button)**, no global hotkeys.
-- **Clicking another animal** → its inspect card (status, current job, queue, wake/sleep, memories). Pending Chanuth's OK.
+- **Clicking another animal** → its inspect card (status, current job, queue, wake/sleep, memories). ✅
 - **ApprovalCard:** Wolf avatar, `title`, `preview`, **Allow** / **Deny** buttons.
 - **DraftsTray:** artifacts (email drafts → "Open in Gmail", file plans, research briefs, social posts → "Copy").
 - **Timeline:** bottom strip from Tiger; click a task → Biome Replay. Wolf Audit tab lists every verdict.
