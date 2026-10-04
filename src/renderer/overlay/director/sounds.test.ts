@@ -12,6 +12,7 @@ describe('sound mapping', () => {
     [entry('agent.presence', { presence: 'active', reason: 'startup' }), 'chipmunk.chirp'],
     [entry('agent.mood', { mood: 'scared' }), 'chipmunk.squeak'],
     [entry('agent.mood', { mood: 'happy' }), 'chipmunk.happy-trill'],
+    [entry('job.update', { state: 'done', to: 'beaver' }, 'beaver'), 'chipmunk.happy-trill'],
     [entry('nudge.fire'), 'chipmunk.knock-knock'],
     [entry('agent.status', { status: 'error' }), 'chipmunk.boing'],
     [entry('agent.presence', { presence: 'sleeping' }), 'chipmunk.snore'],

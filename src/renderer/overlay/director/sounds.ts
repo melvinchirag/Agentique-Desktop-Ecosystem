@@ -22,6 +22,7 @@ export function soundsForEvent(event: BiomeEvent): string[] {
     case 'agent.mood': return id === 'chipmunk' && event.mood === 'scared' ? ['chipmunk.squeak'] : id === 'chipmunk' && event.mood === 'happy' ? ['chipmunk.happy-trill'] : [];
     case 'agent.handoff': return event.via === 'ants' ? ['ants.skitter'] : ['system.scroll-pass'];
     case 'agent.return': return id === 'eagle' ? ['eagle.whoosh'] : [];
+    case 'job.update': return event.state === 'done' && event.to !== 'chipmunk' ? ['chipmunk.happy-trill'] : [];
     case 'nudge.fire': return ['chipmunk.knock-knock'];
     case 'tool.request': return event.risk === 'read' ? [] : ['wolf.sniff'];
     case 'wolf.verdict': return event.verdict === 'deny' ? ['wolf.growl'] : event.verdict === 'ask' ? ['wolf.paw-thump'] : [];

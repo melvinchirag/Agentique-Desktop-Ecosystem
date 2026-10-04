@@ -324,9 +324,10 @@ describe('AnimationDirector event choreography', () => {
     expect(h.events('flyToHub')[0].args).toEqual(['workspace', 'Draft']);
   });
 
-  it('ordinary job.update has no overlay action', async () => {
+  it('ordinary job.update plays the completion sound without an overlay action', async () => {
     const h = harness(); h.director.handle(event('job.update', { jobId: 'j', to: 'beaver', state: 'done', title: 'Files', requestedBy: 'chipmunk' })); await settle();
-    expect(h.calls).toEqual([]);
+    expect(h.events('sfx').map(e => e.args[0])).toEqual(['chipmunk.happy-trill']);
+    expect(h.events('moveTo')).toEqual([]);
   });
 
   it('serializes a second move behind the first', async () => {

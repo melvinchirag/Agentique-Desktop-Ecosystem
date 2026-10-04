@@ -140,6 +140,7 @@ export function createRealCore(options: RealCoreOptions = {}): CoreAdapter {
         timers: { ...settings.timers, ...patch.timers }, nudges: { ...settings.nudges, ...patch.nudges } };
     },
     connectGoogle: async () => { throw new Error('Google connector is not integrated yet.'); },
+    disconnectGoogle: async () => { settings = { ...settings, googleEmail: undefined }; },
     learnEmailStyle: async () => { throw new Error('Pixel is not integrated yet.'); },
     getTimeline: (from, to) => queries.timeline(from, to),
     getTaskEvents: taskId => queries.taskEvents(taskId),
