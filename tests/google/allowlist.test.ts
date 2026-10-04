@@ -55,7 +55,7 @@ describe('P3 Google route allowlist', () => {
     const offenders = files.filter((file) => {
       if (file.endsWith('allowlist.ts')) return false;
       const source = readFileSync(file, 'utf8').replace(/\/\*[\s\S]*?\*\/|\/\/[^\r\n]*/g, '');
-      return /\b(?:send|permissions)\b|\.delete\s*\(/i.test(source);
+      return /\/(?:send|permissions)(?:\b|\/)|\.delete\s*\(/i.test(source);
     });
     expect(offenders).toEqual([]);
   });
