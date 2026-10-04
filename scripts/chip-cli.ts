@@ -7,7 +7,10 @@
  * Commands: /ff 10m  /nudge  /jobs  /presence  /scenario C7  /quit
  */
 import { existsSync, readFileSync } from 'node:fs';
+import { mkdtemp, readdir, rm, utimes, writeFile } from 'node:fs/promises';
 import assert from 'node:assert/strict';
+import os from 'node:os';
+import path from 'node:path';
 import { createInterface } from 'node:readline';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { fileURLToPath } from 'node:url';
@@ -15,6 +18,9 @@ import type { AgentId } from '../src/shared/agents';
 import { AGENTS } from '../src/shared/config';
 import type { BiomeEvent } from '../src/shared/events';
 import { nameOf } from '../src/main/agents/chipmunk/names';
+import { createChipCore, type ChipCore } from '../src/main/chipCore';
+import { FileIndex } from '../src/main/connectors/fs/fileIndex';
+import { LocalFileOpsJournal } from '../src/main/connectors/fs/localJournal';
 import { FakeClock, flushPromises, RealClock } from '../src/main/runtime/clock';
 import type { LlmClient, LlmResponse, SendParams, SpecialistId } from '../src/main/runtime/types';
 import {
@@ -22,6 +28,9 @@ import {
 } from '../src/main/testing';
 import { buildOfflineChip, type OfflineChip } from '../src/main/testing/offlineChip';
 import { DEMO_TIMERS, makeTestSettings } from '../src/main/testing/settings';
+import { FakeFsShell } from '../src/main/testing/fakeFsShell';
+import { makeSandbox } from '../tests/fixtures/makeSandbox';
+import { AskingWardenGate, ScriptedApprovals } from '../tests/scenarios/archie/approvals';
 
 const SEC = 1000;
 const MIN = 60 * SEC;
@@ -77,7 +86,7 @@ function formatEvent(e: BiomeEvent, startTs: number): string {
   return paint(COLORS[e.type] ?? '0', line);
 }
 
-function attachPrinter(chip: OfflineChip, startTs: number, out: (s: string) => void): () => void {
+function attachPrinter(chip: Pick<OfflineChip, 'bus'>, startTs: number, out: (s: string) => void): () => void {
   return chip.bus.subscribe((e) => out(formatEvent(e, startTs)));
 }
 
@@ -176,6 +185,74 @@ class OfflineBrain implements LlmClient {
     const speech = items.length === 0 ? 'Your animals are back.'
       : items.map((i) => (i.ok ? `${nameOf(i.agent as AgentId)} is back. ${i.summary}` : `${nameOf(i.agent as AgentId)} hit a problem. ${i.summary}`)).join(' ');
     return completed(reply(items.length === 1 ? `${nameOf(items[0]!.agent as AgentId)} ✓` : 'All back ✓', speech), THREAD);
+  }
+}
+
+/** Fixture-only canned brains for /sandbox. These never read credentials or use a live provider. */
+class SandboxChipBrain implements LlmClient {
+  async send(p: SendParams): Promise<LlmResponse> {
+    if (p.content.startsWith('[job_results]')) {
+      const result = /- \S+ \[beaver\] · ".*" · (ok|failed)\n\s+summary: (.*)/.exec(p.content);
+      const summary = result?.[2]?.trim();
+      return completed(reply(result?.[1] === 'ok' ? 'Archie ✓' : 'Archie',
+        summary || 'No Archie fixture result was returned.'));
+    }
+    const request = /\[user\]\n([\s\S]*)$/.exec(p.content)?.[1]?.trim() ?? '';
+    return requiresAction([toolCall('report_user_mood', { mood: 'calm', intensity: 0.3, reason: 'plain words' }),
+      toolCall('delegate', { agent: 'beaver', title: request, task: request })]);
+  }
+  async submitToolOutputs(): Promise<LlmResponse> { return completed('(silent)'); }
+}
+
+class SandboxArchieBrain implements LlmClient {
+  private nextThread = 0;
+  private readonly actions = new Map<string, string>();
+  async send(p: SendParams): Promise<LlmResponse> {
+    const request = p.content.toLowerCase();
+    const action = /^undo\b/.test(request) ? 'undo' : /\bdelete\b|\btrash\b/.test(request) ? 'trash'
+      : /\bclean\b|\bsort\b|\borganize\b/.test(request) ? 'plan' : 'search';
+    const thread = `fixture-archie-${++this.nextThread}`;
+    this.actions.set(thread, action);
+    const call = action === 'undo' ? toolCall('fs_undo', {})
+      : action === 'trash' ? toolCall('fs_trash', { paths: ['Desktop/old-notes.txt'] })
+        : action === 'plan' ? toolCall('fs_plan_organize', { path: 'Downloads', strategy: 'by_type' })
+          : toolCall('fs_search', { query: 'resume' });
+    return requiresAction([call], thread);
+  }
+  async submitToolOutputs(threadId: string, outputs: { output: string }[]): Promise<LlmResponse> {
+    let value: Record<string, unknown>;
+    try {
+      const parsed: unknown = JSON.parse(outputs[0]?.output ?? '{}');
+      value = parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed as Record<string, unknown> : {};
+    } catch {
+      value = { error: 'INVALID_TOOL_RESULT' };
+    }
+    const action = this.actions.get(threadId);
+    if (action === 'plan' && typeof value.plan_id === 'string' && value.plan_id) {
+      this.actions.set(threadId, 'apply');
+      return requiresAction([toolCall('fs_apply_plan', { plan_id: value.plan_id })], threadId);
+    }
+    this.actions.delete(threadId);
+    const results = Array.isArray(value.results) ? value.results : [];
+    const names = results.flatMap((item) => {
+      if (!item || typeof item !== 'object' || !('name' in item) || typeof item.name !== 'string') return [];
+      return [item.name];
+    });
+    const description = typeof value.error === 'string' ? `Archie reported ${value.error}.`
+      : action === 'search' ? `Found ${results.length} fixture file${results.length === 1 ? '' : 's'}${names.length ? `: ${names.slice(0, 3).join(', ')}` : ''}.`
+        : typeof value.message === 'string' ? value.message
+          : action === 'plan' && value.plan_id === null ? 'Nothing to move in the fixture.'
+            : typeof value.summary === 'string' ? value.summary : 'Archie returned no confirmed change.';
+    return completed(`BUBBLE: Archie\nSAY: ${description}\nSUMMARY: ${description}`, threadId);
+  }
+}
+
+async function ageSandboxFiles(dir: string, old: number, fresh: string): Promise<void> {
+  for (const entry of await readdir(dir, { withFileTypes: true })) {
+    const item = path.join(dir, entry.name);
+    if (entry.isSymbolicLink()) continue;
+    if (entry.isDirectory()) await ageSandboxFiles(item, old, fresh);
+    else if (item !== fresh) await utimes(item, new Date(old), new Date(old));
   }
 }
 
@@ -568,6 +645,7 @@ const HELP = [
   '  /nudge       fire the next nudge now',
   '  /jobs        list jobs',
   '  /presence    who is active, sleeping or docked',
+  '  /sandbox     create a disposable Archie fixture and use real Archie tools offline',
   '  /scenario C7 run one of the §19 scenarios on a fresh stack',
   '  /quit        exit',
 ].join('\n');
@@ -579,6 +657,9 @@ async function main(): Promise<void> {
   const stack = buildStack(llm, LIVE ? llm : undefined);
   const { chip } = stack;
   attachPrinter(chip, stack.startTs, out);
+  let activeChip: OfflineChip | ChipCore = chip;
+  let sandboxSession: { core: ChipCore; index: FileIndex; parent: string } | undefined;
+  let originalDisposed = false;
 
   if (VERIFY_LIVE) {
     out('Verifying C1-C3: LIVE Backboard, real clock, fake Pixel/Scout, nudges disabled.');
@@ -588,24 +669,106 @@ async function main(): Promise<void> {
   out(dim(`Chip CLI · ${LIVE ? 'LIVE Backboard (real clock, fake animals)' : 'offline (fake brain, fake clock)'}${DEMO ? ' · demo timers' : ''}`));
   out(dim(HELP));
 
-  let quitting = false;
-  const quit = (): void => {
-    if (quitting) return;
-    quitting = true;
-    chip.dispose();
-    process.exit(0);
+  let quitPromise: Promise<void> | undefined;
+  let rl: ReturnType<typeof createInterface> | undefined;
+  const drain = async (core: ChipCore): Promise<void> => {
+    // A result turn may delegate another job, so keep draining until the stack is quiet.
+    for (;;) {
+      await core.orchestrator.whenIdle();
+      const pending = core.jobs.list().filter((job) => job.state === 'running' || job.state === 'queued');
+      if (pending.length) await Promise.all(pending.map((job) => core.jobs.waitFor(job.jobId)));
+      // Chip batches job results for 1.5 seconds before its result turn.
+      await sleep(1600);
+      await core.orchestrator.whenIdle();
+      if (!core.jobs.list().some((job) => job.state === 'running' || job.state === 'queued')) return;
+    }
   };
-  process.on('SIGINT', quit);
+  const closeSandbox = async (session: NonNullable<typeof sandboxSession>): Promise<void> => {
+    await drain(session.core);
+    await session.core.dispose();
+    session.index.stopWatching();
+    await rm(session.parent, { recursive: true, force: true });
+  };
+  const quit = (): Promise<void> => {
+    if (quitPromise) return quitPromise;
+    rl?.close();
+    quitPromise = (async () => {
+      if (!originalDisposed) {
+        chip.jobs.cancel({ all: true }); // FakeClock jobs cannot finish without /ff.
+        chip.dispose();
+        originalDisposed = true;
+      }
+      if (sandboxSession) {
+        await closeSandbox(sandboxSession);
+        sandboxSession = undefined;
+      }
+    })();
+    return quitPromise;
+  };
+  const onSigint = (): void => { void quit().catch(() => { process.exitCode = 1; }); };
+  process.on('SIGINT', onSigint);
 
   const settle = async (): Promise<void> => {
     await flushPromises();
-    await chip.orchestrator.whenIdle();
+    await activeChip.orchestrator.whenIdle();
   };
 
   async function command(line: string): Promise<void> {
     const [cmd = '', ...rest] = line.slice(1).trim().split(/\s+/);
     switch (cmd.toLowerCase()) {
+      case 'sandbox': {
+        const parent = await mkdtemp(path.join(os.tmpdir(), 'ade-archie-cli-'));
+        let newCore: ChipCore | undefined;
+        let newIndex: FileIndex | undefined;
+        try {
+          const fixture = await makeSandbox(parent);
+          await ageSandboxFiles(fixture.root, Date.now() - 24 * HOUR, fixture.freshFile);
+          await writeFile(path.join(fixture.desktop, 'old-notes.txt'), 'Disposable fixture note.');
+          const safe = { allowedRoots: [fixture.desktop, fixture.documents, fixture.downloads], documentsRoot: fixture.documents };
+          const clock = new RealClock();
+          const index = new FileIndex({ ...safe, clock });
+          newIndex = index;
+          await index.build();
+          const journal = new LocalFileOpsJournal(path.join(parent, 'ADE', 'file-ops.jsonl'));
+          const core = createChipCore({
+            llm: new SandboxChipBrain(), runner: specialistsFor(clock), calendar: new FakeCalendar(clock),
+            settings: () => makeTestSettings({ allowedFolders: [...safe.allowedRoots] }), chipAssistantId: 'fixture-chip',
+            clock, startNudges: false,
+            archie: { llm: new SandboxArchieBrain(), assistantId: 'fixture-archie', safe, index, journal,
+              shell: new FakeFsShell(), startSweep: false,
+              gate: ({ bus }) => new AskingWardenGate({ bus }),
+              approvals: (ctx) => new ScriptedApprovals(ctx),
+            },
+          });
+          newCore = core;
+          const previous = sandboxSession;
+          if (previous) await closeSandbox(previous);
+          else if (!originalDisposed) {
+            chip.jobs.cancel({ all: true });
+            chip.dispose();
+            originalDisposed = true;
+          }
+          sandboxSession = { core, index, parent };
+          activeChip = core;
+          attachPrinter(core, clock.now(), out);
+          out('Archie fixture ready. Allowed roots:');
+          for (const root of safe.allowedRoots) out(`  ${root}`);
+          out('Try: find my resume | clean up my Downloads | delete old-notes | undo');
+          out('OFFLINE FIXTURE: both brains are fake; Archie tools run only inside this disposable sandbox.');
+          out('Fixture approvals are scripted and auto-approved; real Warden is a later integration.');
+          if (LIVE) out('The --live Chip provider is not used in /sandbox; this is not live acceptance.');
+        } catch {
+          if (activeChip !== newCore) {
+            await newCore?.dispose();
+            newIndex?.stopWatching();
+            await rm(parent, { recursive: true, force: true });
+          }
+          throw new Error('Could not create the Archie fixture.');
+        }
+        return;
+      }
       case 'ff': {
+        if (sandboxSession) return out('/ff is unavailable inside the Archie fixture.');
         if (!stack.fake) return out('The real clock can\'t be fast-forwarded; /ff is offline only.');
         const ms = parseDuration(rest.join(' '));
         if (ms === null) return out('Usage: /ff 10m   (also 30s, 2h, 500ms)');
@@ -613,10 +776,10 @@ async function main(): Promise<void> {
         return chip.orchestrator.whenIdle();
       }
       case 'nudge':
-        chip.nudges.fireNextNow();
+        activeChip.nudges.fireNextNow();
         return settle();
       case 'jobs': {
-        const list = chip.jobs.list();
+        const list = activeChip.jobs.list();
         if (list.length === 0) return out('(no jobs)');
         for (const j of list) {
           out(`${j.jobId.slice(0, 8)}  ${j.agent.padEnd(12)}${j.state.padEnd(10)}${q(j.title)}  by ${j.requestedBy}${j.kind === 'help' ? ' (help)' : ''}${j.planStep !== undefined ? ` step ${j.planStep}` : ''}${j.position !== undefined ? ` #${j.position}` : ''}`);
@@ -624,7 +787,7 @@ async function main(): Promise<void> {
         return;
       }
       case 'presence':
-        for (const id of Object.keys(AGENTS) as AgentId[]) out(`${id.padEnd(12)}${nameOf(id).padEnd(8)}${chip.presence.get(id)}`);
+        for (const id of Object.keys(AGENTS) as AgentId[]) out(`${id.padEnd(12)}${nameOf(id).padEnd(8)}${activeChip.presence.get(id)}`);
         return;
       case 'scenario':
         if (!rest[0]) return out(`Usage: /scenario C7   (${Object.keys(SCENARIOS).join(', ')})`);
@@ -639,8 +802,8 @@ async function main(): Promise<void> {
     }
   }
 
-  const rl = createInterface({ input: process.stdin, ...(process.stdin.isTTY ? { output: process.stdout, prompt: 'you> ' } : {}) });
-  rl.on('SIGINT', quit);
+  rl = createInterface({ input: process.stdin, ...(process.stdin.isTTY ? { output: process.stdout, prompt: 'you> ' } : {}) });
+  rl.on('SIGINT', () => { void quit(); });
   if (process.stdin.isTTY) rl.prompt();
 
   for await (const raw of rl) {
@@ -648,17 +811,17 @@ async function main(): Promise<void> {
     try {
       if (line.startsWith('/')) await command(line);
       else if (line) {
-        chip.orchestrator.submitUserMessage(line);
-        await chip.orchestrator.whenIdle();
+        activeChip.orchestrator.submitUserMessage(line);
+        await activeChip.orchestrator.whenIdle();
       }
-    } catch (err) {
-      out(paint('1;31', `error: ${err instanceof Error ? err.message : String(err)}`));
+    } catch {
+      out(paint('1;31', 'error: command failed (details withheld to protect credentials)'));
     }
+    if (quitPromise) break;
     if (process.stdin.isTTY) rl.prompt();
   }
 
-  // stdin closed (piped input): let live jobs and their result turns finish before leaving.
-  if (LIVE) {
+  if (!sandboxSession && LIVE && !quitPromise) {
     for (let waited = 0; waited < 2 * MIN; waited += 250) {
       await chip.orchestrator.whenIdle();
       if (!chip.jobs.list().some((j) => j.state === 'running' || j.state === 'queued')) break;
@@ -666,11 +829,11 @@ async function main(): Promise<void> {
     }
     await sleep(2 * SEC);
   }
-  await chip.orchestrator.whenIdle();
-  quit();
+  await quit();
+  process.off('SIGINT', onSigint);
 }
 
-main().catch((err: unknown) => {
-  console.error(err instanceof Error ? err.message : String(err));
+main().catch(() => {
+  console.error('Chip CLI failed (details withheld to protect credentials).');
   process.exit(1);
 });
