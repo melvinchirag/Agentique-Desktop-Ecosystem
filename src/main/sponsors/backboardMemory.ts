@@ -40,7 +40,7 @@ export class BackboardMemoryApi implements MemoryApi {
     await this.client.request(`${this.base(agentId)}/${encodeURIComponent(id)}`, { method: 'DELETE' });
   }
 
-  /** Adds a memory directly (Pixel's email style profile). Not part of MemoryApi. */
+  /** Adds a memory directly (Pixel's email style line). This is the `MemoryWriter` contract (04-pixel-workspace.md §15); the class satisfies it structurally. */
   async add(agentId: AgentId, text: string): Promise<{ id: string }> {
     const raw = await this.client.request(this.base(agentId), { method: 'POST', body: { content: text } });
     return { id: String(raw.memory_id ?? raw.id) };

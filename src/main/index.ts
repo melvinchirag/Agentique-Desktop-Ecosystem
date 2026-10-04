@@ -1,7 +1,7 @@
 import { app, ipcMain } from 'electron';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { createFakeCore } from './fake';
+import { createRealCore } from './core/realCore';
 import { registerCoreIpc } from './ipc/registerCoreIpc';
 import { createAssetLabWindow } from './shell/assetLabWindow';
 import { SHELL_IPC } from './shell/contracts';
@@ -96,7 +96,7 @@ if (!app.requestSingleInstanceLock()) {
     const disposeDisplay = watchDisplay({
       overlay, hub: hub.window, isCollapsed: () => hub.collapsed, layout, targets,
     });
-    const core = watchSettings(createFakeCore({ demoMode, resourcesDir }), onSettings); // J2: swap createFakeCore → createRealCore
+    const core = watchSettings(createRealCore({ demoMode, resourcesDir }), onSettings);
     coreRef = core;
     const disposeCoreIpc = registerCoreIpc(core, { ipc: ipcMain, targets });
     shortcuts.update(settingsDemoMode, devMode);

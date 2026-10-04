@@ -1,0 +1,8 @@
+{
+  "displayName": "Pixel",
+  "scale": 1.0,
+  "yOffset": 0,
+  "bubbleHeight": 0.5,
+  "walkSpeed": 1.0,
+  "clipMap": { "Work": "Write" }
+}

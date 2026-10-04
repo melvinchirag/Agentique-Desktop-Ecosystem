@@ -18,7 +18,7 @@ import { createOrchestrator } from './runtime/orchestrator';
 import { createPresenceManager } from './runtime/presence';
 import type {
   Approvals, Bus, CalendarSource, Clock, DocumentsApi, EventSink, FileOpsJournal, HistoryStore, InjectionScreen, JobScheduler,
-  LlmClient, MoodEngine, NudgeEngine, NudgeStore, Orchestrator, PresenceManager, SpecialistRunner, TimerHandle, WardenGate,
+  LlmClient, MoodEngine, NudgeEngine, NudgeStore, Orchestrator, SpecialistRunner, TimerHandle, WardenGate,
 } from './runtime/types';
 
 /**
@@ -72,7 +72,7 @@ export interface ChipCoreConfig {
 
 export interface ChipCore {
   bus: EventBus; clock: Clock;
-  jobs: JobScheduler; presence: PresenceManager; mood: MoodEngine;
+  jobs: JobScheduler; presence: ReturnType<typeof createPresenceManager>; mood: MoodEngine;
   nudges: NudgeEngine; nudgeStore: NudgeStore; history: HistoryStore; orchestrator: Orchestrator;
   /** Hold-to-talk on Chip / the Hub mic (§14.4: no nudges while the user is holding Chip). */
   setUserTalking(on: boolean): void;

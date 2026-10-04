@@ -1,0 +1,8 @@
+{
+  "displayName": "Warden",
+  "scale": 1.0,
+  "yOffset": 0,
+  "bubbleHeight": 0.5,
+  "walkSpeed": 1.0,
+  "clipMap": { "Scared": "Guard", "Happy": "Proud", "Nervous": "Guard", "Excited": "Proud", "Sad": "Idle", "Think": "Idle", "Work": "Idle" }
+}
