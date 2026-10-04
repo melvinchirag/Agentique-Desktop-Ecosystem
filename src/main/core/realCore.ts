@@ -17,6 +17,7 @@ import { TigerHistoryStore } from '../store/tigerHistory';
 import { TigerNudgeStore } from '../store/tigerNudges';
 import { TigerQueries } from '../store/tigerQueries';
 import { FakeCalendar } from '../testing/fakeCalendar';
+import { StubWardenGate } from '../testing/stubWarden';
 import { handleStandInSendPost, StandInSpecialists } from './standInSpecialists';
 import { ElevenLabsVoice } from '../voice/elevenlabs';
 
@@ -74,6 +75,8 @@ export interface RealCoreOptions {
   demoMode?: boolean;
   resourcesDir?: string;
   env?: Env;
+  openExternal?: (url: string) => Promise<void>;
+  documentsRoot?: string;
 }
 
 /** Main-process adapter. registerCoreIpc forwards this bus to the overlay and Hub. */
@@ -99,6 +102,14 @@ export function createRealCore(options: RealCoreOptions = {}): CoreAdapter {
     llm, runner, calendar: new FakeCalendar(clock), settings: () => settings,
     chipAssistantId: assistantIds.chipmunk!, clock, eventSink,
     nudgeStore: new TigerNudgeStore(db), history: new TigerHistoryStore(db, () => clock.now()),
+    ...(assistantIds.eagle && options.openExternal && options.documentsRoot ? { eagle: {
+      llm, assistantId: assistantIds.eagle, openExternal: options.openExternal, documentsRoot: options.documentsRoot,
+      gate: ({ bus }: { bus: import('../runtime/types').Bus }) => new StubWardenGate(bus),
+      approvals: () => ({
+        request: async () => ({ approved: false as const, how: 'cancelled' as const }),
+        resolve: () => {}, cancelForJobs: () => {}, pending: () => [], dispose: () => {},
+      }),
+    } } : {}),
   });
   runner.connect(core.bus);
 

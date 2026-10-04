@@ -1,6 +1,7 @@
 import type { AdeSettings } from '../shared/ipc';
 import { EventBus } from './bus/eventBus';
 import { createBeaverAgent } from './agents/beaver';
+import { createEagleAgent, type EagleToolDeps } from './agents/eagle';
 import { createOrganizeToolBindings, sweepOldTrash, type SweepResult } from './agents/beaver/organizeTools';
 import { createReadToolBindings } from './agents/beaver/readTools';
 import { createCompositeJournal, type CompositeJournal } from './connectors/fs/compositeJournal';
@@ -50,6 +51,14 @@ export interface ArchieWiring {
   sweepEveryMs?: number;             // default 6 h
 }
 
+export interface EagleWiring extends EagleToolDeps {
+  llm: LlmClient;
+  assistantId: string;
+  gate: (ctx: ArchieContext) => WardenGate;
+  approvals: (ctx: ArchieContext) => Approvals;
+  screen?: InjectionScreen;
+}
+
 export const TRASH_SWEEP_EVERY_MS = 6 * 60 * 60 * 1000;
 const SAFE_SWEEP_ERRORS = new Set(['INVALID_BATCH_ID', 'TRASH_LOCATION_CHANGED', 'NOT_A_FOLDER', 'ENOENT', 'EPERM', 'EBUSY']);
 
@@ -68,6 +77,7 @@ export interface ChipCoreConfig {
   timeZone?: string;                 // default: the system zone
   startNudges?: boolean;             // default true
   archie?: ArchieWiring;             // default: none, so `beaver` stays on `runner`
+  eagle?: EagleWiring;
 }
 
 export interface ChipCore {
@@ -85,6 +95,7 @@ export interface ChipCore {
     /** Run the 7-day ADE Trash sweep now (one at a time: a second call joins the one in flight). */
     sweep(): Promise<SweepResult>;
   };
+  eagle?: { runtime: SpecialistRunner; gate: WardenGate; approvals: Approvals };
   /** Stops every engine and timer, unsubscribes, then flushes the event sink (if any). Safe to call twice. */
   dispose(): Promise<void>;
 }
@@ -117,9 +128,14 @@ export function createChipCore(config: ChipCoreConfig): ChipCore {
 
   // Circular wiring: the runtime needs `jobs` (ask_teammate), and `jobs` needs a runner. A lazy runner breaks the cycle.
   let archieRuntime: SpecialistRunner | undefined;
-  const routedRunner: SpecialistRunner = config.archie
-    ? { run: (agentId, task, ctx) => (agentId === 'beaver' && archieRuntime ? archieRuntime : runner).run(agentId, task, ctx) }
-    : runner;
+  let eagleRuntime: SpecialistRunner | undefined;
+  const routedRunner: SpecialistRunner = {
+    run: (agentId, task, ctx) => {
+      if (agentId === 'beaver' && archieRuntime) return archieRuntime.run(agentId, task, ctx);
+      if (agentId === 'eagle' && eagleRuntime) return eagleRuntime.run(agentId, task, ctx);
+      return runner.run(agentId, task, ctx);
+    },
+  };
 
   const presence = createPresenceManager({ bus, clock, settings });
   const jobs = createJobScheduler({ bus, clock, runner: routedRunner, presence, settings });
@@ -218,6 +234,26 @@ export function createChipCore(config: ChipCoreConfig): ChipCore {
     }
   }
 
+  let eagle: ChipCore['eagle'];
+  if (config.eagle) {
+    const e = config.eagle;
+    const gate = e.gate({ bus, clock, jobs });
+    const approvals = e.approvals({ bus, clock, jobs });
+    const runtime = createAgentRuntime({
+      bus, llm: e.llm, jobs, gate, approvals, settings,
+      agents: [{ definition: createEagleAgent(e), assistantId: e.assistantId }],
+      ...(e.screen ? { screen: e.screen } : {}),
+    });
+    eagleRuntime = {
+      async run(agentId, task, runCtx) {
+        bus.emit({ type: 'agent.status', agentId: 'eagle', taskId: runCtx.taskId, status: 'away', detail: 'Scanning the web…' });
+        try { return await runtime.run(agentId, task, runCtx); }
+        finally { bus.emit({ type: 'agent.status', agentId: 'eagle', taskId: runCtx.taskId, status: 'done' }); }
+      },
+    };
+    eagle = { runtime: eagleRuntime, gate, approvals };
+  }
+
   presence.start();
   if (config.startNudges !== false) nudges.start();
 
@@ -229,6 +265,8 @@ export function createChipCore(config: ChipCoreConfig): ChipCore {
       if (sweepTimer !== undefined) clock.clearTimeout(sweepTimer);
       try { archie?.approvals.dispose(); }
       catch { console.error('[chipCore] approvals disposal failed'); }
+      try { eagle?.approvals.dispose(); }
+      catch { console.error('[chipCore] eagle approvals disposal failed'); }
       orchestrator.dispose();
       nudges.dispose();
       mood.dispose();
@@ -248,7 +286,7 @@ export function createChipCore(config: ChipCoreConfig): ChipCore {
     setUserTalking: (on) => { userTalking = on; },
     setDoNotDisturb: (on) => { doNotDisturb = on; },
     isUserBusy,
-    ...(archie ? { archie } : {}),
+    ...(archie ? { archie } : {}), ...(eagle ? { eagle } : {}),
     dispose,
   };
 }
