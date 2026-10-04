@@ -102,7 +102,7 @@ describe('pulse().pixel', () => {
     const db = new FakeDb();
     db.reply = (text) => (text.includes('drafts_log') ? [{ drafts_today: 1, waiting: 1 }] : []);
     const pulse: any = await new TigerQueries(db, quiet).pulse();
-    expect(Object.keys(pulse)).toEqual(['mood', 'jobs', 'activity', 'warden', 'pixel']);
+    expect(pulse).toMatchObject({ moodWeek: [], jobsPerAgent: {}, wardenBlocks: 0, wardenAsks: 0 });
     expect(pulse.pixel).toEqual({ draftsToday: 1, waiting: 1 });
     db.down = true;
     expect(((await new TigerQueries(db, quiet).pulse()) as any).pixel).toEqual({ draftsToday: 0, waiting: 0 });

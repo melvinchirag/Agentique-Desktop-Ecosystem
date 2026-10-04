@@ -1,18 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import type { AdeApi } from '../../shared/ipc';
 import type { AdeShellApi } from '../../main/shell/contracts';
-import type { AgentId } from '../../shared/agents';
 import { AGENTS } from '../../shared/config';
-
-export interface WardenAuditRow {
-  ts: number;
-  taskId?: string;
-  agentId: AgentId;
-  tool: string;
-  verdict: 'allow' | 'ask' | 'deny';
-  rule: string;
-  reason: string;
-}
+import type { WardenAuditRow } from './responses';
+export type { WardenAuditRow } from './responses';
 
 interface AuditTabProps {
   api: AdeApi;

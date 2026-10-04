@@ -2,26 +2,14 @@ import React, { useEffect, useState } from 'react';
 import type { AdeApi } from '../../shared/ipc';
 import type { AgentId } from '../../shared/agents';
 import { AGENTS } from '../../shared/config';
-
-interface MoodDay {
-  day: string;
-  mood: string;
-  score: number;
-}
-
-interface PulseData {
-  moodWeek?: MoodDay[];
-  jobsPerAgent?: Partial<Record<AgentId, number>>;
-  wardenBlocks?: number;
-  wardenAsks?: number;
-}
+import type { PulseResponse } from './responses';
 
 interface PulseTabProps {
   api: AdeApi;
 }
 
 export const PulseTab: React.FC<PulseTabProps> = ({ api }) => {
-  const [pulse, setPulse] = useState<PulseData | null>(null);
+  const [pulse, setPulse] = useState<PulseResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -30,13 +18,13 @@ export const PulseTab: React.FC<PulseTabProps> = ({ api }) => {
       .getPulse()
       .then((data) => {
         if (active) {
-          setPulse((data as PulseData) ?? {});
+          setPulse(data as PulseResponse);
           setIsLoading(false);
         }
       })
       .catch(() => {
         if (active) {
-          setPulse({});
+          setPulse(null);
           setIsLoading(false);
         }
       });

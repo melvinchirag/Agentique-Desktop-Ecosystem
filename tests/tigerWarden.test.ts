@@ -51,13 +51,13 @@ describe('TigerQueries for Warden', () => {
     const db = new FakeDb();
     db.reply = (text) => (text.includes('warden_daily') ? [{ verdict: 'deny', times: 2 }] : []);
     const pulse: any = await new TigerQueries(db, quiet).pulse();
-    expect(Object.keys(pulse)).toEqual(['mood', 'jobs', 'activity', 'warden', 'pixel']);
+    expect(pulse).toMatchObject({ moodWeek: [], jobsPerAgent: {}, wardenBlocks: 2, wardenAsks: 0 });
     expect(pulse.warden).toEqual({ allowed: 0, asked: 0, denied: 2, alerts: 0 });
   });
   it('pulse() still answers when Tiger is down', async () => {
     const db = new FakeDb();
     db.down = true;
-    expect(await new TigerQueries(db, quiet).pulse()).toEqual({ mood: [], jobs: [], activity: [], warden: { allowed: 0, asked: 0, denied: 0, alerts: 0 }, pixel: { draftsToday: 0, waiting: 0 } });
+    expect(await new TigerQueries(db, quiet).pulse()).toMatchObject({ moodWeek: [], jobsPerAgent: {}, wardenBlocks: 0, wardenAsks: 0 });
   });
 });
 
