@@ -38,8 +38,8 @@
   {
     "id": "chipmunk.poke",
     "file": "resources/sfx/chipmunk/poke.mp3",
-    "durationMs": 1074,
-    "prompt": "tiny cartoon chipmunk surprised giggle squeak when poked, cute, playful, short"
+    "durationMs": 1257,
+    "prompt": "real chipmunk startled rapid chatter, fast high pitched chip-chip-chip rodent clicks, no voice, no music"
   },
   {
     "id": "wolf.growl",
@@ -62,8 +62,8 @@
   {
     "id": "wolf.poke",
     "file": "resources/sfx/wolf/poke.mp3",
-    "durationMs": 1074,
-    "prompt": "short friendly low wolf huff, gentle gruff grunt, calm, not aggressive"
+    "durationMs": 1257,
+    "prompt": "one short deep gruff wolf bark, a low woof huff from a large canine, close, no growl, no howl"
   },
   {
     "id": "beaver.tail-slap",
@@ -105,8 +105,8 @@
   {
     "id": "beaver.poke",
     "file": "resources/sfx/beaver/poke.mp3",
-    "durationMs": 1074,
-    "prompt": "cute cartoon beaver surprised chuckle grunt, goofy, friendly, short"
+    "durationMs": 1257,
+    "prompt": "beaver low nasal grunt followed by one quick flat tail thump on a wooden log, natural animal sound"
   },
   {
     "id": "eagle.screech",
@@ -129,8 +129,8 @@
   {
     "id": "eagle.poke",
     "file": "resources/sfx/eagle/poke.mp3",
-    "durationMs": 1074,
-    "prompt": "short surprised eagle chirp, sharp quick single note, clean"
+    "durationMs": 1257,
+    "prompt": "bald eagle short piping call, three quick high thin whistled notes, natural bird of prey, close"
   },
   {
     "id": "ants.skitter",
@@ -147,8 +147,8 @@
   {
     "id": "ants.poke",
     "file": "resources/sfx/ants/poke.mp3",
-    "durationMs": 1074,
-    "prompt": "many tiny high pitched cartoon voices squeaking together in surprise, very small, cute, short"
+    "durationMs": 1257,
+    "prompt": "dozens of tiny dry insect clicks and ticks scattering quickly, miniature mandible clicking, no voices"
   },
   {
     "id": "workspace.blip",
@@ -165,8 +165,8 @@
   {
     "id": "workspace.poke",
     "file": "resources/sfx/workspace/poke.mp3",
-    "durationMs": 1074,
-    "prompt": "cute playful digital bloop giggle, two quick rising synth notes, friendly"
+    "durationMs": 1257,
+    "prompt": "friendly small robot double beep, two short clean synth tones boop-beep, digital assistant reacting"
   },
   {
     "id": "butterfly.flutter-sparkle",
@@ -177,8 +177,8 @@
   {
     "id": "butterfly.poke",
     "file": "resources/sfx/butterfly/poke.mp3",
-    "durationMs": 1074,
-    "prompt": "tiny magical sparkle giggle, light twinkling chime, playful, short"
+    "durationMs": 1257,
+    "prompt": "very soft rapid wing flutter burst then a single tiny glass chime twinkle, delicate, airy, no voice"
   },
   {
     "id": "nightingale.trill",
@@ -189,8 +189,8 @@
   {
     "id": "nightingale.poke",
     "file": "resources/sfx/nightingale/poke.mp3",
-    "durationMs": 1074,
-    "prompt": "short surprised melodic bird chirp, two sweet notes, elegant"
+    "durationMs": 1257,
+    "prompt": "nightingale short melodic whistle phrase, four liquid flute-like rising notes, natural songbird"
   },
   {
     "id": "system.scroll-pass",
