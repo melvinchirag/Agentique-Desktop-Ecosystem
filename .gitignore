@@ -8,6 +8,7 @@ node_modules/
 dist/
 out/
 build/
+release/
 *.log
 
 # ADE runtime data

@@ -1,0 +1,17 @@
+appId: com.ade.agentique
+productName: ADE
+directories:
+  output: release
+files:
+  - out/**/*
+  - package.json
+extraResources:
+  - from: src/renderer/public/characters
+    to: characters
+  - from: resources/sfx
+    to: sfx
+win:
+  target: nsis
+  signAndEditExecutable: false
+nsis:
+  oneClick: false
