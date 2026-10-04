@@ -25,7 +25,7 @@ Where others have "Happy", Warden has "Proud".
  - Looping animations: first frame = last frame.
  - Don't animate colors. The code does mood tints (e.g. a red rim
    light when he blocks something).
- - Branch:  wolf/graphics
+ - Branch:  warden/graphics
    Blender file:  art/wolf/wolf.blend
    Export to:     src/renderer/public/characters/wolf/default/model.glb
  - Check + export with your Codex tools:
@@ -37,7 +37,7 @@ Where others have "Happy", Warden has "Proud".
  2. RIG
 ---------------------------------------------------------------------
 
- - Height about 1.0 m at the shoulder line, faces -Y, origin at the feet.
+ - About 1.0 m tall (ASSETS.md: wolf 1.0), faces -Y, origin at the feet.
  - Four legs that can PLANT firmly (for Block and Guard).
  - Tail with 4-5 bones (low and still when serious, high and slow
    when proud, curled over the nose when asleep).
@@ -115,7 +115,7 @@ Where others have "Happy", Warden has "Proud".
      then, waiting patiently.
      -> Sitting beside an APPROVAL CARD while the user decides.
 
- >>> After Tier 1: CHECK, EXPORT, PUSH (on wolf/graphics).
+ >>> After Tier 1: CHECK, EXPORT, PUSH (on warden/graphics).
 
  ===== TIER 2 - SECURITY MOMENTS =====
 
@@ -178,7 +178,7 @@ Where others have "Happy", Warden has "Proud".
 ---------------------------------------------------------------------
  6. DON'T MAKE
 ---------------------------------------------------------------------
- - No "Scared", "Nervous", "Sad", or "Excited" clips for Warden.
+ - No "Scared", "Happy", "Nervous", "Sad", "Excited", or "Think" clips for Warden.
    He never cowers. The app maps those moods to Guard / Proud.
  - No "talking while growling" versions (the code layers the mood).
  - No color or glow animations.
@@ -200,7 +200,14 @@ Where others have "Happy", Warden has "Proud".
 
  NOTE for your Codex: in tools/blender/required_clips.json, the
  "wolf" entry uses Guard instead of Scared and Proud instead of
- Happy (exact list above).
+ Happy (exact list above). Also save
+ src/renderer/public/characters/wolf/character.json with
+   "clipMap": { "Scared": "Guard", "Happy": "Proud" }
+ so the app's normal mood logic plays Guard/Proud. No Think or Sad
+ clips: Warden never thinks out loud or gets sad (the app uses
+ Idle / Guard instead).
+
+ Use ChatGPT and Codex only (your plan). Save on warden/graphics.
 
  Thank you, Zarin!
 =====================================================================

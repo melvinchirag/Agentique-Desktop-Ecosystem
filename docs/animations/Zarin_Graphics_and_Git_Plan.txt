@@ -73,7 +73,7 @@ Your AI tools: ChatGPT and Codex ONLY (same ChatGPT account).
    Chip ............ chip/graphics       (start here)
    Warden .......... warden/graphics
    Pixel ........... pixel/graphics
-   Archie .......... archie/graphics
+   Archie .......... beaver/graphics
    Scout ........... scout/graphics
    Swarm ........... swarm/graphics
    Iris ............ iris/graphics

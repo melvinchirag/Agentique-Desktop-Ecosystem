@@ -1,15 +1,15 @@
-# Warden (Wolf) — Animation Actions for Zarin ⏳ PENDING APPROVAL
+# Warden (Wolf) — Animation Actions for Zarin ⏳ PENDING APPROVAL (wait for Chanuth's OK)
 
 Same rules as Chip and Archie (`chip-actions.md`, `../ASSETS.md §2`):
 - exact Action names, Fake User on, in place, 30 fps, loops seamless, no color animation
 - `.glb` ≈ 1.0 m tall, faces −Y, origin at the feet
 - Saved to `src/renderer/public/characters/wolf/default/model.glb`
 - Blender source: `art/wolf/wolf.blend`
-- Branch: `wolf/graphics`
+- Branch: `warden/graphics`
 
 **Rig must-haves:** four legs that plant firmly (Block/Guard), tail with 4–5 bones, independent ears, a jaw that opens wide (Howl/Growl). No props.
 
-**Warden never cowers (proposed):** his core set swaps **`Scared` → `Guard`** and **`Happy` → `Proud`**. `character.json` adds `"clipMap": { "Scared": "Guard", "Happy": "Proud" }` so the renderer's generic mood logic still works. `tools/blender/required_clips.json` "wolf" lists the names below.
+**Warden never cowers (proposed):** his core set swaps **`Scared` → `Guard`** and **`Happy` → `Proud`**. `character.json` adds `"clipMap": { "Scared": "Guard", "Happy": "Proud" }` so the renderer's generic mood logic still works. `tools/blender/required_clips.json` "wolf" lists the names below. `character.json` lives at `src/renderer/public/characters/wolf/character.json`. No `Think` or `Sad` either (core clips 7–8): the renderer falls back to `Idle` / `Guard`. Tools: ChatGPT + Codex only (Zarin's plan).
 
 ## Wolf body language
 
@@ -52,7 +52,7 @@ Same rules as Chip and Archie (`chip-actions.md`, `../ASSETS.md §2`):
 | 19 | `Greet` | ❌ | 1.5 s | Calm head bow, slow tail wave | App start ("Warden on watch.") |
 
 **Optional shape keys:** `MouthOpen`, `Blink`, `Snarl` (lips back), `Hackles` (fur ridge).
-**Don't make:** `Scared`, `Nervous`, `Sad`, `Excited`, talking-while-growling variants, or color changes.
+**Don't make:** `Scared`, `Happy`, `Nervous`, `Sad`, `Excited`, `Think`, talking-while-growling variants, or color changes.
 
 ## Mood / event → clip
 
@@ -62,7 +62,7 @@ Same rules as Chip and Archie (`chip-actions.md`, `../ASSETS.md §2`):
 | protective | `Guard` |
 | proud | `Proud` |
 | sleepy | `Yawn` → `Sleep` |
-| `wolf.verdict: ask` | `Alert` → `Walk`/`Run` to the card → `Sit` |
+| `wolf.verdict: ask` | `Alert` → `Walk`/`Run` to the asking animal → `Sit` (the ApprovalCard appears beside him) |
 | `approval.resolve` | `Nod` → walk back |
 | `wolf.verdict: deny` | `Run` (if far) → `Block` + `Growl` (red rim light in code) |
 | `wolf.alert` | `Howl` |
