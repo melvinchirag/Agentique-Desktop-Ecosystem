@@ -14,22 +14,22 @@
   },
   "beaver": {
     "name": "Archie",
-    "description": "Friendly, practical working-guy voice; upbeat, a bit goofy, warm, mid-range, proud of tidy work.",
+    "description": "A confident, optimistic builder and engineer beaver. Warm, steady, mid-range voice, calm and capable, not loud. Sounds like someone who knows exactly what he is doing and enjoys the work. Friendly, with a slight smile in the voice.",
     "previews": [
       {
         "n": 1,
         "file": "voices/previews/beaver-1.mp3",
-        "generated_voice_id": "83mdEHHYiWyfNG4ShO8a"
+        "generated_voice_id": "PuvRsQk7opRM6nMwvSLS"
       },
       {
         "n": 2,
         "file": "voices/previews/beaver-2.mp3",
-        "generated_voice_id": "KanYohjW0B1ZJIg4fDXW"
+        "generated_voice_id": "ctCblmYWvs6Hj2Y4mvC0"
       },
       {
         "n": 3,
         "file": "voices/previews/beaver-3.mp3",
-        "generated_voice_id": "FO5duYkPmdxMq23n1kWp"
+        "generated_voice_id": "qjo483caefs7BgFZzbgJ"
       }
     ]
   }
