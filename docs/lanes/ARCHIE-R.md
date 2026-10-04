@@ -23,7 +23,7 @@ Implement the generic `AgentRuntime` used by every specialist, including Archie.
 
 1. Build the registry, fresh-thread LLM loop, 12k output cap, artifact collection, one Backboard retry, and BUBBLE/SAY/SUMMARY parser with documented fallbacks.
 2. Inject `ask_teammate` only for normal jobs; submit help jobs and await their result.
-3. Send every normal tool through `WardenGate`; pause/resume its job clock while awaiting an approval.
+3. Send every normal tool through `WardenGate`; await the injected `Approvals` service when needed. Per DECISIONS §15f and the Warden prompt, Approvals owns job-clock pause/resume; the runtime must not pause it a second time. Test with a fake Approvals service that pauses/resumes the fake job clock.
 4. Test parallel calls, denied and declined calls, approval pause, no help-job recursion, parser fallbacks, and artifacts.
 
 ## STOP
