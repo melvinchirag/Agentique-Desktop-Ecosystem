@@ -49,6 +49,9 @@ const shell: AdeShellApi = {
   onFocusChat: cb => on(SHELL_IPC.hubFocusChat, cb),
   onOpenHubTab: cb => on(SHELL_IPC.openHubTab, cb),
   onInspectAgent: cb => on(SHELL_IPC.inspectAgent, cb),
+  onSettingsChanged: cb => on(SHELL_IPC.settingsChanged, cb),
+  replayTask: taskId => ipcRenderer.send(SHELL_IPC.replayTask, taskId),
+  onReplayTask: cb => on(SHELL_IPC.replayTask, cb),
 };
 
 contextBridge.exposeInMainWorld('ade', api);

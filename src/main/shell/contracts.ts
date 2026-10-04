@@ -8,7 +8,7 @@
  */
 import type { AgentId } from '../../shared/agents';
 import type { BiomeEvent } from '../../shared/events';
-import type { AdeApi } from '../../shared/ipc';
+import type { AdeApi, AdeSettings } from '../../shared/ipc';
 import type { Clock } from '../runtime/types';
 
 // ── Geometry ──────────────────────────────────────────────
@@ -61,6 +61,10 @@ export interface AdeShellApi {
   hideAnimals(on: boolean): void;
   /** Delivered to every window. Hotkeys are registered only in demo or dev mode (spec §13). */
   onDemoHotkey(cb: (key: DemoHotkey) => void): () => void;
+  /** Pushed to every window after any setSettings (e.g. the overlay follows voiceEnabled). */
+  onSettingsChanged(cb: (settings: AdeSettings) => void): () => void;
+  /** Hub Audit tab "Replay" → the overlay's director replays that task at 2×. */
+  replayTask(taskId: string): void;
 
   // hub → main
   /** Esc, or after sending a message: hub.blur() so the user's previous app regains focus. */
@@ -74,6 +78,7 @@ export interface AdeShellApi {
 
   // main → overlay
   onInspectAgent(cb: (agentId: AgentId) => void): () => void;
+  onReplayTask(cb: (taskId: string) => void): () => void;
 }
 
 /**
@@ -94,6 +99,8 @@ export const SHELL_IPC = {
   demoHotkey: 'shell:demo:hotkey',               // push → every window (DemoHotkey)
   blurHub: 'shell:hub:blur',                     // send (hub only)
   setHubCollapsed: 'shell:hub:collapse',         // send (hub only)
+  settingsChanged: 'shell:settings:changed',     // push → every window (AdeSettings)
+  replayTask: 'shell:overlay:replay',            // send (taskId); then push → overlay
 } as const;
 
 // ── Main-process pieces ───────────────────────────────────

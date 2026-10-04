@@ -58,6 +58,8 @@ export function createMockShellApi(overrides: Partial<AdeShellApi> = {}): AdeShe
   emitFocusChat(): void;
   emitOpenHubTab(...args: Parameters<Parameters<AdeShellApi['onOpenHubTab']>[0]>): void;
   emitInspectAgent(...args: Parameters<Parameters<AdeShellApi['onInspectAgent']>[0]>): void;
+  emitSettings(settings: Parameters<Parameters<AdeShellApi['onSettingsChanged']>[0]>[0]): void;
+  emitReplayTask(taskId: string): void;
 } {
   const calls: MockCalls['calls'] = [];
   const listeners = {
@@ -66,6 +68,8 @@ export function createMockShellApi(overrides: Partial<AdeShellApi> = {}): AdeShe
     focus: new Set<Parameters<AdeShellApi['onFocusChat']>[0]>(),
     tab: new Set<Parameters<AdeShellApi['onOpenHubTab']>[0]>(),
     inspect: new Set<Parameters<AdeShellApi['onInspectAgent']>[0]>(),
+    settings: new Set<Parameters<AdeShellApi['onSettingsChanged']>[0]>(),
+    replay: new Set<Parameters<AdeShellApi['onReplayTask']>[0]>(),
   };
   const layout: DisplayLayout = {
     workArea: { x: 0, y: 0, width: 1536, height: 816 },
@@ -89,6 +93,9 @@ export function createMockShellApi(overrides: Partial<AdeShellApi> = {}): AdeShe
     onFocusChat: cb => listen('onFocusChat', listeners.focus, cb),
     onOpenHubTab: cb => listen('onOpenHubTab', listeners.tab, cb),
     onInspectAgent: cb => listen('onInspectAgent', listeners.inspect, cb),
+    onSettingsChanged: cb => listen('onSettingsChanged', listeners.settings, cb),
+    replayTask: send('replayTask'),
+    onReplayTask: cb => listen('onReplayTask', listeners.replay, cb),
     ...overrides,
   };
   return {
@@ -98,5 +105,7 @@ export function createMockShellApi(overrides: Partial<AdeShellApi> = {}): AdeShe
     emitFocusChat: () => listeners.focus.forEach(cb => cb()),
     emitOpenHubTab: (tab, id) => listeners.tab.forEach(cb => cb(tab, id)),
     emitInspectAgent: id => listeners.inspect.forEach(cb => cb(id)),
+    emitSettings: value => listeners.settings.forEach(cb => cb(value)),
+    emitReplayTask: id => listeners.replay.forEach(cb => cb(id)),
   };
 }
