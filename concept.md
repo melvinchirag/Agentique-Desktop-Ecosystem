@@ -42,7 +42,7 @@ Everything on the desktop belongs to one of three classes of agents.
 ### Class 1 — Pet agents (the themed characters)
 - The visible creatures. They are the interface between you and the ecosystem.
 - They talk to you, understand what you want, plan the steps, and hand work to the right agents.
-- Each pet has a **role** (for example: a planner, "Yapp" the chatty one, a guardian that asks before anything risky).
+- Each pet has a **role** (for example: a planner, Chip the chatty main agent, a guardian that asks before anything risky).
 
 ### Class 2 — App agents (the "skills")
 - One agent per app: Chrome agent, Word agent, File Explorer agent, and so on.
@@ -57,7 +57,7 @@ Everything on the desktop belongs to one of three classes of agents.
 | Character | Agent | Job |
 |---|---|---|
 | 🐜 **Ants** | Planner | A colony that breaks your request into steps and hands work to the right agents |
-| 🐿️ **Chipmunk** | Yappy | The chatty one: talks with you and explains what's happening |
+| 🐿️ **Chipmunk** | **Chip** (main agent; formerly "Yappy") | The chatty one: your main point of contact. Talks with you and explains what's happening |
 | 🐺 **Wolf** | Security / Guardian | Asks your permission before anything risky |
 | 🦫 **Beaver** | File manager | Builds, moves, sorts and organizes files and folders |
 | 🦅 **Eagle** | Browser | Searches, reads and acts on the web |
@@ -84,11 +84,11 @@ All agents talk over one shared message bus. Pets post goals and requests, App a
 The ecosystem can be themed: **Desert**, **Snow**, **Rainforest**, and more later.
 
 - In the Desert theme the creatures are desert animals; in Snow they're snow animals; in Rainforest they're rainforest animals.
-- **The function never changes.** The Desert "Yapp" agent and the Snow "Yapp" agent have exactly the same brain and abilities; only the look is different.
+- **The function never changes.** The Desert "Chip" agent and the Snow "Chip" agent have exactly the same brain and abilities; only the look is different.
 
 How we build it:
-- **Agent definitions** (role, personality prompt, tools) are written once, e.g. `agents/yapp.json`.
-- **Theme packs** only hold visuals and sound: sprite sheets, colors, names, sounds, e.g. `themes/desert/yapp.png`, `themes/snow/yapp.png`.
+- **Agent definitions** (role, personality prompt, tools) are written once, e.g. `agents/chip.json`.
+- **Theme packs** only hold visuals and sound: sprite sheets, colors, names, sounds, e.g. `themes/desert/chip.png`, `themes/snow/chip.png`.
 - Switching themes swaps the sprites and never touches behavior.
 
 ---

@@ -41,7 +41,7 @@ These define the product. If a build decision breaks one of these, it's the wron
 1. **It's alive.** Creatures move, idle, react to what you do, and notice changes on the desktop. A frozen pet is a broken product.
 2. **It's a society, not an assistant.** Multiple agents with different roles that visibly talk to and help each other. One chatbot with a mascot is not this product.
 3. **It does real things.** Agents act on real files and real apps. Pure animation is not enough.
-4. **Themes are skins only.** Desert, Snow, Rainforest change the look, never the function. Desert "Yapp" = Snow "Yapp".
+4. **Themes are skins only.** Desert, Snow, Rainforest change the look, never the function. Desert "Chip" = Snow "Chip".
 5. **You're always in control.** Nothing destructive (delete, overwrite, send, buy) happens without your OK. One click stops everything.
 6. **Calm, not chaotic.** It lives on your screen all day, so it must never get in your way. Clicks pass through to your apps; creatures stay out of the way when you're working.
 7. **Light and fast.** Objects sleep until needed; the app shouldn't slow the computer or burn money in the background.
@@ -64,7 +64,7 @@ Every agent is a character. Each creature's animal fits its job.
 | Character | Agent | Job |
 |---|---|---|
 | 🐜 **Ants** | **Planner** | A colony that takes your request, breaks it into steps, and hands work to the right agents |
-| 🐿️ **Chipmunk** | **Yappy** | The chatty one: talks with you, explains what's happening, keeps you company |
+| 🐿️ **Chipmunk** | **Chip** (the main agent; formerly "Yappy") | The chatty one: your main point of contact. Talks with you, explains what's happening, keeps you company |
 | 🐺 **Wolf** | **Security / Guardian** | Watches every risky action and asks your permission first |
 | 🦫 **Beaver** | **File manager** | Builds, moves, sorts and organizes your files and folders |
 | 🦅 **Eagle** | **Browser** | Flies out to the web: searches, reads and acts in the browser |
@@ -106,7 +106,7 @@ Win **Ideation Matrix** (the wildcard track) and compete for overall top 3 with 
 | **MUST** | **Ants (Planner)** visibly hand work to other agents |
 | **MUST** | At least **2 agents doing real actions**: **Beaver (files)** + **Eagle (browser)** |
 | **MUST** | **Wolf (Guardian)** confirmation before anything destructive |
-| **MUST** | **Chipmunk (Yappy)** chats in character |
+| **MUST** | **Chip (Chipmunk, the main agent)** chats in character |
 | SHOULD | Keyboard shortcuts: whole ecosystem + per agent |
 | SHOULD | Google Workspace agent (custom character) |
 | COULD | Nightingale (music) and Butterfly (social media) |
@@ -123,7 +123,7 @@ Win **Ideation Matrix** (the wildcard track) and compete for overall top 3 with 
 
 ### The demo moment (about 3 minutes) **[MELVIN DECIDES the final task]**
 1. **(0:00)** Clean desktop. "Every AI today is invisible. What if you could *see* it?" Launch the app (or hit the ecosystem shortcut). The creatures appear and start wandering. *(First reaction.)*
-2. **(0:30)** A judge clicks the Chipmunk (Yappy) and chats with it. It answers in character.
+2. **(0:30)** A judge clicks Chip the chipmunk and chats with it. It answers in character.
 3. **(1:00)** The goal: *"Turn the notes on my desktop into a report with 3 sources."*
 4. **(1:15)** The Ants (Planner) swarm and split it up; speech bubbles show the plan. The Beaver hauls `notes.txt` over, which wakes up and hands over its contents. The Eagle flies off and searches the web. The Google Workspace agent writes the report into a Doc live. *(The main moment.)*
 5. **(2:15)** The Beaver tries to delete the old notes. The **Wolf (Guardian) steps in and asks permission**. "This society always asks first: the opposite of the Thronglets."
