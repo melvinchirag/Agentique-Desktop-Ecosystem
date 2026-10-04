@@ -140,6 +140,8 @@ CREATE TABLE IF NOT EXISTS drafts_log (
   to_count INT, subject TEXT, state TEXT DEFAULT 'waiting'
 );
 CREATE INDEX IF NOT EXISTS ix_drafts_state ON drafts_log (state, ts);
+-- One row per Gmail draft, so recording the same draft again updates it (04-pixel-workspace.md §5.2).
+CREATE UNIQUE INDEX IF NOT EXISTS ux_drafts_gmail ON drafts_log (gmail_draft_id);
 
 -- Scout's research briefs
 CREATE TABLE IF NOT EXISTS research_log (

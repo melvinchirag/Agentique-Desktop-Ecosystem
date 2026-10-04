@@ -242,9 +242,9 @@ describe('TigerQueries', () => {
 
   it('pulse returns mood, jobs, and activity; empty when Tiger is down', async () => {
     const db = new FakeDb();
-    expect(Object.keys(await new TigerQueries(db, quiet).pulse())).toEqual(['mood', 'jobs', 'activity', 'warden']);
+    expect(Object.keys(await new TigerQueries(db, quiet).pulse())).toEqual(['mood', 'jobs', 'activity', 'warden', 'pixel']);
     db.down = true;
-    expect(await new TigerQueries(db, quiet).pulse()).toEqual({ mood: [], jobs: [], activity: [], warden: { allowed: 0, asked: 0, denied: 0, alerts: 0 } });
+    expect(await new TigerQueries(db, quiet).pulse()).toEqual({ mood: [], jobs: [], activity: [], warden: { allowed: 0, asked: 0, denied: 0, alerts: 0 }, pixel: { draftsToday: 0, waiting: 0 } });
   });
 });
 
