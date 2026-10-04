@@ -80,6 +80,21 @@ describe("speak('wolf', …)", () => {
     expect((await voice.speak('wolf', "I never send. It's in your drafts.", 'neutral')).audio.byteLength).toBe(0);
   });
 
+  it('another animal with shipped lines plays its own, and falls back to a live render for other text', async () => {
+    const { voice, calls } = setup();
+    const dir = (voice as any).shipped.dir as string;
+    mkdirSync(join(dir, 'ants'));
+    writeFileSync(join(dir, 'ants', 'plan-assembled.mp3'), 'ANTS-MP3');
+    writeFileSync(join(dir, 'ants', 'manifest.json'), JSON.stringify({ agent: 'ants', lines: [{ trigger: 'plan-assembled', text: 'Plan assembled!', file: 'plan-assembled.mp3', hash: 'z' }] }));
+    const custom = new ElevenLabsVoice({ apiKey: 'k', voiceIds: { ants: 'voice-swarm' }, cache: new VoiceCache(tmp()), shipped: new ShippedLines(dir),
+      fetch: (async (url: any, init: any) => { calls.push({ url: String(url), body: JSON.parse(init.body) }); return new Response(JSON.stringify({ audio_base64: Buffer.from('LIVE').toString('base64'), alignment: null }), { status: 200 }); }) as typeof fetch, log: () => {} });
+    expect(text((await custom.speak('ants', 'Plan assembled!', 'excited')).audio)).toBe('ANTS-MP3');
+    expect(calls).toHaveLength(0);
+    await custom.speak('ants', 'Step two, on its way!', 'excited');
+    expect(calls).toHaveLength(1);
+    expect(calls[0].body.text).toBe('[excited] Step two, on its way!');       // mood kept for non-Warden animals
+  });
+
   it('other animals keep their mood and never read Warden\'s shipped lines', async () => {
     const { voice, calls } = setup();
     await voice.speak('chipmunk', "I never send. It's in your drafts.", 'excited');

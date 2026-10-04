@@ -138,6 +138,13 @@ describe('BackboardClient other calls', () => {
     expect(calls[0]!.body).toEqual({ name: 'ADE · Warden', system_prompt: 's' });
   });
 
+  it('updateAssistant PUTs only the fields given, to the same id', async () => {
+    const { c, calls } = client([{ json: { assistant_id: 'ants-id' } }]);
+    await c.updateAssistant('ants-id', { factExtractionPrompt: 'new rules', updateMemoryPrompt: 'new update' });
+    expect(calls[0]).toMatchObject({ method: 'PUT', url: 'https://app.backboard.io/api/assistants/ants-id' });
+    expect(calls[0]!.body).toEqual({ custom_fact_extraction_prompt: 'new rules', custom_update_memory_prompt: 'new update' });
+  });
+
   it('refuses to start without an API key', () => {
     expect(() => new BackboardClient({ apiKey: '' })).toThrow(/BACKBOARD_API_KEY/);
   });

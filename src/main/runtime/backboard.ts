@@ -111,6 +111,19 @@ export class BackboardClient implements LlmClient {
     return { assistantId: raw.assistant_id };
   }
 
+  /**
+   * Changes an existing assistant in place (same id): `PUT /assistants/{id}` with only the fields to change.
+   * Confirmed live: the name and system prompt are kept when they are left out. PATCH is not allowed (405).
+   */
+  async updateAssistant(assistantId: string, p: Partial<CreateAssistantParams>): Promise<void> {
+    const body: Record<string, unknown> = {};
+    if (p.name !== undefined) body.name = p.name;
+    if (p.systemPrompt !== undefined) body.system_prompt = p.systemPrompt;
+    if (p.factExtractionPrompt !== undefined) body.custom_fact_extraction_prompt = p.factExtractionPrompt;
+    if (p.updateMemoryPrompt !== undefined) body.custom_update_memory_prompt = p.updateMemoryPrompt;
+    await this.request(`/assistants/${encodeURIComponent(assistantId)}`, { method: 'PUT', body });
+  }
+
   /** Deletes a thread and its messages (confirmed: DELETE /threads/{id}, docs/sponsor-verify.md §P3). Pixel's style learner calls this so writing samples do not linger. */
   async deleteThread(threadId: string): Promise<void> {
     await this.request(`/threads/${encodeURIComponent(threadId)}`, { method: 'DELETE' });
