@@ -1,0 +1,11 @@
+{
+  "displayName": "Pixel",
+  "scale": 1.0,
+  "yOffset": 0,
+  "bubbleHeight": 0.5,
+  "walkSpeed": 1.0,
+  "clipMap": {
+    "Idle": "Idle", "Walk": "Walk", "Talk": "Talk", "Happy": "Happy",
+    "Write": "Write", "Work": "Write", "Handoff": "Handoff", "Think": "Idle"
+  }
+}
