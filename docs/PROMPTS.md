@@ -290,7 +290,7 @@ Never touch other folders. Stop and tell me if any file is over 100 MB.
 
 ---
 
-# Warden (wolf, security) — ⏳ PENDING APPROVAL: use only after Chanuth approves the Warden plan
+# Warden (wolf, security) — ✅ APPROVED (Oct 4)
 
 Branches use the character name: `warden/logic`, `warden/sponsors`, `warden/graphics`, lanes `lane/warden-<track>-<x>`. The agent id in code and folders stays `wolf`.
 
@@ -301,7 +301,7 @@ Branches use the character name: `warden/logic`, `warden/sponsors`, `warden/grap
 | Zarin | Codex, repo root | Zarin — Warden graphics |
 
 ## Melvin — Warden logic orchestrator
-*Paste into: Claude Code, **Opus 5.5**, `/effort high`, repo root. Start any time after Chip's Wave 1 is merged (can overlap Archie). Use only after the Warden plan is approved.*
+*Paste into: Claude Code, **Opus 5.5**, `/effort high`, repo root. Start any time after Chip's Wave 1 is merged (can overlap Archie).*
 
 ```text
 You are the ORCHESTRATOR for building WARDEN (the wolf security agent, id "wolf") in the ADE repo:
@@ -345,7 +345,7 @@ after every step.
 ```
 
 ## Shafeen — Warden sponsor tech
-*Paste into: Claude Code, **Opus 5.5**, `/effort high`, repo root. Start after Chip's sponsor kit is handed off. Use only after the Warden plan is approved.*
+*Paste into: Claude Code, **Opus 5.5**, `/effort high`, repo root. Start after Chip's sponsor kit is handed off.*
 
 ```text
 You are the ORCHESTRATOR for WARDEN's sponsor tech (ElevenLabs voice + pre-generated lines + SFX, Tiger
@@ -377,7 +377,7 @@ ask if a real API differs from the docs. Status table after every step.
 ```
 
 ## Zarin — Warden graphics
-*Paste into: **Codex**, repo root. Use only after the Warden plan is approved.*
+*Paste into: **Codex**, repo root.*
 
 ```text
 Help me build and save WARDEN THE WOLF's 3D model and animations for the ADE project.

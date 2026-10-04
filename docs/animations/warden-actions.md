@@ -1,4 +1,4 @@
-# Warden (Wolf) — Animation Actions for Zarin ⏳ PENDING APPROVAL (wait for Chanuth's OK)
+# Warden (Wolf) — Animation Actions for Zarin ✅ APPROVED (Oct 4)
 
 Same rules as Chip and Archie (`chip-actions.md`, `../ASSETS.md §2`):
 - exact Action names, Fake User on, in place, 30 fps, loops seamless, no color animation

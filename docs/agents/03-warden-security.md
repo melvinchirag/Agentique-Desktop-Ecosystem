@@ -1,11 +1,11 @@
-# Agent 03 — Warden (Wolf) — Security Guardian · Plan v1.1 ⏳ PENDING APPROVAL
+# Agent 03 — Warden (Wolf) — Security Guardian · Plan v1.1 ✅ APPROVED (Oct 4)
 
 **Id:** `wolf` · **Name:** Warden · **Tier:** core
 **Builders:** logic → Melvin (`warden/logic`) · sponsor tech → Shafeen (`warden/sponsors`) · graphics → Zarin (`warden/graphics`). Branch names use the character name; the agent id in code and folders stays `wolf` (`src/main/wolf/`, `characters/wolf/`, `sfx/wolf/`).
 **Read with:** `../DECISIONS.md`; the **real contracts on `main`**: `src/shared/events.ts` (`tool.request`, `wolf.verdict`, `wolf.alert`, `approval.request`, `approval.resolve`, `agent.say` priorities), `src/shared/tools.ts` (`Risk`, `ToolDefinition.riskFor/preview`), `src/shared/ipc.ts` (`resolveApproval`, `getWardenAudit`, `getPulse`), `src/main/runtime/types.ts` (`JobScheduler.pauseClock/resumeClock/cancel/list`, `PresenceManager`, `HistoryKind 'warden_blocks'`, `TigerQueries.wardenAudit`, `VoiceService.pregenerate`); `StubWardenGate` on `chip/logic` (`src/main/testing/stubWarden.ts`); `01-chip-orchestrator.md` (§3 help jobs, §4.1 job clock, §4.4 speech priority, §9 stop); `02-archie-files.md` (§2 sandbox, §4 tools, §13 what Warden must enforce, §14 AgentRuntime); `../app-shell/00-APP-SHELL-SPEC.md` (§7 director, §8 speech queue, §9 Audit tab, §10 inspect card); `../SPONSORS.md` (Warden rows).
 **Replaces Chip's `StubWardenGate`.** The real gate keeps the stub's exact method: `review(r) → 'allow' | 'ask' | 'deny'`, emitting `wolf.verdict` from `agentId: 'wolf'` (§15).
 
-> ⏳ Everything marked **(proposed)** waits for Chanuth's approval. Decisions to confirm are in §19.
+> ✅ APPROVED (Oct 4). All 14 decisions in §19 are approved.
 
 ---
 
@@ -420,17 +420,17 @@ export interface InjectionScreen { screen(text: string, source: ScreenSource): P
 
 ## 19. Decisions for Chanuth (with recommendations)
 
-1. **Warden never cowers:** his "scared" slot is `Guard`; moods only neutral / protective / proud / sleepy. → **Yes.**
-2. **New rules W12–W16** (safe links only, attachment checks, helpers can't delete, one card per job / max 3 on screen, **task-wide** taint after a trick). → **Yes.**
-3. **No "always allow for this task"** in the hackathon. → **Yes (don't offer it).**
-4. **Approval timeout 5 min → declined.** → **Keep.**
-5. **Layer-2 Backboard classifier** for borderline text only, 3 s, falls back to heuristics; env switch. → **On.**
-6. **Screen specialist results** (say + summary, incl. help-job results) and calendar text, plus local pre-screen for `fs_ask_file`. → **Yes.**
-7. **Silent on allow**; blocks/asks/alerts/timeouts at `warden` priority, acks + greeting at `report`; 10 s repeat throttle. → **Yes.**
-8. **Lines pre-generated** through the voice cache **and** shipped as mp3s; Warden always `[serious]`. → **Yes.**
-9. **New things in ADE-owned places count as `draft`** (allow); sharing = `external` (deny). → **Yes** (Pixel's and Scout's plans will rely on it).
-10. **Contract additions in §15** via `contracts/warden` (gate/approvals/screen types, `ToolDefinition.inspect`, optional `approval.resolve.how`). → **Yes.**
-11. **Gate fails closed** (bug → deny + alert). → **Yes.**
-12. **Warden sleeps and docks like the others**; the gate never depends on presence; he's woken on ask/deny/alert and kept awake while a card is pending. → **Yes.**
-13. **Approvals own the job-clock pause** (ref-counted; also pauses the asking job of a help job); the runtime doesn't call pause/resume itself. → **Yes** (fixes parallel asks with the boolean `pauseClock`).
-14. **W1 matches tool-name segments** (+ `forward`) and a registry lint test forbids such names. → **Yes.**
+1. **Warden never cowers:** his "scared" slot is `Guard`; moods only neutral / protective / proud / sleepy. → **Yes.** ✅ APPROVED (Oct 4)
+2. **New rules W12–W16** (safe links only, attachment checks, helpers can't delete, one card per job / max 3 on screen, **task-wide** taint after a trick). → **Yes.** ✅ APPROVED (Oct 4)
+3. **No "always allow for this task"** in the hackathon. → **Yes (don't offer it).** ✅ APPROVED (Oct 4)
+4. **Approval timeout 5 min → declined.** → **Keep.** ✅ APPROVED (Oct 4)
+5. **Layer-2 Backboard classifier** for borderline text only, 3 s, falls back to heuristics; env switch. → **On.** ✅ APPROVED (Oct 4)
+6. **Screen specialist results** (say + summary, incl. help-job results) and calendar text, plus local pre-screen for `fs_ask_file`. → **Yes.** ✅ APPROVED (Oct 4)
+7. **Silent on allow**; blocks/asks/alerts/timeouts at `warden` priority, acks + greeting at `report`; 10 s repeat throttle. → **Yes.** ✅ APPROVED (Oct 4)
+8. **Lines pre-generated** through the voice cache **and** shipped as mp3s; Warden always `[serious]`. → **Yes.** ✅ APPROVED (Oct 4)
+9. **New things in ADE-owned places count as `draft`** (allow); sharing = `external` (deny). → **Yes** (Pixel's and Scout's plans will rely on it). ✅ APPROVED (Oct 4)
+10. **Contract additions in §15** via `contracts/warden` (gate/approvals/screen types, `ToolDefinition.inspect`, optional `approval.resolve.how`). → **Yes.** ✅ APPROVED (Oct 4)
+11. **Gate fails closed** (bug → deny + alert). → **Yes.** ✅ APPROVED (Oct 4)
+12. **Warden sleeps and docks like the others**; the gate never depends on presence; he's woken on ask/deny/alert and kept awake while a card is pending. → **Yes.** ✅ APPROVED (Oct 4)
+13. **Approvals own the job-clock pause** (ref-counted; also pauses the asking job of a help job); the runtime doesn't call pause/resume itself. → **Yes** (fixes parallel asks with the boolean `pauseClock`). ✅ APPROVED (Oct 4)
+14. **W1 matches tool-name segments** (+ `forward`) and a registry lint test forbids such names. → **Yes.** ✅ APPROVED (Oct 4)

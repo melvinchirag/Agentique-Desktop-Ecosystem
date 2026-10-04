@@ -1,7 +1,7 @@
 =====================================================================
   WARDEN THE WOLF - ANIMATION LIST FOR ZARIN
   ADE (Agentique Desktop Ecosystem) - Hack Dearborn 5
-  (PENDING APPROVAL - wait for Chanuth's OK before starting)
+  (APPROVED Oct 4)
 =====================================================================
 
 Warden is the security guardian: calm, steady, few words, protective,

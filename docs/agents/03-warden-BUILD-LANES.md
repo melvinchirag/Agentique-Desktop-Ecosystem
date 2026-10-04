@@ -8,7 +8,7 @@
 - **Wave 1 (J, A, G):** after `contracts/warden` is merged into `main` (they code against `WardenGate`, `Approvals`, `InjectionScreen`).
 - **Wave 2 (I):** after Archie's lane **R (AgentRuntime)** is merged into `beaver/logic`.
 
-**Status:** ⏳ PENDING APPROVAL. **Target:** ≈ 2 h of lanes from start (incl. waiting for the contracts merge) + 40 min integration.
+**Status:** ✅ APPROVED (Oct 4). **Target:** ≈ 2 h of lanes from start (incl. waiting for the contracts merge) + 40 min integration.
 
 ---
 

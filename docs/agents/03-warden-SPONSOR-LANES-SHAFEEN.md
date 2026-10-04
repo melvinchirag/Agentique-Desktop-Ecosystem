@@ -5,7 +5,7 @@
 **Specs:** `03-warden-security.md` §6.3 (classifier), §7 (lines), §8 (inspect card + Audit data), §10 (sponsors), §15 (contracts); `../SPONSORS.md` Warden rows (memory OFF, designed voice, pre-generated template lines, growl/howl/sniff, `wolf_audit`, `warden_blocks`).
 **Method:** Hydra (`C:\Chanuth\hydra\models.json`): Opus 5.5 orchestrator; Codex GPT-6 Sol for strong-floor code; Codex Luna / AGY Gemini 3.8 Flash High only for value-floor asset work; Sonnet for verification; **Opus reviews WT1 and WB1**. No MCP for implementers.
 **When:** after Chip's sponsor kit is handed off (can overlap Archie's sponsor lanes). No lane needs `contracts/warden`: the classifier shape is Warden's own (`src/main/wolf/injection.ts`), and nothing here edits `src/shared` or `types.ts`. **Target: ≈ 1.25 h.**
-**Status:** ⏳ PENDING APPROVAL.
+**Status:** ✅ APPROVED (Oct 4).
 
 ---
 
