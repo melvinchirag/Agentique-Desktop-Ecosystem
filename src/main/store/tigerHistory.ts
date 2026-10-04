@@ -1,6 +1,7 @@
 import type { AgentId } from '../../shared/agents';
 import type { HistoryKind, HistoryStore } from '../runtime/types';
 import { redact, type Db } from './tiger';
+import type { TigerResearchStore } from './tigerResearch';
 
 const MAX_ROWS = 20;
 const DEFAULT_SINCE_HOURS = 24;
@@ -50,20 +51,22 @@ const iso = (v: unknown) => (v instanceof Date ? v.toISOString() : v);
 
 /** Tiger-backed HistoryStore. Replaces the in-memory one at handoff. Returns [] if Tiger is unreachable. */
 export class TigerHistoryStore implements HistoryStore {
-  constructor(private readonly db: Db, private readonly now: () => number = Date.now, private readonly log: (m: string) => void = (m) => console.warn(`[tiger] ${m}`)) {}
+  constructor(private readonly db: Db, private readonly now: () => number = Date.now, private readonly log: (m: string) => void = (m) => console.warn(`[tiger] ${m}`), private readonly research?: TigerResearchStore) {}
 
   async query(kind: HistoryKind, sinceHours: number, agent?: AgentId): Promise<object[]> {
     const sql = SQL[kind];
     if (!sql) return [];
     const hours = Number.isFinite(sinceHours) && sinceHours > 0 ? sinceHours : DEFAULT_SINCE_HOURS;
     const since = new Date(this.now() - hours * 3600 * 1000);
+    const findings = kind === 'agent_activity' && (!agent || agent === 'eagle')
+      ? (await this.research?.find(since) ?? []).map(row => ({ agent: 'eagle', at: iso(row.ts), title: row.title, findings: row.sources, brief_path: row.brief_path })) : [];
     try {
       const { rows } = await this.db.query(sql, [since, agent ?? null]);
       // file_ops is only present on Archie's row; drop the empty column from the others.
-      return rows.map((row) => Object.fromEntries(Object.entries(row).filter(([k, v]) => !(k === 'file_ops' && v == null)).map(([k, v]) => [k, iso(v)])));
+      return [...rows.map((row) => Object.fromEntries(Object.entries(row).filter(([k, v]) => !(k === 'file_ops' && v == null)).map(([k, v]) => [k, iso(v)]))), ...findings];
     } catch (err) {
       this.log(`history query "${kind}" failed: ${redact((err as Error).message)}`);
-      return [];
+      return findings;
     }
   }
 }

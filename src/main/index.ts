@@ -97,6 +97,7 @@ if (!app.requestSingleInstanceLock()) {
       overlay, hub: hub.window, isCollapsed: () => hub.collapsed, layout, targets,
     });
     const core = watchSettings(createRealCore({ demoMode, demoTimers: argv.includes('--demo-timers'), resourcesDir,
+      exePath: app.getPath('exe'), packaged: app.isPackaged,
       desktopRoot: app.getPath('desktop'), documentsRoot: app.getPath('documents'), downloadsRoot: app.getPath('downloads'),
       safeStorage, fsShell: shell, openExternal: url => shell.openExternal(url), onSettingsChanged: onSettings }), onSettings);
     coreRef = core;

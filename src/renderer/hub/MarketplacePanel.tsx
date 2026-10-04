@@ -58,7 +58,7 @@ export const MarketplacePanel: React.FC<MarketplacePanelProps> = ({
             const profile = AGENTS[id];
             const row = agents[id];
             const isDocked = row?.presence === 'docked';
-            const isInstalled = row?.presence !== 'not_installed';
+            const isInstalled = row?.presence !== undefined && row.presence !== 'not_installed';
 
             return (
               <div key={id} className="hub-market-card">
@@ -78,7 +78,7 @@ export const MarketplacePanel: React.FC<MarketplacePanelProps> = ({
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 }}>
                   <span style={{ fontSize: 9, color: 'var(--hub-text-secondary)', textTransform: 'capitalize' }}>
-                    {isInstalled ? (isDocked ? 'Docked' : 'Active') : 'Available'}
+                    {isInstalled ? (isDocked ? 'Docked' : 'Active') : 'Coming soon'}
                   </span>
 
                   {isDocked ? (
@@ -90,11 +90,11 @@ export const MarketplacePanel: React.FC<MarketplacePanelProps> = ({
                     >
                       Wake
                     </button>
-                  ) : (
+                  ) : isInstalled ? (
                     <span style={{ fontSize: 9, color: 'var(--hub-success)' }}>
                       Installed
                     </span>
-                  )}
+                  ) : null}
                 </div>
               </div>
             );

@@ -1,7 +1,42 @@
 import { describe, expect, it } from 'vitest';
-import { createRealCore, missingRealCoreKeys } from './realCore';
+import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { createRealCore, disconnectedCalendar, loadPersistedSettings, loadRealCoreEnv, missingRealCoreKeys, savePersistedSettings } from './realCore';
+import { makeTestSettings } from '../testing/settings';
 
 describe('real core startup fallback', () => {
+  it('uses an empty calendar while Google is disconnected', async () => {
+    expect(await disconnectedCalendar().listEvents()).toEqual([]);
+  });
+
+  it('finds .env beside the executable before data dir and cwd, and returns its folder for CA resolution', () => {
+    const root = mkdtempSync(join(tmpdir(), 'ade-env-'));
+    const exeDir = join(root, 'app');
+    const dataDir = join(root, 'data');
+    mkdirSync(exeDir); mkdirSync(dataDir);
+    try {
+      writeFileSync(join(dataDir, '.env'), 'ADE_TEST_SOURCE=data\n');
+      expect(loadRealCoreEnv({ exePath: join(exeDir, 'ADE.exe'), dataDir }).env.ADE_TEST_SOURCE).toBe('data');
+      writeFileSync(join(exeDir, '.env'), 'ADE_TEST_SOURCE=exe\nTIGER_CA_FILE=cert.pem\n');
+      const loaded = loadRealCoreEnv({ exePath: join(exeDir, 'ADE.exe'), dataDir });
+      expect(loaded.env.ADE_TEST_SOURCE).toBe('exe');
+      expect(loaded.baseDir).toBe(exeDir);
+    } finally { rmSync(root, { recursive: true, force: true }); }
+  });
+
+  it('restores model, voice, folders and demo preferences after relaunch', () => {
+    const root = mkdtempSync(join(tmpdir(), 'ade-settings-'));
+    try {
+      const file = join(root, 'settings.json');
+      const saved = makeTestSettings({ voiceEnabled: false, sfxEnabled: false, allowedFolders: ['C:/Work'], demoMode: true });
+      saved.models.chipmunk = { llm_provider: 'openai', model_name: 'gpt-4o' };
+      savePersistedSettings(file, saved);
+      const loaded = loadPersistedSettings(file, makeTestSettings());
+      expect(loaded).toMatchObject({ voiceEnabled: false, sfxEnabled: false, allowedFolders: ['C:/Work'], demoMode: true });
+      expect(loaded.models.chipmunk).toEqual(saved.models.chipmunk);
+    } finally { rmSync(root, { recursive: true, force: true }); }
+  });
   it('requires the Chip and Tiger credentials but treats voice as optional', () => {
     expect(missingRealCoreKeys({})).toEqual(['BACKBOARD_API_KEY', 'BB_ASSISTANT_CHIPMUNK', 'TIGER_DATABASE_URL']);
     expect(missingRealCoreKeys({ BACKBOARD_API_KEY: 'bb', BB_ASSISTANT_CHIPMUNK: 'chip', TIGER_DATABASE_URL: 'postgres://user:pass@example/db' })).toEqual([]);

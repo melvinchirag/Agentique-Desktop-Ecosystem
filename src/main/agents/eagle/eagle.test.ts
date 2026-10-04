@@ -4,8 +4,9 @@ import { briefPath, createEagleTools, safeWebUrl } from './tools';
 import { parseSpecialistOutput } from '../../runtime/specialistOutput';
 import { createChipCore } from '../../chipCore';
 import { FakeClock } from '../../runtime/clock';
+import { RESULT_BATCH_MS } from '../../runtime/orchestrator';
 import { FakeCalendar } from '../../testing/fakeCalendar';
-import { completed, FakeLlm } from '../../testing/fakeLlm';
+import { completed, FakeLlm, requiresAction, toolCall } from '../../testing/fakeLlm';
 import { fakeResult } from '../../testing/fakeSpecialists';
 import { makeTestSettings } from '../../testing/settings';
 import { StubWardenGate } from '../../testing/stubWarden';
@@ -78,8 +79,53 @@ describe('Scout registration', () => {
       webSearch: 'Auto', memory: 'Auto' } });
     expect(core.bus.recent().filter(event => event.type === 'agent.status' && event.agentId === 'eagle')
       .map(event => event.type === 'agent.status' && [event.status, event.detail])).toEqual([
-        ['away', 'Scanning the web…'], ['done', undefined],
+        ['away', 'Scanning the web…'], ['idle', undefined],
       ]);
     await core.dispose();
+  });
+
+  it.each([
+    ['free-form web answer', 'plain'],
+    ['screen exception after the answer', 'screen'],
+    ['tool exception after an interim answer', 'tool'],
+    ['silent Chip result response', 'silent'],
+  ] as const)('%s still returns and gives Chip a result turn', async (_name, mode) => {
+    const clock = new FakeClock();
+    const answer = 'NASA says Apollo 11 landed on July 20, 1969. https://www.nasa.gov/history/';
+    const screenError = mode === 'screen' ? new Error('screen unavailable') : undefined;
+    const eagleLlm = new FakeLlm(mode === 'tool'
+      ? [{ ...requiresAction([toolCall('web_open', { url: 'https://www.nasa.gov/history/' })]), content: answer }, completed(answer)]
+      : [completed(answer)]);
+    const chipLlm = new FakeLlm([completed(mode === 'silent' ? '(silent)' : '[bubble: Research ready]\nScout found the NASA source.')]);
+    const core = createChipCore({ llm: chipLlm, runner: { run: async () => fakeResult('eagle') },
+      calendar: new FakeCalendar(clock), settings: makeTestSettings, chipAssistantId: 'chip', clock, startNudges: false,
+      eagle: { llm: eagleLlm, assistantId: 'scout', documentsRoot: 'C:/Documents',
+        openExternal: async () => { if (mode === 'tool') throw new Error('browser unavailable'); },
+        gate: ({ bus }) => new StubWardenGate(bus), approvals,
+        ...(screenError ? { screen: { screen: async () => { throw screenError; } } } : {}),
+      },
+    });
+    try {
+      const submitted = core.jobs.submit({ agent: 'eagle', task: 'Find the first Moon landing date',
+        title: 'Moon landing', requestedBy: 'chipmunk', kind: 'normal', parentTaskId: 'task-web' });
+      const result = await core.jobs.waitFor(submitted.jobId!);
+      expect(result.ok).toBe(!screenError);
+      expect(result.summary).toContain(screenError ? 'screened' : 'NASA');
+      const events = core.bus.recent();
+      const report = events.findIndex(e => e.type === 'agent.say' && e.agentId === 'eagle');
+      const returned = events.findIndex(e => e.type === 'agent.return' && e.agentId === 'eagle');
+      const terminal = events.findIndex(e => e.type === 'job.update' && e.to === 'eagle' &&
+        e.state === (screenError ? 'failed' : 'done'));
+      expect(report).toBeGreaterThanOrEqual(0);
+      expect(returned).toBeGreaterThan(report);
+      expect(terminal).toBeGreaterThan(returned);
+      expect(events.some(e => e.type === 'agent.status' && e.agentId === 'eagle' && e.status === 'idle')).toBe(true);
+      expect(core.jobs.list().find(j => j.jobId === submitted.jobId)?.state).toBe(screenError ? 'failed' : 'done');
+      if (mode === 'tool') expect(events.some(e => e.type === 'tool.result' && e.agentId === 'eagle' && !e.ok)).toBe(true);
+      await clock.advanceAsync(RESULT_BATCH_MS);
+      await core.orchestrator.whenIdle();
+      expect(chipLlm.calls.some(call => call.kind === 'send' && call.params.content.startsWith('[job_results]'))).toBe(true);
+      expect(core.bus.recent().some(e => e.type === 'agent.say' && e.agentId === 'chipmunk' && e.priority === 'chip')).toBe(true);
+    } finally { await core.dispose(); }
   });
 });

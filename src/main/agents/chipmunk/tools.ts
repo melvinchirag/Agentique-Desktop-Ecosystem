@@ -87,7 +87,7 @@ export function chipTools(installed: SpecialistId[]): OpenAiTool[] {
       function: {
         name: 'biome_history',
         description:
-          "Look up what the biome did before. Use for 'what did you do for me today', 'what did Warden block', 'how have I been feeling'.",
+          "Look up what the biome did before. Use agent_activity with agent eagle for 'what did Scout find'; also use for 'what did you do for me today', 'what did Warden block', 'how have I been feeling'.",
         parameters: {
           type: 'object',
           properties: {
