@@ -35,7 +35,11 @@ export const createHubWindow = (opts: {
   window.on('moved', scheduleLayout);
   window.on('resize', scheduleLayout);
   window.on('closed', () => app.quit());
-  if (opts.devMode) window.webContents.once('did-finish-load', () => window.webContents.openDevTools({ mode: 'detach' }));
+  window.webContents.once('did-finish-load', () => {
+    if (opts.devMode) window.webContents.openDevTools({ mode: 'detach' });
+    window.setAlwaysOnTop(true, 'floating');
+    if (!window.isAlwaysOnTop()) window.setAlwaysOnTop(true, 'screen-saver');
+  });
   return {
     window,
     get collapsed() { return collapsed; },
