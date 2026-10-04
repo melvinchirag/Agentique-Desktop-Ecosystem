@@ -195,6 +195,10 @@ Owner of this file: Chanuth (with Claude). Last updated: Sun Oct 4, 2026, early 
 | `agents/02-archie-BUILD-LANES.md` | Melvin's lanes for Archie + AgentRuntime |
 | `agents/02-archie-SPONSOR-LANES-SHAFEEN.md` | Shafeen's lanes for Archie |
 | `animations/archie-actions.md`, `animations/Archie_Animations_for_Zarin.txt` | Archie's animation list (21 actions + props) |
+| `agents/03-warden-security.md` | Warden (wolf, security) spec v1 ⏳ **pending approval**: rules W0–W16, approvals, injection screen, lines |
+| `agents/03-warden-BUILD-LANES.md` | Melvin's lanes for Warden (replaces Chip's stub gate) |
+| `agents/03-warden-SPONSOR-LANES-SHAFEEN.md` | Shafeen's lanes for Warden (voice lines, Tiger audit, Backboard classifier) |
+| `animations/warden-actions.md`, `animations/Warden_Animations_for_Zarin.txt` | Warden's animation list (19 actions) |
 
 ## 15a. Melvin's original docs (repo)
 - `VISION.md` stays as the vision contract (north star, principles, Thronglets framing, demo safety, long-term phases), updated to match these decisions. `concept.md` is archived as `docs/archive/concept-v0.md`.
@@ -211,6 +215,10 @@ Owner of this file: Chanuth (with Claude). Last updated: Sun Oct 4, 2026, early 
 - **Undo journal** ✅: local `file-ops.jsonl` is primary; Tiger `file_ops` is a copy.
 - **Talking files** ✅: Archie's voice with a softer "paper" delivery; Archie holds the note at his own spot.
 - **Default allowed folders** ✅: Desktop, Documents, Downloads. **Archie's spot** ✅: bottom-left above the taskbar.
+
+## 15e. Warden plan ⏳ PENDING APPROVAL
+- Spec, lanes, animations, prompts: `agents/03-warden-*`, `animations/warden-actions.md`, `animations/Warden_Animations_for_Zarin.txt`, `PROMPTS.md` (Warden sections, marked "use only after approval").
+- Nothing here is approved yet. Open decisions are listed in `agents/03-warden-security.md §19`: Warden never cowers (Guard/Proud), new rules W12–W16, no "always allow", 5-min approval timeout, the layer-2 classifier, screening specialist summaries, silent on allow, pre-generated lines, "new things in ADE-owned places = draft", contract additions (`contracts/warden`), fail closed.
 
 ## 15d. Desktop movement
 - **MVP:** animals stand on the taskbar. **Dragging animals anywhere on the screen = post-MVP** ✅.

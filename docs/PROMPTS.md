@@ -242,5 +242,106 @@ Never touch other folders. Stop and tell me if any file is over 100 MB.
 
 ---
 
+# Warden (wolf, security) — ⏳ PENDING APPROVAL: use only after Chanuth approves the Warden plan
+
+| Who | Paste into | Section |
+|---|---|---|
+| Melvin | Claude Code (Opus 5.5, effort high), repo root | Melvin — Warden logic orchestrator |
+| Shafeen | Claude Code (Opus 5.5, effort high), repo root | Shafeen — Warden sponsor tech |
+| Zarin | Codex, repo root | Zarin — Warden graphics |
+
+## Melvin — Warden logic orchestrator
+*Paste into: Claude Code, **Opus 5.5**, `/effort high`, repo root. Start any time after Chip's Wave 1 is merged (can overlap Archie). Use only after the Warden plan is approved.*
+
+```text
+You are the ORCHESTRATOR for building WARDEN (the wolf security agent, id "wolf") in the ADE repo:
+the real WardenGate (rules W0-W16), Approvals, the InjectionScreen, Warden's lines table, and the swap
+that replaces Chip's StubWardenGate. You plan, write lane specs, dispatch AI lanes, audit, and merge.
+You don't implement lanes yourself (only Wave 0 items and few-line fixes).
+
+READ FIRST, IN THIS ORDER:
+1. docs/DECISIONS.md
+2. docs/agents/03-warden-security.md        (Warden spec: rules, approvals, injection screen, lines, contracts §15)
+3. docs/agents/03-warden-BUILD-LANES.md     (YOUR plan: lanes X L J A G I, models, merge order)
+4. docs/agents/02-archie-files.md §13-14    (what Warden enforces for Archie; AgentRuntime hook points)
+5. docs/agents/01-chip-orchestrator.md §4.1, §9 (job clock pause/resume; stop cancels approvals)
+6. docs/GIT-WORKFLOW.md
+
+WAVE 0:
+- Contracts (spec §15): if my contracts/shared PR is still open, add Warden's types to it; otherwise open
+  a small PR contracts/warden -> main with ONLY those changes. Tell me the PR link; Shafeen waits on it.
+- Then create branch wolf/logic FROM chip/logic, rebase on main, write lane files docs/lanes/WARDEN-<X>.md,
+  and make a worktree per lane: git worktree add ../ade-wt-wolf-logic-<x> -b lane/wolf-logic-<x> wolf/logic
+
+DISPATCH: give me the EXACT launch command or instruction per lane, using the model, effort, and engine
+in the plan's lane table (Codex via stdin with --ignore-user-config --disable apps; Claude/AGY interactive
+in the worktree). I launch them.
+
+AUDIT + MERGE: re-run every lane's tests yourself; no test may touch my real folders; diff = owned paths
+only, no secrets; you (Opus) review lanes J, A, G before merging (security-critical). Merge into wolf/logic:
+X -> L -> J -> A -> G. Then, once beaver/logic has lane R (AgentRuntime), git merge origin/beaver/logic and run
+lane I. npm test after each; push. Done = W-1..W-27 green AND Chip's C-tests + Archie's A10-A13, A20 green
+with the REAL gate. When Shafeen posts "Warden sponsor kit ready", merge origin/wolf/sponsors.
+
+RULES: never commit .env; deny MCP tool calls; the gate must FAIL CLOSED; STOP and ask on spec conflicts.
+Report a status table (lane | state | next) after every step.
+```
+
+## Shafeen — Warden sponsor tech
+*Paste into: Claude Code, **Opus 5.5**, `/effort high`, repo root. Start after Chip's sponsor kit is handed off. Use only after the Warden plan is approved.*
+
+```text
+You are the ORCHESTRATOR for WARDEN's sponsor tech (ElevenLabs voice + pre-generated lines + SFX, Tiger
+audit queries, Backboard injection classifier) in the ADE repo. Plan, write lane specs, dispatch, audit,
+merge. Don't implement lanes yourself except few-line fixes.
+
+READ FIRST:
+1. docs/DECISIONS.md
+2. docs/agents/03-warden-SPONSOR-LANES-SHAFEEN.md   (YOUR plan: lanes WV1 WT1 WB1 WW1)
+3. docs/agents/03-warden-security.md sections 6.3 (classifier), 7 (lines), 8 (inspect card + Audit), 10 (sponsors), 15 (contracts)
+4. docs/SPONSORS.md (Warden rows) and docs/agents/01-chip-SPONSOR-LANES-SHAFEEN.md (tooling you reuse)
+
+SETUP: WW1 and WV1 can start now. WT1 and WB1 wait until Warden's contracts are on main (check:
+git fetch && git show origin/main:src/main/runtime/types.ts | findstr WardenGate). Branch wolf/sponsors
+from main; lane files docs/lanes/WARDEN-SP-<X>.md; worktrees:
+git worktree add ../ade-wt-wolf-sponsors-<x> -b lane/wolf-sponsors-<x> wolf/sponsors
+
+DISPATCH each lane with the exact model, effort, and engine from the lane table (Codex via stdin with
+--ignore-user-config --disable apps; Claude/AGY interactive). I launch them. For WV1, tell me when
+Warden's voice previews are ready so the team can pick one; Warden's lines are rendered ONCE and shipped as mp3s.
+
+AUDIT + MERGE into wolf/sponsors: WW1 -> WT1 -> WB1 -> WV1; you review WT1; no keys in diffs; npm test after
+each; push. Run the smoke test in plan section 2, tell me to post "Warden sponsor kit ready: <commit>", and
+open PR wolf/sponsors -> main.
+
+RULES: never edit src/shared or types.ts (Melvin owns them); Warden's Backboard calls always use
+memory "off"; the classifier must fail safe (return null on any error); deny MCP tool calls; STOP and
+ask if a real API differs from the docs. Status table after every step.
+```
+
+## Zarin — Warden graphics
+*Paste into: **Codex**, repo root. Use only after the Warden plan is approved.*
+
+```text
+Help me build and save WARDEN THE WOLF's 3D model and animations for the ADE project.
+
+1. Read docs/animations/Warden_Animations_for_Zarin.txt (my full list) and docs/ASSETS.md section 2
+   (export rules). Summarize the Tier 1 list for me in 10 lines. Note: Warden has Guard instead of
+   Scared and Proud instead of Happy.
+2. Git: git switch main && git pull && git switch -c wolf/graphics && git push -u origin wolf/graphics
+3. Make sure tools/blender/required_clips.json has the "wolf" entry with EXACTLY the clip names
+   from Warden_Animations_for_Zarin.txt (loop flags + tiers). Update it if needed.
+4. When I say "check", run:
+     blender -b art/wolf/wolf.blend --python tools/blender/check_character.py -- wolf
+   and explain any FAIL lines in plain words.
+5. When I say "export", run:
+     blender -b art/wolf/wolf.blend --python tools/blender/export_character.py -- wolf
+6. When I say "save", commit and push only art/wolf, src/renderer/public/characters/wolf, and
+   tools/blender with a message like "wolf(graphics): Tier 1 clips ...".
+Never touch other folders. Stop and tell me if any file is over 100 MB.
+```
+
+---
+
 ## Prompts for later agents
 Each new agent plan (Pixel, Warden, Scout, Swarm, then the app shell) adds its own prompt sections here.
