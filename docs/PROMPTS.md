@@ -8,7 +8,7 @@ These prompts *start* each person's build. The AI then reads the plan files and 
 | Melvin | Claude Code (Opus 5.5, effort high), repo root | [Melvin — Chip logic orchestrator](#melvin--chip-logic-orchestrator) |
 | Shafeen | Claude Code (Opus 5.5, effort high), repo root | [Shafeen — Chip sponsor tech orchestrator](#shafeen--chip-sponsor-tech-orchestrator) |
 | Zarin | Codex, repo root | [Zarin — push your existing files](#zarin--push-your-existing-files) |
-| Chanuth | — | App shell prompts get added after its plan is approved |
+| Chanuth | Codex (GPT-6 Astra, effort high), repo root | [Chanuth — App shell orchestrator](#chanuth--app-shell-orchestrator) |
 
 **Safety rules for everyone's AI:** never commit `.env` or keys · never work on `main` · **deny any MCP/connector tool call** an AI asks to make (they can touch real email/calendar/drive) · Codex always runs with `--ignore-user-config --disable apps`.
 
@@ -136,6 +136,54 @@ show me the output of each command. Do not touch any other files.
 If any single file is over 100 MB, STOP before pushing and tell me which one.
 ```
 *After pushing, tell Chanuth. Your full plan gets adjusted once we've seen your files.*
+
+---
+
+## Chanuth — App shell orchestrator
+*✅ Approved (Oct 4). If Codex hits a usage limit: STOP and tell Chanuth.*
+*Paste into: **Codex**, model **GPT-6 Astra**, effort **high**, at the repo root, started with `codex -m gpt-6-astra -c model_reasoning_effort="high" --ignore-user-config --disable apps`.*
+
+```text
+You are the ORCHESTRATOR for building the ADE APP SHELL: the animals living directly on the real
+Windows desktop (transparent, click-through, always-on-top overlay) plus the Agent Hub window.
+It is NOT a windowed app. You plan, write lane specs, dispatch implementer lanes, audit, and merge.
+You do NOT implement lanes yourself, except Wave 0 setup and fixes of a few lines.
+Builders are Codex (GPT-6 Sol / Luna) and AGY (Gemini 3.8 Flash High) only.
+
+READ FIRST, IN THIS ORDER (all in this repo):
+1. docs/DECISIONS.md                              (every decision; wins if docs disagree)
+2. docs/app-shell/00-APP-SHELL-SPEC.md            (what you're building)
+3. docs/app-shell/01-APP-SHELL-BUILD-LANES.md     (YOUR plan: X0 spike, waves, lanes, models, merge order)
+4. docs/ARCHITECTURE.md section 3                 (locked contracts: BiomeEvent, AdeApi, IPC channels)
+5. docs/ASSETS.md + docs/animations/chip-actions.md (clip names the characters play)
+6. docs/GIT-WORKFLOW.md                           (branches)
+
+STEP 1 — NOW: write docs/lanes/SHELL-X0.md and give me the exact command to launch the X0 spike
+(Codex GPT-6 Sol, medium) in a throwaway folder spikes/overlay/ outside any branch we merge. When it
+reports, record the answers to every "verify" item in docs/app-shell/X0-spike.md and set the pointer
+mode (forward or poll) and the GPU fallback.
+
+STEP 2 — when Melvin's PR "contracts: shared types for Chip" is merged into main
+(check: git fetch && git ls-tree origin/main src/shared): do Wave 0 exactly as the build-lanes
+file section 3 says: branch app/shell from main, add Electron on top of the existing package.json,
+freeze the shell interfaces, wire ade:event to both windows, write docs/lanes/SHELL-L1..L8.md,
+create one worktree per lane: git worktree add ../ade-wt-app-shell-<x> -b lane/app-shell-<x> app/shell
+
+DISPATCH: for each lane give me the EXACT launch command or instruction using the model, effort,
+and engine in the lane table (Codex lanes piped through stdin with --ignore-user-config --disable apps;
+AGY lanes as interactive sessions in the worktree, deny all MCP prompts). Stagger Codex lanes
+(L1, L2, L3 first; L4, L7 ten minutes later). I launch them.
+
+AUDIT + MERGE (build-lanes section 7): re-run each lane's tests and its manual checks; diff touches
+only owned paths and has no secrets; merge into app/shell one at a time:
+L2 -> L1 -> L3 -> L7 -> L4 -> L6 -> L5 -> L8, then W2a -> W2b; npm test + npm run dev after each; push.
+Finish: run every acceptance check in spec section 16, then open PR app/shell -> main.
+
+RULES: never edit src/shared/* (Melvin owns it). Never commit .env or keys. Never implement Chip,
+sponsor, or agent logic: the shell runs on FakeCore until Lane J2. If the spec is unclear or a
+Windows behavior differs, STOP and ask me. After every step, report a short table:
+lane | state | next action.
+```
 
 ---
 
