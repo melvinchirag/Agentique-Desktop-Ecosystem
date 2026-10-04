@@ -45,6 +45,19 @@ describe('PresenceManager', () => {
     ]);
   });
 
+  it('docks an animal on request and wakes it through the same presence state', async () => {
+    const { clock, presence } = harness();
+    presence.start();
+    presence.dock('workspace');
+    expect(presence.get('workspace')).toBe('docked');
+    clock.advance(60_000);
+    expect(presence.get('workspace')).toBe('docked');
+    const waking = presence.wake('workspace', 'user');
+    clock.advance(WAKE_FROM_DOCK_MS);
+    await waking;
+    expect(presence.get('workspace')).toBe('active');
+  });
+
   it('lets Chip sleep without docking', () => {
     const { clock, presence } = harness();
     presence.start();
