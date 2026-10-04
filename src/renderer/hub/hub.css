@@ -813,3 +813,4 @@ body, html {
   gap: 12px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.6);
 }
+.hub-nudge-dot { width: 9px; height: 9px; padding: 0; border: 0; border-radius: 50%; background: #f59e0b; cursor: pointer; }

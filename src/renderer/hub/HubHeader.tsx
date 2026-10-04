@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import type { AdeApi } from '../../shared/ipc';
 import type { AdeShellApi } from '../../main/shell/contracts';
 import type { HubStoreHook } from '../shell/contracts';
@@ -30,6 +30,10 @@ export const HubHeader: React.FC<HubHeaderProps> = ({
   const agents = store((state) => state.agents);
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [nudgeUnread, setNudgeUnread] = useState(false);
+  useEffect(() => api.onEvent(event => {
+    if (event.type === 'nudge.fire') setNudgeUnread(true);
+  }), [api]);
 
   const dockedAgents = Object.values(agents).filter((row) => row.presence === 'docked');
 
@@ -68,6 +72,7 @@ export const HubHeader: React.FC<HubHeaderProps> = ({
             {userMood.mood}
           </span>
         )}
+        {nudgeUnread && <button type="button" className="hub-nudge-dot hub-no-drag" style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties} aria-label="Nudge notification" title="New nudge" onClick={() => setNudgeUnread(false)} />}
       </div>
 
       <div className="hub-header-controls hub-no-drag" style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}>
