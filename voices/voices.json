@@ -56,5 +56,97 @@
     ],
     "voice_id": "NtsYvGcHBRVh0mLANqjS",
     "picked": 3
+  },
+  "eagle": {
+    "name": "Scout",
+    "description": "A crisp, confident, sharp eagle. News-anchor energy, clear and concise, sees far.",
+    "previews": [
+      {
+        "n": 1,
+        "file": "voices/previews/eagle-1.mp3",
+        "generated_voice_id": "JovNvGHQidOs4NzD0uFO"
+      },
+      {
+        "n": 2,
+        "file": "voices/previews/eagle-2.mp3",
+        "generated_voice_id": "7zYr9M0baYnC59bHDXI3"
+      },
+      {
+        "n": 3,
+        "file": "voices/previews/eagle-3.mp3",
+        "generated_voice_id": "WyWhqeqJZrUmUNbhR2la"
+      }
+    ],
+    "voice_id": "JovNvGHQidOs4NzD0uFO",
+    "picked": 1
+  },
+  "ants": {
+    "name": "Swarm",
+    "description": "A very high, tiny, energetic voice, like a small eager ant. Quick, bright, cheerful, marching rhythm.",
+    "previews": [
+      {
+        "n": 1,
+        "file": "voices/previews/ants-1.mp3",
+        "generated_voice_id": "XIrhLaG4DklLlSXhEhhW"
+      },
+      {
+        "n": 2,
+        "file": "voices/previews/ants-2.mp3",
+        "generated_voice_id": "QZSbW2Ne4YGS0OO4UDAx"
+      },
+      {
+        "n": 3,
+        "file": "voices/previews/ants-3.mp3",
+        "generated_voice_id": "w0otmzTW0VJZYIweoSbf"
+      }
+    ],
+    "voice_id": "XIrhLaG4DklLlSXhEhhW",
+    "picked": 1
+  },
+  "butterfly": {
+    "name": "Iris",
+    "description": "A light, airy, cheerful young butterfly. Playful, stylish, quick and bubbly.",
+    "previews": [
+      {
+        "n": 1,
+        "file": "voices/previews/butterfly-1.mp3",
+        "generated_voice_id": "sMQAXRUvqIupTjEsCGVR"
+      },
+      {
+        "n": 2,
+        "file": "voices/previews/butterfly-2.mp3",
+        "generated_voice_id": "4gJAoJghewa0Sz35Zu2Y"
+      },
+      {
+        "n": 3,
+        "file": "voices/previews/butterfly-3.mp3",
+        "generated_voice_id": "kOZRDhUphcs7PgBQnpZO"
+      }
+    ],
+    "voice_id": "sMQAXRUvqIupTjEsCGVR",
+    "picked": 1
+  },
+  "nightingale": {
+    "name": "Celene",
+    "description": "A warm, smooth, melodic diva nightingale. Elegant, soulful, unhurried, a little dramatic.",
+    "previews": [
+      {
+        "n": 1,
+        "file": "voices/previews/nightingale-1.mp3",
+        "generated_voice_id": "Lki7b4Jx434GeiqsmP38"
+      },
+      {
+        "n": 2,
+        "file": "voices/previews/nightingale-2.mp3",
+        "generated_voice_id": "ryBb3HHpw8R991D2z1Gn"
+      },
+      {
+        "n": 3,
+        "file": "voices/previews/nightingale-3.mp3",
+        "generated_voice_id": "fu1bFyE80K3P5eXLFwKe"
+      }
+    ],
+    "voice_id": "Lki7b4Jx434GeiqsmP38",
+    "picked": 1
   }
 }
