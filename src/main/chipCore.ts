@@ -2,6 +2,7 @@ import type { AdeSettings } from '../shared/ipc';
 import { EventBus } from './bus/eventBus';
 import { createBeaverAgent } from './agents/beaver';
 import { createEagleAgent, type EagleToolDeps } from './agents/eagle';
+import { createAntsAgent, createSwarmPlanStore, parsePlanSummary, type SwarmPlan, type SwarmPlanStore } from './agents/ants';
 import { createOrganizeToolBindings, sweepOldTrash, type SweepResult } from './agents/beaver/organizeTools';
 import { createReadToolBindings } from './agents/beaver/readTools';
 import { createCompositeJournal, type CompositeJournal } from './connectors/fs/compositeJournal';
@@ -57,6 +58,16 @@ export interface EagleWiring extends EagleToolDeps {
   screen?: InjectionScreen;
 }
 
+export interface AntsWiring {
+  llm: LlmClient;
+  assistantId: string;
+  gate: (ctx: ArchieContext) => WardenGate;
+  approvals: (ctx: ArchieContext) => Approvals;
+  screen?: InjectionScreen;
+  /** Optional Tiger plan_items adapter; the local plan remains available without it. */
+  appendItems?: (plan: SwarmPlan) => Promise<void>;
+}
+
 export const TRASH_SWEEP_EVERY_MS = 6 * 60 * 60 * 1000;
 const SAFE_SWEEP_ERRORS = new Set(['INVALID_BATCH_ID', 'TRASH_LOCATION_CHANGED', 'NOT_A_FOLDER', 'ENOENT', 'EPERM', 'EBUSY']);
 
@@ -76,6 +87,7 @@ export interface ChipCoreConfig {
   startNudges?: boolean;             // default true
   archie?: ArchieWiring;             // default: none, so `beaver` stays on `runner`
   eagle?: EagleWiring;
+  ants?: AntsWiring;
 }
 
 export interface ChipCore {
@@ -94,6 +106,7 @@ export interface ChipCore {
     sweep(): Promise<SweepResult>;
   };
   eagle?: { runtime: SpecialistRunner; gate: WardenGate; approvals: Approvals };
+  ants?: { runtime: SpecialistRunner; gate: WardenGate; approvals: Approvals; plans: SwarmPlanStore };
   /** One live specialist registry; a missing entry uses the configured stand-in runner. */
   registerSpecialist(agentId: SpecialistId, runtime: SpecialistRunner): void;
   /** Stops every engine and timer, unsubscribes, then flushes the event sink (if any). Safe to call twice. */
@@ -261,6 +274,34 @@ export function createChipCore(config: ChipCoreConfig): ChipCore {
     } catch (error) { console.error('[chipCore] Scout construction failed; using fallback', error); }
   }
 
+  let ants: ChipCore['ants'];
+  if (config.ants) {
+    const a = config.ants;
+    const gate = a.gate({ bus, clock, jobs });
+    const approvals = a.approvals({ bus, clock, jobs });
+    const plans = createSwarmPlanStore(a.appendItems);
+    const runtime = createAgentRuntime({
+      bus, llm: a.llm, jobs, gate, approvals, settings,
+      agents: [{ definition: createAntsAgent(plans), assistantId: a.assistantId,
+        memory: { normal: 'Auto', help: 'Auto' } }],
+      ...(a.screen ? { screen: a.screen } : {}),
+    });
+    const antsRuntime: SpecialistRunner = {
+      async run(agentId, task, runCtx) {
+        bus.emit({ type: 'agent.status', agentId: 'ants', taskId: runCtx.taskId, status: 'working', detail: 'Assembling a plan…' });
+        try {
+          const result = await runtime.run(agentId, task, runCtx);
+          if (result.ok && !parsePlanSummary(result.summary)) {
+            return { ...result, ok: false, summary: 'Swarm returned an invalid plan JSON block.' };
+          }
+          return result;
+        } finally { bus.emit({ type: 'agent.status', agentId: 'ants', taskId: runCtx.taskId, status: 'done' }); }
+      },
+    };
+    ants = { runtime: antsRuntime, gate, approvals, plans };
+    specialists.ants = antsRuntime;
+  }
+
   presence.start();
   if (config.startNudges !== false) nudges.start();
 
@@ -274,6 +315,8 @@ export function createChipCore(config: ChipCoreConfig): ChipCore {
       catch { console.error('[chipCore] approvals disposal failed'); }
       try { eagle?.approvals.dispose(); }
       catch { console.error('[chipCore] eagle approvals disposal failed'); }
+      try { ants?.approvals.dispose(); }
+      catch { console.error('[chipCore] ants approvals disposal failed'); }
       orchestrator.dispose();
       nudges.dispose();
       mood.dispose();
@@ -294,7 +337,7 @@ export function createChipCore(config: ChipCoreConfig): ChipCore {
     setDoNotDisturb: (on) => { doNotDisturb = on; },
     isUserBusy,
     registerSpecialist: (agentId, runtime) => { specialists[agentId] = runtime; },
-    ...(archie ? { archie } : {}), ...(eagle ? { eagle } : {}),
+    ...(archie ? { archie } : {}), ...(eagle ? { eagle } : {}), ...(ants ? { ants } : {}),
     dispose,
   };
 }

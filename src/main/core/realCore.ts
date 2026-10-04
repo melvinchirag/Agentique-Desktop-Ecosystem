@@ -177,6 +177,14 @@ export function createRealCore(options: RealCoreOptions = {}): CoreAdapter {
       llm, assistantId: assistantIds.eagle, openExternal: options.openExternal, documentsRoot,
       gate, approvals, screen: injectionScreen,
     } } : {}),
+    ...(assistantIds.ants ? { ants: {
+      llm, assistantId: assistantIds.ants,
+      gate: ({ bus }: { bus: import('../runtime/types').Bus }) => new StubWardenGate(bus),
+      approvals: () => ({
+        request: async () => ({ approved: false as const, how: 'cancelled' as const }),
+        resolve: () => {}, cancelForJobs: () => {}, pending: () => [], dispose: () => {},
+      }),
+    } } : {}),
   });
   alertBus = core.bus;
   standIns.connect(core.bus);
