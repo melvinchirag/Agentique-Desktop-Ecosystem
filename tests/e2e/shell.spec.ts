@@ -68,6 +68,19 @@ test.beforeAll(async () => {
 
 test.afterAll(async () => { await app?.close(); });
 
+test('packaged renderer resolves the SFX manifest and a sound', async () => {
+  const result = await overlay.evaluate(async () => {
+    const manifest = await fetch('./sfx/manifest.json');
+    const sounds = await manifest.json() as { id: string; file: string }[];
+    const chirp = sounds.find(sound => sound.id === 'chipmunk.chirp')!;
+    const audio = await fetch(`./sfx/${chirp.file.replace(/^resources\/sfx\//, '')}`);
+    return { manifest: manifest.ok, audio: audio.ok, bytes: (await audio.arrayBuffer()).byteLength };
+  });
+  expect(result.manifest).toBe(true);
+  expect(result.audio).toBe(true);
+  expect(result.bytes).toBeGreaterThan(0);
+});
+
 test('Windows: geometry, transparency, focus, taskbar and character hit region', async () => {
   const state = await app.evaluate(async ({ BrowserWindow, screen }) => {
     const windows = BrowserWindow.getAllWindows();

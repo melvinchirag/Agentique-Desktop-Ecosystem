@@ -78,7 +78,7 @@ function harness() {
     closeInspect: () => {}, flyToHub: (id, title) => record('flyToHub', id, title),
     setReplayBanner: on => record('setReplayBanner', on),
   };
-  const sfx: SfxPlayer = { play: name => record('sfx', name), setVolume: () => {}, setEnabled: () => {} };
+  const sfx: SfxPlayer = { play: name => record('sfx', name), setVolume: () => {}, setEnabled: () => {}, setAmbienceEnabled: () => {}, dispose: () => {} };
   let player: EventPlayer<BiomeEvent> | null = null;
   const deps: DirectorDeps = {
     layer, speech, ui, sfx, getLayout: () => layout, clock,
@@ -267,7 +267,8 @@ describe('AnimationDirector event choreography', () => {
     h.director.handle(event('nudge.fire', { nudgeId: 'n', kind: 'daily', about: 'exam' })); await settle();
     expect(h.clips('chipmunk')).toContain('WakeUp');
     expect(h.events('moveTo')[0].args).toEqual(['chipmunk', 500, { gait: 'walk' }]);
-    expect(h.events('sfx')[0].args).toEqual(['knock']);
+    expect(h.events('sfx')[0].args).toEqual(['chipmunk.snore']);
+    expect(h.events('sfx').some(e => e.args[0] === 'chipmunk.knock-knock')).toBe(true);
     h.clock.advance(3000); await settle();
     expect(h.events('moveTo')[1].args).toEqual(['chipmunk', 380, { gait: 'walk' }]);
   });
@@ -291,7 +292,7 @@ describe('AnimationDirector event choreography', () => {
     expect(h.clips('wolf')).toContain('Sit');
     expect(h.events('moveTo')[1].args).toEqual(['wolf', 160, { gait: 'run' }]);
     expect(h.clips('wolf')).toContain('Block');
-    expect(h.events('sfx')[0].args).toEqual(['growl']);
+    expect(h.events('sfx').some(e => e.args[0] === 'wolf.growl')).toBe(true);
     expect(h.events('setMood')[0].args.slice(0, 2)).toEqual(['wolf', 'protective']);
     h.clock.advance(2000); await settle();
     expect(h.events('moveTo')[2].args).toEqual(['wolf', 500, { gait: 'walk' }]);

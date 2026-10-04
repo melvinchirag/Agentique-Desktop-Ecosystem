@@ -31,6 +31,8 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
 
   const currentModels = settings?.models ?? ({} as Record<AgentId, ModelChoice>);
   const voiceEnabled = settings?.voiceEnabled ?? true;
+  const sfxEnabled = settings?.sfxEnabled ?? true;
+  const ambienceEnabled = settings?.ambienceEnabled ?? false;
   const demoMode = settings?.demoMode ?? false;
   const allowedFolders = settings?.allowedFolders ?? [];
   const googleEmail = settings?.googleEmail;
@@ -51,6 +53,18 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
     const next = !voiceEnabled;
     store.getState().setSettings({ ...settings!, voiceEnabled: next });
     await api.setSettings({ voiceEnabled: next });
+  };
+
+  const handleToggleSfx = async () => {
+    const next = !sfxEnabled;
+    store.getState().setSettings({ ...settings!, sfxEnabled: next });
+    await api.setSettings({ sfxEnabled: next });
+  };
+
+  const handleToggleAmbience = async () => {
+    const next = !ambienceEnabled;
+    store.getState().setSettings({ ...settings!, ambienceEnabled: next });
+    await api.setSettings({ ambienceEnabled: next });
   };
 
   const handleToggleDemoMode = async () => {
@@ -160,6 +174,14 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
             aria-label="Enable voices"
           />
           <span style={{ fontSize: 12 }}>Enable ElevenLabs Voices</span>
+        </label>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+          <input type="checkbox" checked={sfxEnabled} onChange={handleToggleSfx} aria-label="Sound effects" />
+          <span style={{ fontSize: 12 }}>Sound effects</span>
+        </label>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+          <input type="checkbox" checked={ambienceEnabled} onChange={handleToggleAmbience} aria-label="Ambience" />
+          <span style={{ fontSize: 12 }}>Ambience</span>
         </label>
       </div>
 

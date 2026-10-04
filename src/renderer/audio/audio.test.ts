@@ -13,9 +13,9 @@ function fakeClock() {
 function fakeAudio(duration = 1) {
   const sources: any[] = [], gains: any[] = [];
   const ac: any = { state: 'running', currentTime: 0, destination: {}, resume: vi.fn(), decodeAudioData: vi.fn(async (bytes: ArrayBuffer) => { if (!bytes.byteLength) throw new Error('empty'); return { duration }; }),
-    createGain() { const n: any = { gain: { value: 1 }, connect: vi.fn() }; gains.push(n); return n; },
+    createGain() { const n: any = { gain: { value: 1 }, connect: vi.fn(), disconnect: vi.fn() }; gains.push(n); return n; },
     createAnalyser() { return { fftSize: 256, connect: vi.fn(), getByteTimeDomainData(data: Uint8Array) { data.fill(180); } }; },
-    createBufferSource() { const n: any = { detune: { value: 0 }, connect: vi.fn(), start: vi.fn((when: number) => { n.when = when; }), stop: vi.fn(), buffer: null, onended: null }; sources.push(n); return n; },
+    createBufferSource() { const n: any = { detune: { value: 0 }, connect: vi.fn(), disconnect: vi.fn(), start: vi.fn((when: number) => { n.when = when; }), stop: vi.fn(), buffer: null, onended: null }; sources.push(n); return n; },
   };
   return { ac, sources, gains };
 }
@@ -59,6 +59,28 @@ describe('speech queue', () => {
 });
 
 describe('SFX, mic, and push to talk', () => {
+  it('resolves manifest IDs, limits simultaneous effects to two, and loops ambience quietly on demand', async () => {
+    const audio = fakeAudio();
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(async url =>
+      String(url).endsWith('manifest.json')
+        ? { ok: true, json: async () => [
+          { id: 'chipmunk.chirp', file: 'resources/sfx/chipmunk/chirp.mp3' },
+          { id: 'biome.forest-ambience', file: 'resources/sfx/biome/forest-ambience.mp3', loop: true },
+        ] } as Response
+        : { ok: true, arrayBuffer: async () => new ArrayBuffer(1) } as Response);
+    const sfx = createSfxPlayer({ baseUrl: './sfx', audioContext: () => audio.ac });
+    sfx.play('chipmunk.chirp'); sfx.play('chipmunk.chirp'); sfx.play('chipmunk.chirp');
+    await tick();
+    expect(audio.sources).toHaveLength(2);
+    expect(fetchSpy).toHaveBeenCalledWith('./sfx/chipmunk/chirp.mp3');
+    sfx.setAmbienceEnabled(true); await tick();
+    expect(audio.sources).toHaveLength(3);
+    expect(audio.sources[2].loop).toBe(true);
+    expect(audio.gains.at(-1)?.gain.value).toBe(0.15);
+    sfx.setAmbienceEnabled(false);
+    expect(audio.sources[2].stop).toHaveBeenCalledOnce();
+    sfx.dispose(); fetchSpy.mockRestore();
+  });
   it('silently handles unknown names and a missing manifest', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined), fetchSpy = vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('offline'));
     const sfx = createSfxPlayer({ baseUrl: '/sfx' }); sfx.play('unknown'); await tick();
