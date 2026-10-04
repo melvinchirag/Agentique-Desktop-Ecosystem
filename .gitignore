@@ -13,6 +13,7 @@ release/
 *.log
 
 # ADE runtime data
+.ade-dev/
 voice-cache/
 pending-events.jsonl
 

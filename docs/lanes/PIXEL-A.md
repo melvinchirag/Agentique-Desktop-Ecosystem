@@ -12,7 +12,7 @@ Implement loopback OAuth with PKCE, safe token storage, single-flight refresh, d
 `docs/agents/04-pixel-workspace.md` §§2.2–2.4, 16; `docs/agents/04-pixel-BUILD-LANES.md` §§2–3 (A).
 
 ## Steps
-1. Generate S256 PKCE and random 128-bit state; listen on `127.0.0.1:0`, verify state, close on success/error/3-minute timeout, and inject `openExternal`.
+1. Generate S256 PKCE and random 128-bit state; listen on `127.0.0.1:0`, verify state, close on success/error/3-minute timeout, and inject `openExternal`. This checkout has no `google-auth-library`; use `node:crypto` and injected `fetch` for the OAuth URL and token exchange unless the orchestrator adds that dependency.
 2. Implement encrypted `SafeStorageTokenStore` with memory-only fallback when encryption is unavailable; `MemoryTokenStore`; and gitignored dev-only `.ade-dev/` storage that refuses packaged execution. Never persist access tokens.
 3. Build connect, scope validation, single-flight refresh, `invalid_grant` reconnect handling, and disconnect with revoke, token clear, and email clear.
 4. Keep `fetch`, `safeStorage`, and `Clock` injected. No real account in tests.
