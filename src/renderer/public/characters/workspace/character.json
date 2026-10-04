@@ -5,7 +5,12 @@
   "bubbleHeight": 0.5,
   "walkSpeed": 1.0,
   "clipMap": {
-    "Idle": "Idle", "Walk": "Walk", "Talk": "Talk", "Happy": "Happy",
-    "Write": "Write", "Work": "Write", "Handoff": "Handoff", "Think": "Idle"
+    "Idle": "Idle", "Walk": "Walk", "Run": "Run", "Talk": "Talk",
+    "TalkHappy": "Talk", "TalkScared": "Talk", "Listen": "Listen", "Think": "Think",
+    "Work": "Write", "Write": "Write", "Happy": "Happy", "Celebrate": "Celebrate",
+    "Greet": "Greet", "Scared": "Scared", "Nervous": "Nervous", "Sad": "Sad",
+    "Excited": "Excited", "Relief": "Relief", "Handoff": "Handoff", "Nudge": "Nudge",
+    "Dizzy": "Dizzy", "Sleep": "Sleep", "Yawn": "Yawn", "WakeUp": "WakeUp",
+    "SleepWalk": "Walk", "Carry": "Run"
   }
 }
