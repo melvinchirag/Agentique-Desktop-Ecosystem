@@ -1,6 +1,7 @@
 # secrets
 .env
 .env.*
+.tiger-ca.pem
 !.env.example
 
 # node / build
@@ -23,3 +24,6 @@ pending-events.jsonl
 Thumbs.db
 .vscode/
 .idea/
+
+# Git worktrees for parallel lanes (never commit)
+.worktrees/
