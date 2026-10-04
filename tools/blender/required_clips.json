@@ -109,59 +109,73 @@
     "clips": {
       "Idle": {
         "loop": true,
-        "tier": 1
+        "tier": 1,
+        "required": true
       },
       "Walk": {
         "loop": true,
-        "tier": 1
+        "tier": 1,
+        "required": true
       },
       "Talk": {
         "loop": true,
-        "tier": 1
+        "tier": 1,
+        "required": true
       },
       "Work": {
         "loop": true,
-        "tier": 1
+        "tier": 1,
+        "required": false
       },
       "Happy": {
         "loop": false,
-        "tier": 1
+        "tier": 1,
+        "required": true
       },
       "Scared": {
         "loop": true,
-        "tier": 1
+        "tier": 1,
+        "required": false
       },
       "Think": {
         "loop": true,
-        "tier": 2
+        "tier": 2,
+        "required": false
       },
       "Sad": {
         "loop": true,
-        "tier": 2
+        "tier": 2,
+        "required": false
       },
       "Sleep": {
         "loop": true,
-        "tier": 3
+        "tier": 3,
+        "required": false
       },
       "Greet": {
         "loop": false,
-        "tier": 2
+        "tier": 2,
+        "required": false
       },
       "Yawn": {
         "loop": false,
-        "tier": 3
+        "tier": 3,
+        "required": false
       },
       "SleepWalk": {
         "loop": true,
-        "tier": 3
+        "tier": 3,
+        "required": false
       },
       "Write": {
         "loop": true,
-        "tier": 2
+        "tier": 2,
+        "required": true
       },
       "Handoff": {
         "loop": false,
-        "tier": 2
+        "tier": 2,
+        "required": true
       }
     }
   },
@@ -326,13 +340,13 @@
       "Carry": {
         "loop": true,
         "tier": 1,
-        "required": true
+        "required": false
       },
       "HoldNote": {
         "loop": true,
         "duration": 2,
         "tier": 1,
-        "required": true
+        "required": false
       }
     }
   },

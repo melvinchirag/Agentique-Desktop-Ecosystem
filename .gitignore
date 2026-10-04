@@ -1,6 +1,7 @@
 # secrets
 .env
 .env.*
+.tiger-ca.pem
 !.env.example
 
 # node / build
@@ -28,3 +29,6 @@ Thumbs.db
 # Local Electron smoke captures
 tests/e2e/screenshots/
 test-results/
+
+# Git worktrees for parallel lanes (never commit)
+.worktrees/

@@ -1,3 +1,8 @@
+> **FINAL PLAN (Oct 4)**
+> REQUIRED: Idle, Walk, Talk, Happy. OPTIONAL: Carry, HoldNote, and any of Chip clip names (Chip rig names are valid).
+> Ship order: push the STATIC model first (the app animates static models procedurally), then add clips one at a time and push after each clip.
+> Everything else in this document is optional.
+
 # Archie (Beaver) — Animation Actions for Zarin
 
 > **FAST MODE (Oct 4): make ONLY these 6 essential clips — Idle, Walk, Talk, Happy, Carry, HoldNote. Everything else is optional / done in code.**
