@@ -1,0 +1,40 @@
+{
+  "animal": "eagle",
+  "triangles": 5360,
+  "bones": 29,
+  "height": 0.7163815516978502,
+  "clips": {},
+  "morphs": [],
+  "errors": [],
+  "manual_checks": [
+    "Facing -Y",
+    "Visual quality of every clip",
+    "Playback in ADE Asset Lab"
+  ],
+  "glb_bytes": 622312,
+  "exported_clips": [
+    "Celebrate",
+    "Dizzy",
+    "Excited",
+    "Fly",
+    "Greet",
+    "Handoff",
+    "Happy",
+    "Idle",
+    "Land",
+    "Listen",
+    "Nervous",
+    "Nudge",
+    "Relief",
+    "Run",
+    "Sad",
+    "Scared",
+    "Sleep",
+    "Takeoff",
+    "Talk",
+    "Think",
+    "WakeUp",
+    "Walk",
+    "Yawn"
+  ]
+}
