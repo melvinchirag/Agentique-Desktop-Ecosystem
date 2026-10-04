@@ -1,6 +1,7 @@
 import type { BiomeEvent } from '../../shared/events';
 import type { TigerQueries as TigerQueriesContract } from '../runtime/types';
 import { fromRow, redact, type Db } from './tiger';
+import { pixelToday } from './tigerDrafts';
 import { WARDEN_AUDIT_SQL, wardenToday } from './tigerWarden';
 
 const EVENT_COLUMNS = 'ts, id, session_id, task_id, agent_id, type, payload';
@@ -31,9 +32,9 @@ export class TigerQueries implements TigerQueriesContract {
     return this.rows('wardenAudit', WARDEN_AUDIT_SQL, [n]);
   }
 
-  /** Mood this week, jobs per animal this week, activity over the last day, and Warden's counts for today. */
+  /** Mood this week, jobs per animal this week, activity over the last day, Warden's counts for today, and Pixel's draft counts. */
   async pulse(): Promise<object> {
-    const [mood, jobs, activity, warden] = await Promise.all([
+    const [mood, jobs, activity, warden, pixel] = await Promise.all([
       this.rows('pulse.mood', `SELECT day, mood, times::int AS times, round(avg_intensity::numeric, 2)::float AS avg_intensity
                                FROM mood_daily WHERE day >= now() - INTERVAL '7 days' ORDER BY day, times DESC`),
       this.rows('pulse.jobs', `SELECT agent, sum(done)::int AS done, sum(failed)::int AS failed
@@ -41,8 +42,9 @@ export class TigerQueries implements TigerQueriesContract {
       this.rows('pulse.activity', `SELECT bucket, agent_id AS agent, events::int AS events, actions::int AS actions
                                    FROM agent_activity_5m WHERE bucket >= now() - INTERVAL '24 hours' ORDER BY bucket, agent_id`),
       wardenToday(this.db, this.log),
+      pixelToday(this.db, this.log),
     ]);
-    return { mood, jobs, activity, warden };
+    return { mood, jobs, activity, warden, pixel };
   }
 
   private async rows(what: string, sql: string, params: unknown[] = []): Promise<Record<string, any>[]> {
