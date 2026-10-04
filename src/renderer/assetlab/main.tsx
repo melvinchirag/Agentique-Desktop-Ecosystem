@@ -1,3 +1,4 @@
 import { createRoot } from 'react-dom/client';
+import { AssetLabApp } from './AssetLabApp';
 
-createRoot(document.getElementById('root')!).render(<h1>Asset Lab</h1>);
+createRoot(document.getElementById('root')!).render(<AssetLabApp />);
