@@ -213,7 +213,7 @@ All tools are `ToolDefinition`s (`ARCHITECTURE §3.3`). **Risk** feeds Warden. P
 3. Removes folders the batch created if they're now empty.
 4. Marks the batch `undone`.
 5. **Trash undo works too** (soft trash): files come back from `ADE Trash/<batchId>/` to where they were.
-6. **After the 7-day sweep** a batch is in the Windows Recycle Bin and Archie can't restore it, so he says: "That one's in your Recycle Bin now. Right-click → Restore." 
+6. **After the 7-day sweep** a batch is in the Windows Recycle Bin and Archie can't restore it, so he says: "That one's in your Recycle Bin now. Right-click → Restore."
 
 **Soft trash (`fs_trash`) ✅:**
 1. Warden asks (W4).
