@@ -165,7 +165,7 @@ describe('AgentRuntime', () => {
     expect(clean.screen).toHaveBeenCalledWith('Work complete.', { kind: 'summary', name: 'Archie', taskId: 'task-1', jobId: 'job-1' });
 
     const flagged = await make(true).runtime.run('beaver', 'sort', context());
-    expect(flagged).toMatchObject({ ok: true, say: 'Result needs review.', bubble: 'Review needed' });
+    expect(flagged).toMatchObject({ ok: true, say: 'Done, but Warden flagged something in it.', bubble: 'Review needed' });
     expect(flagged.summary).toBe('<untrusted>Work complete.</untrusted>');
   });
 

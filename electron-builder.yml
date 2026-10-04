@@ -6,6 +6,8 @@ files:
   - out/**/*
   - package.json
 extraResources:
+  - from: resources/voice-lines
+    to: voice-lines
   - from: src/renderer/public/characters
     to: characters
   - from: resources/sfx

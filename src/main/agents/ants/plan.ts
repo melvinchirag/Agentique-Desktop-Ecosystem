@@ -20,8 +20,11 @@ export function parsePlan(value: unknown): PlanStep[] | null {
 }
 
 export function parsePlanSummary(summary: string): PlanStep[] | null {
-  const block = /```(?:json)?\s*([\s\S]*?)```/i.exec(summary);
-  const source = block?.[1] ?? summary.trim();
+  const wrapped = /^<untrusted\b([^>]*)>([\s\S]*)<\/untrusted>$/.exec(summary.trim());
+  if (wrapped?.[1]?.includes('flagged="true"')) return null;
+  const content = wrapped?.[2] ?? summary;
+  const block = /```(?:json)?\s*([\s\S]*?)```/i.exec(content);
+  const source = block?.[1] ?? content.trim();
   try { return parsePlan(JSON.parse(source)); }
   catch { return null; }
 }

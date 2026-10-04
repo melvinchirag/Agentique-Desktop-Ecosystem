@@ -180,13 +180,21 @@ export async function moveWithoutOverwrite(from: string, to: string, options: Mo
     await releasePlaceholder(target);
     return { ok: false, error: 'JOURNAL_FAILED' };
   }
-  try {
-    await io.rename(from, target);
-    return { ok: true, to: target };
-  } catch (error) {
-    if (code(error) === 'EXDEV') return copyVerifyDelete(from, target);
-    await releasePlaceholder(target);
-    return { ok: false, error: code(error) };
+  for (let attempt = 0; ; attempt += 1) {
+    try {
+      await io.rename(from, target);
+      return { ok: true, to: target };
+    } catch (error) {
+      if (code(error) === 'EXDEV') return copyVerifyDelete(from, target);
+      // Windows indexing and virus scanners can briefly hold the reserved target.
+      // Keep the exclusive placeholder during a bounded retry so no other file is overwritten.
+      if (code(error) === 'EPERM' && attempt < 5) {
+        await new Promise<void>((resolve) => setTimeout(resolve, 20));
+        continue;
+      }
+      await releasePlaceholder(target);
+      return { ok: false, error: code(error) };
+    }
   }
 }
 
@@ -362,10 +370,40 @@ export type OrganizeToolName =
 export function createOrganizeToolBindings(deps: OrganizeToolDeps): Pick<Required<BeaverBindings>, OrganizeToolName> {
   const { safe, index, journal, clock } = deps;
   const plans = new PlanStore(clock);
+  const knownBatches = new Map<string, FileOp[]>();
+  let latestBatch: string | undefined;
+  let journalRevision = 0;
+  const reviewedUndo = new WeakMap<object, { batchId: string; signature: string; implicit: boolean; ops: FileOp[] }>();
+  const unavailableUndo = new WeakSet<object>();
+  const signature = (ops: FileOp[]): string => JSON.stringify(ops.map((op) =>
+    [op.id, op.batchId, op.op, op.fromPath, op.toPath, op.undone, op.swept]));
+  const refreshLastBatch = async (): Promise<void> => {
+    const revision = journalRevision;
+    const id = await journal.lastBatch();
+    if (revision !== journalRevision) return;
+    if (!id) { latestBatch = undefined; return; }
+    const ops = await journal.batchOps(id);
+    if (revision !== journalRevision) return;
+    if (!ops.length || ops.some((op) => op.undone || op.swept || op.op === 'sweep')) {
+      latestBatch = undefined;
+      return;
+    }
+    knownBatches.set(id, ops);
+    latestBatch = id;
+  };
+  // The journal is async while ToolDefinition.inspect is sync. Warm the most recent
+  // batch and keep new operations in memory for the approval-time inspection.
+  void refreshLastBatch().catch(() => undefined);
   /** Batches still being applied in this process: undo refuses them, or it would reverse half a batch that is still growing. */
   const active = new Set<string>();
   /** A failed single change journaled its intent but moved nothing: mark it undone so "undo" skips it and finds the last REAL change. */
-  const abandon = (batchId: string): Promise<void> => journal.markUndone(batchId).catch(() => undefined);
+  const abandon = async (batchId: string): Promise<void> => {
+    await journal.markUndone(batchId).catch(() => undefined);
+    knownBatches.delete(batchId);
+    journalRevision += 1;
+    if (latestBatch === batchId) latestBatch = undefined;
+    void refreshLastBatch().catch(() => undefined);
+  };
   const makeId = deps.newId ?? (() => randomUUID());
 
   function newBatchId(): string {
@@ -403,9 +441,48 @@ export function createOrganizeToolBindings(deps: OrganizeToolDeps): Pick<Require
     return { error: 'NOT_FOUND', path: str(input), suggestions };
   }
 
-  function record(ctx: ToolContext, batchId: string, op: FileOp['op'], fromPath: string | undefined, toPath: string): Promise<void> {
-    return journal.record({ id: makeId(), ts: clock.now(), jobId: ctx.jobId, batchId, op, fromPath, toPath, undone: false });
+  async function record(ctx: ToolContext, batchId: string, op: FileOp['op'], fromPath: string | undefined, toPath: string): Promise<void> {
+    const entry = { id: makeId(), ts: clock.now(), jobId: ctx.jobId, batchId, op, fromPath, toPath, undone: false };
+    await journal.record(entry);
+    knownBatches.set(batchId, [...(knownBatches.get(batchId) ?? []), entry]);
+    journalRevision += 1;
+    latestBatch = batchId;
   }
+
+  const pathArg = (input: unknown, key: string): string[] => {
+    const value = args(input)[key];
+    return typeof value === 'string' ? [value] : [];
+  };
+  const prepareUndoInspection = async (input: unknown): Promise<void> => {
+    if (!input || typeof input !== 'object') return;
+    unavailableUndo.delete(input);
+    reviewedUndo.delete(input);
+    try {
+      const requested = str(args(input).batch_id).trim();
+      const id = requested || await journal.lastBatch();
+      if (!id || !BATCH_ID.test(id)) throw new Error('No valid undo batch');
+      const ops = await journal.batchOps(id);
+      if (!ops.length || ops.some((op) => op.undone || op.swept || op.op === 'sweep')) throw new Error('No undoable operations');
+      reviewedUndo.set(input, { batchId: id, signature: signature(ops), implicit: !requested, ops });
+    } catch { unavailableUndo.add(input); }
+  };
+  const undoInspection = (input: unknown) => {
+    if (input && typeof input === 'object' && unavailableUndo.has(input))
+      throw new Error('Undo journal metadata unavailable for inspection');
+    const prepared = input && typeof input === 'object' ? reviewedUndo.get(input) : undefined;
+    const requested = str(args(input).batch_id).trim();
+    const id = prepared?.batchId ?? (requested || latestBatch);
+    const operations = prepared?.ops ?? (id ? knownBatches.get(id) : undefined);
+    // Unknown, cold, or invalidated journal metadata cannot be represented as a
+    // zero-item operation: that would bypass W5/W6. Warden turns the throw into W0.
+    if (!id || !operations?.length || operations.some((op) => op.undone || op.swept || op.op === 'sweep')) {
+      throw new Error('Undo journal metadata unavailable for inspection');
+    }
+    if (input && typeof input === 'object' && !prepared)
+      reviewedUndo.set(input, { batchId: id, signature: signature(operations), implicit: !requested, ops: operations });
+    return { paths: operations.flatMap((op) => [op.fromPath, op.toPath].filter((p): p is string => !!p)),
+      writesPaths: operations.flatMap((op) => [op.fromPath, op.toPath].filter((p): p is string => !!p)), count: operations.length };
+  };
 
   /** Create a folder and any missing parents, journaling each `mkdir` before it runs. */
   async function ensureFolder(ctx: ToolContext, batchId: string, folder: string, created: string[]): Promise<{ ok: true } | { ok: false; error: string }> {
@@ -491,6 +568,7 @@ export function createOrganizeToolBindings(deps: OrganizeToolDeps): Pick<Require
 
   return {
     fs_plan_organize: {
+      inspect: (input) => ({ paths: pathArg(input, 'path') }),
       async execute(input, ctx) {
         const a = args(input);
         const strategy = a.strategy;
@@ -540,6 +618,11 @@ export function createOrganizeToolBindings(deps: OrganizeToolDeps): Pick<Require
     },
 
     fs_propose_plan: {
+      inspect: (input) => {
+        const moves = args(input).moves;
+        const entries = Array.isArray(moves) ? moves : [];
+        return { paths: entries.flatMap((entry) => [str(args(entry).from), str(args(entry).to_folder)].filter(Boolean)), count: entries.length };
+      },
       async execute(input, ctx) {
         const a = args(input);
         const title = str(a.title).trim();
@@ -564,6 +647,12 @@ export function createOrganizeToolBindings(deps: OrganizeToolDeps): Pick<Require
     fs_apply_plan: {
       riskFor: () => 'write',
       preview: applyPreview,
+      inspect: (input) => {
+        const found = plans.get(args(input).plan_id);
+        if (!found.ok) return {};
+        return { paths: found.plan.moves.map((move) => move.from),
+          writesPaths: [...found.plan.moves.map((move) => move.to), ...found.plan.folders], count: found.plan.moves.length };
+      },
       async execute(input, ctx) {
         const found = plans.take(args(input).plan_id);
         if (!found.ok) return { error: found.error, ...(found.error === 'PLAN_EXPIRED' ? { hint: 'Plans last 30 minutes; make a new plan.' } : {}) };
@@ -614,6 +703,7 @@ export function createOrganizeToolBindings(deps: OrganizeToolDeps): Pick<Require
     },
 
     fs_move: {
+      inspect: (input) => ({ paths: pathArg(input, 'from'), writesPaths: pathArg(input, 'to_folder') }),
       preview: (input) => `Move ${shortName(args(input).from)} → ${shownPath(args(input).to_folder)}`,
       async execute(input, ctx) {
         const a = args(input);
@@ -648,6 +738,11 @@ export function createOrganizeToolBindings(deps: OrganizeToolDeps): Pick<Require
     },
 
     fs_rename: {
+      inspect: (input) => {
+        const source = pathArg(input, 'path');
+        const name = str(args(input).new_name);
+        return { paths: source, writesPaths: source.length && name ? [path.join(path.dirname(source[0]), name)] : [] };
+      },
       preview: (input) => `Rename ${shortName(args(input).path)} → ${str(args(input).new_name)}`,
       async execute(input, ctx) {
         const a = args(input);
@@ -703,6 +798,7 @@ export function createOrganizeToolBindings(deps: OrganizeToolDeps): Pick<Require
     },
 
     fs_mkdir: {
+      inspect: (input) => ({ writesPaths: pathArg(input, 'path') }),
       preview: (input) => `Create folder ${shownPath(args(input).path)}`,
       async execute(input, ctx) {
         const a = args(input);
@@ -721,6 +817,11 @@ export function createOrganizeToolBindings(deps: OrganizeToolDeps): Pick<Require
     },
 
     fs_trash: {
+      inspect: (input) => {
+        const paths = args(input).paths;
+        return { paths: Array.isArray(paths) ? paths.filter((p): p is string => typeof p === 'string') : [],
+          count: Array.isArray(paths) ? paths.length : 0 };
+      },
       riskFor: () => 'destructive',
       preview: trashPreview,
       async execute(input, ctx) {
@@ -768,15 +869,23 @@ export function createOrganizeToolBindings(deps: OrganizeToolDeps): Pick<Require
     },
 
     fs_undo: {
+      inspect: undoInspection,
+      prepareInspection: prepareUndoInspection,
       preview: (input) => (str(args(input).batch_id) ? `Undo batch ${str(args(input).batch_id)}: put its files back` : "Undo: put Archie's last change back"),
       async execute(input, ctx) {
         const requested = args(input).batch_id;
         if (requested !== undefined && typeof requested !== 'string') return { error: 'INVALID_BATCH_ID' };
-        const batchId = (requested as string | undefined)?.trim() || await journal.lastBatch();
+        const reviewed = input && typeof input === 'object' ? reviewedUndo.get(input) : undefined;
+        if (input && typeof input === 'object') reviewedUndo.delete(input);
+        const batchId = reviewed?.batchId ?? ((requested as string | undefined)?.trim() || await journal.lastBatch());
         if (!batchId) return { error: 'NOTHING_TO_UNDO' };
         if (!BATCH_ID.test(batchId)) return { error: 'INVALID_BATCH_ID', batch_id: batchId };
         if (active.has(batchId)) return { error: 'BATCH_IN_PROGRESS', batch_id: batchId, hint: 'That change is still running; undo it when it finishes.' };
+        if (reviewed && reviewed.implicit && await journal.lastBatch() !== batchId)
+          return { error: 'UNDO_REVIEW_EXPIRED', hint: 'The latest change changed; ask to undo again.' };
         const ops = await journal.batchOps(batchId);
+        if (reviewed && signature(ops) !== reviewed.signature)
+          return { error: 'UNDO_REVIEW_EXPIRED', hint: 'The change changed since Warden reviewed it; ask to undo again.' };
         if (!ops.length) return { error: 'UNKNOWN_BATCH', batch_id: batchId };
         if (ops.some((op) => op.swept || op.op === 'sweep')) return { error: 'ALREADY_IN_RECYCLE_BIN', batch_id: batchId, message: RECYCLE_BIN_MESSAGE };
         if (ops.some((op) => op.undone)) return { error: 'ALREADY_UNDONE', batch_id: batchId };
@@ -853,13 +962,17 @@ export function createOrganizeToolBindings(deps: OrganizeToolDeps): Pick<Require
           };
         }
         await journal.markUndone(batchId);
+        knownBatches.delete(batchId);
+        journalRevision += 1;
+        if (latestBatch === batchId) latestBatch = undefined;
+        void refreshLastBatch().catch(() => undefined);
         return {
           ok: true, batch_id: batchId, restored, folders_removed: foldersRemoved, folders_kept: keptFolders,
           restored_under_new_name: renamed.slice(0, MAX_LISTED), skipped: skipped.slice(0, MAX_LISTED), skipped_count: skipped.length,
           message: `Put ${plural(restored, 'item')} back.`,
         };
       },
-    },
+    } as Required<BeaverBindings>['fs_undo'] & { prepareInspection: (input: unknown) => Promise<void> },
   };
 }
 
