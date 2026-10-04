@@ -187,7 +187,7 @@ export function createReadToolBindings(deps: ReadToolDeps): BeaverBindings {
     const trash = await trashRoot();
     const hideTrash = trash !== undefined && !isWithin(found.abs, trash) ? trash : undefined;
     status(ctx, beaverStatus.sniffing(path.basename(found.abs)));
-    const items: { name: string; type: 'file' | 'folder'; sizeBytes?: number; modified: string }[] = [];
+    const items: { name: string; path: string; type: 'file' | 'folder'; sizeBytes?: number; modified: string }[] = [];
     const compare = (a: typeof items[number], b: typeof items[number]): number => {
       const order = sort === 'modified_desc' ? Date.parse(b.modified) - Date.parse(a.modified)
         : sort === 'modified_asc' ? Date.parse(a.modified) - Date.parse(b.modified)
@@ -210,8 +210,8 @@ export function createReadToolBindings(deps: ReadToolDeps): BeaverBindings {
         try { stat = await fs.stat(abs); } catch { continue; }
         const name = path.relative(found.abs, abs).split(path.sep).join('/');
         items.push(child.isDirectory()
-          ? { name, type: 'folder', modified: iso(stat.mtimeMs) }
-          : { name, type: 'file', sizeBytes: stat.size, modified: iso(stat.mtimeMs) });
+          ? { name, path: abs, type: 'folder', modified: iso(stat.mtimeMs) }
+          : { name, path: abs, type: 'file', sizeBytes: stat.size, modified: iso(stat.mtimeMs) });
         total++;
         // Scan every entry before choosing the top results; alphabetic truncation misses newer files.
         if (items.length >= LIST_CAP * 2) {
@@ -412,7 +412,7 @@ export function createReadToolBindings(deps: ReadToolDeps): BeaverBindings {
     }
     const indexed = await documents.waitIndexed(documentId, INDEX_TIMEOUT_MS);
     if (indexed.status !== 'indexed') return { error: 'INDEXING_TIMEOUT', hint: 'Answer from fs_read_text if you can.' } satisfies ToolError;
-    return { ok: true, document_id: documentId, chunks: indexed.chunks, name: path.basename(found.abs) };
+    return { ok: true, document_id: documentId, chunks: indexed.chunks, name: path.basename(found.abs), path: found.abs };
   }
 
   // ── fs_open / fs_reveal ──────────────────────────────────────────────────

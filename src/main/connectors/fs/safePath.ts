@@ -1,5 +1,6 @@
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
+import { resolveBareFilename } from './resolveBareFilename';
 
 export type SafePathResult = { ok: true; abs: string; root: string } | { ok: false; reason: string };
 export interface SafePathOptions {
@@ -67,8 +68,9 @@ export async function safePath(input: string, options: SafePathOptions): Promise
     } else {
       const parts = win.split('\\');
       const named = roots.find((root) => path.basename(root).toLowerCase() === parts[0]?.toLowerCase());
-      if (!named) return { ok: false, reason: 'OUTSIDE_ALLOWED_FOLDERS' };
-      abs = path.resolve(named, ...parts.slice(1));
+      const resolved = named ? path.resolve(named, ...parts.slice(1)) : resolveBareFilename(raw, roots);
+      if (!resolved) return { ok: false, reason: 'OUTSIDE_ALLOWED_FOLDERS' };
+      abs = resolved;
     }
     const canonical = await realpathNearest(abs);
     const root = roots.find((allowed) => isWithin(canonical, allowed));
