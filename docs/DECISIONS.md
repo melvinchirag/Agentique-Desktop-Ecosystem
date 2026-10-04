@@ -248,6 +248,13 @@ Owner of this file: Chanuth (with Claude). Last updated: Sun Oct 4, 2026, early 
 - The real gate keeps `StubWardenGate`'s method exactly: `review(r) → 'allow' | 'ask' | 'deny'`, emitting `wolf.verdict` from `'wolf'`. Main has no gate type yet, so it comes with the contracts PR.
 - All 14 decisions in `agents/03-warden-security.md §19` are approved (Oct 4): Warden never cowers (Guard/Proud), new rules W12–W16 (W16 taint is task-wide), no "always allow", 5-min approval timeout, the layer-2 classifier (env switch), screening specialist results + calendar text + `fs_ask_file` pre-screen, silent on allow with `warden`/`report` priorities, pre-generated + shipped lines, "new things in ADE-owned places = draft", contract additions via `contracts/warden` (gate/approvals/screen types in `types.ts`, `ToolInspection` + `ToolDefinition.inspect?`, optional `approval.resolve.how`), fail closed, Warden sleeps/docks but the gate never depends on presence, Approvals own the ref-counted job-clock pause, W1 segment matching + registry lint.
 
+## 15h. Final graphics plan (Oct 4)
+- **Archie (beaver, Zarin):** required `Idle`, `Walk`, `Talk`, `Happy`; optional `Carry`, `HoldNote`, and any Chip clip names (Archie may use a copy of Chip rig).
+- **Warden (wolf, Zarin):** required `Idle`, `Walk`, `Talk`, `Block`, `Growl`, `Sit`; all other clips optional.
+- **Pixel (workspace, Shafeen; concept done):** required `Idle`, `Walk`, `Talk`, `Happy`, `Write`, `Handoff`; all other clips optional.
+- **Ship order per character:** push the static model first (the app animates static models procedurally), then add one clip at a time and push after each.
+- **Graphics branch owners:** `beaver/graphics` and `warden/graphics` - Zarin; `pixel/graphics` - Shafeen. Never have two people edit one `.blend`.
+
 ## 15g. Pixel plan ✅ APPROVED (Oct 4)
 - Chanuth approved the Pixel spec, build lanes, sponsor lanes, animation brief, prompt sections, and all 15 decisions below on Oct 4. Branches: `pixel/logic`, `pixel/sponsors`, `pixel/graphics`.
 - **Chanuth's graphics rule for Pixel (given Oct 4, applies to this plan):** Zarin makes only **6 clips** (`Idle, Walk, Talk, Happy, Write, Handoff`); the app shell does Scared/Sad/Sleep/Yawn/Greet/etc. procedurally; `clipMap Work → Write`; the design brief is 5–6 lines.

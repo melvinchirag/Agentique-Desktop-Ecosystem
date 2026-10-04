@@ -76,8 +76,14 @@ def validate(animal):
                           for n in mat.node_tree.nodes), mat.name + ': procedural texture')
     targets = [rig] + [o.data.shape_keys for o in meshes if o.data.shape_keys]
     clips = {}
+    animated = any((obj.animation_data and (obj.animation_data.action or len(obj.animation_data.nla_tracks)))
+                   for obj in targets if obj)
+    if not animated:
+        print('STATIC MODEL ' + chr(0x2014) + ' OK (app animates procedurally)')
     for name, rule in spec['clips'].items():
-        if not rule.get('required', True):
+        if not animated:
+            break
+        if not rule.get('required', False):
             continue
         action = bpy.data.actions.get(name)
         check(action is not None, 'Missing action: ' + name)

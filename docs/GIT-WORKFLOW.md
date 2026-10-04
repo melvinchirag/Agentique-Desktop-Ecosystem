@@ -75,3 +75,12 @@ main  ← only Chanuth merges here (contracts + docs first; the app once it exis
 2. Then Lane J2 hooks Chip into the app (Melvin's plan).
 3. Later agents follow the same order: `<agent>/sponsors` → `<agent>/logic` → `<agent>/graphics`.
 4. `npm test` + `npm run dev` on `main` after every merge.
+
+
+## Final graphics plan (Oct 4)
+
+- Owners: Zarin owns `beaver/graphics` (Archie) and `warden/graphics` (Warden); Shafeen owns `pixel/graphics` (Pixel). Never have two people editing the same `.blend`.
+- Archie required clips: `Idle`, `Walk`, `Talk`, `Happy`. `Carry`, `HoldNote`, and any Chip clip names are optional; Chip names are valid if Archie uses a copied Chip rig.
+- Warden required clips: `Idle`, `Walk`, `Talk`, `Block`, `Growl`, `Sit`.
+- Pixel required clips: `Idle`, `Walk`, `Talk`, `Happy`, `Write`, `Handoff`. Pixel concept is complete.
+- Ship each static model first as the procedural animation fallback. Then add one clip at a time and push after each clip.

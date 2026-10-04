@@ -1,3 +1,8 @@
+> **FINAL PLAN (Oct 4)**
+> REQUIRED: Idle, Walk, Talk, Block, Growl, Sit. Every other clip is OPTIONAL.
+> Ship order: push the STATIC model first (the app animates static models procedurally), then add clips one at a time and push after each clip.
+> Everything else in this document is optional.
+
 # Warden (Wolf) — Animation Actions for Zarin ✅ APPROVED (Oct 4)
 
 > **FAST MODE (Oct 4): make ONLY these 6 essential clips — Idle, Walk, Talk, Block, Growl, Sit. Everything else is optional / done in code.**
