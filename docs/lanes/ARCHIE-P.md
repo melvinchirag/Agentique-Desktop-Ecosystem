@@ -28,3 +28,5 @@ Build Archie’s filesystem boundary: canonical allowed-root checking plus a cap
 ## STOP
 
 Stop if a test requires a real user folder or platform behavior that the spec does not define.
+
+**Audit status (Oct 4):** Implemented by Codex GPT-6 Sol medium (managed agent) at `7200646`; audited and merged. `safePath` checked against the escape cases (prefix, symlink/junction, UNC/device, ADS, reserved and trailing-dot names). Audit fixes in `fileIndex.ts`: a folder change now re-scans only its subtree (the old code ran a full `build()`, emptying the index and flipping `isReady` during search); watcher `error` handler added (unhandled, it crashes the process when a watched folder is deleted on Windows); the initial scan no longer re-runs `safePath` per file. Two tests added.

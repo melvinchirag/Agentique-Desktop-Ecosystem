@@ -26,3 +26,5 @@ Provide the only filesystem surface tests may touch and an append-only local und
 ## STOP
 
 If symlink creation is disallowed, skip only that fixture and report it. Never use real user paths.
+
+**Audit status (Oct 4):** Implemented by Codex GPT-6 Luna (managed agent, AGY unavailable) at `fcdcaa5`; audited and merged into `beaver/logic`. Matches Archie spec §5 and `FileOpsJournal` in `types.ts`; tests write only to OS temp folders. Only the three owned paths changed.

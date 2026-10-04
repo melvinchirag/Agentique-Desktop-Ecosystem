@@ -29,3 +29,5 @@ Implement the generic `AgentRuntime` used by every specialist, including Archie.
 ## STOP
 
 Stop if PR #11's Warden interfaces are not merged or any shared type cannot express the spec. Do not alter shared contracts.
+
+**Audit status (Oct 4):** Implemented by Codex GPT-6 Sol high (managed agent) at `59f1bac`; audited and merged. Matches Archie spec §14 and the Warden screening split (tools screen their own results; the runtime screens the final say + summary). One test added for the result-screening branch.
