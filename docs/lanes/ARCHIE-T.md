@@ -26,3 +26,12 @@ Implement Archie’s read-only file tools and their safe error behavior.
 ## STOP
 
 Stop if `DocumentsApi` or `ToolContext.threadId` is unavailable; do not change contracts.
+
+## Orchestrator clarifications (Oct 4, after F + P + D + R merged)
+- **Engine actually used:** Claude Sonnet 5.5 high (Codex's Windows sandbox can't write files, and Codex's usage limit was hit). Same lane scope.
+- **Already on your branch, use it:** `safePath`/`isExcludedPath` and `FileIndex` (`src/main/connectors/fs/`), `LocalFileOpsJournal`, `tests/fixtures/makeSandbox.ts`, Archie's schemas `BEAVER_SCHEMAS`/`BEAVER_RISKS` and `BeaverBindings` (`src/main/agents/beaver/`), `DocumentsApi` + `InjectionScreen` (`src/main/runtime/types.ts`), and the new shared `FsShell` (`src/main/connectors/fs/fsShell.ts`) with `FakeFsShell` (`src/main/testing/fakeFsShell.ts`). The real `DocumentsApi` is in `src/main/sponsors/backboardDocuments.ts`; tests use a fake.
+- **Shape:** export `createReadToolBindings(deps): BeaverBindings` for exactly these 8 tools: `fs_list, fs_search, fs_info, fs_read_text, fs_describe, fs_ask_file, fs_open, fs_reveal`. `deps` = `{ safe: SafePathOptions, index: FileIndex, shell: FsShell, documents?: DocumentsApi, screen?: InjectionScreen, clock?: Clock }`. Do not touch the write tools (lane O owns them) or `index.ts`.
+- **Untrusted text:** every returned file text goes through `screen.screen(text, { kind: 'file', name })` when `screen` is given and returns its `.wrapped`; with no `screen`, wrap it yourself as `<untrusted source="file:NAME">…</untrusted>`.
+- **`fs_open`:** the executor itself refuses executables and scripts (`.exe .bat .cmd .ps1 .vbs .js .msi .lnk .scr`), whatever Warden does later. `FsShell` is the only way to open or reveal anything.
+- **No real folders, ever.** Every test builds `makeSandbox(<os temp dir>)` and removes it afterwards.
+- **Do not commit, push or merge.** Leave changes uncommitted; the orchestrator audits and commits.
