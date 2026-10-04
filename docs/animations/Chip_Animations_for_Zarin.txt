@@ -1,0 +1,274 @@
+=====================================================================
+  CHIP THE CHIPMUNK - ANIMATION LIST FOR ZARIN
+  ADE (Agentique Desktop Ecosystem) - Hack Dearborn 5
+=====================================================================
+
+Hi Zarin! This is every animation Chip needs, what each one should
+look like, and the order to make them in. Chip is the orchestrator:
+the chipmunk the user talks to. He's chatty, warm, quick, a little
+anxious, and fiercely loyal.
+
+
+---------------------------------------------------------------------
+ 1. GOLDEN RULES (please read first)
+---------------------------------------------------------------------
+
+ - Each animation is one Blender ACTION. Name it EXACTLY as written
+   below. Capital letters matter: "Idle" works, "idle" does not.
+   The app finds animations by name.
+ - Turn on FAKE USER (the shield icon) for every Action, or Blender
+   drops it on export.
+ - Animate IN PLACE. No walking forward across the scene; the code
+   moves Chip around.
+ - 30 frames per second.
+ - LOOPING animations: the first frame must match the last frame,
+   so they loop smoothly.
+ - DON'T animate colors. The app turns Chip blue when he's scared,
+   glowy when he's happy, and so on, in code.
+ - If an animation isn't done yet, the app uses a simple fallback,
+   so nothing breaks while you work. Export often!
+
+
+---------------------------------------------------------------------
+ 2. EXPORT SETTINGS
+---------------------------------------------------------------------
+
+ - File type: glTF 2.0 Binary (.glb)
+ - Export only Chip's mesh + armature (no cameras, no lights)
+ - Apply all transforms first (Ctrl+A -> All Transforms)
+ - +Y Up (the default)
+ - Chip faces -Y in Blender (the Front view, Numpad 1, shows his face)
+ - Origin at his feet, centered (feet touch 0)
+ - Height: about 0.35 meters
+ - Animation export mode: "Actions", with "Always Sample Animations" on
+ - Max 4 bone influences per vertex, 60 bones or fewer
+ - Under 15,000 triangles, under 5 MB
+ - Materials: Principled BSDF only, textures 1024 px or smaller
+   (procedural node setups don't export)
+ - Include shape keys (for the mouth/blink, section 6)
+ - Save as:  characters/chipmunk/default/model.glb
+
+ Rig must-haves: ear bones (both ears move separately), a tail with
+ 4-6 bones (for nice curls and puffs), paw/arm bones, and a jaw bone
+ (or a mouth shape key).
+
+
+---------------------------------------------------------------------
+ 3. HOW A CHIPMUNK SHOWS EACH EMOTION (use for every animation)
+---------------------------------------------------------------------
+
+ NEUTRAL  - Ears: up, relaxed.        Tail: gentle S-curve, slow sway.
+            Body: upright, slight lean forward.
+            Face: open eyes, blinking.  Paws: together at chest.
+
+ HAPPY    - Ears: perked up.          Tail: fluffy, high, quick flicks.
+            Body: bouncy, chest out.
+            Face: squinty smile.        Paws: little claps or pumps.
+
+ EXCITED  - Ears: straight up.        Tail: wild fast wagging.
+            Body: can't stand still, bouncing.
+            Face: wide, sparkly eyes.   Paws: waving, fists up.
+
+ NERVOUS  - Ears: half back, twitching.  Tail: low, flicking nervously.
+            Body: slightly hunched.
+            Face: eyes darting side to side.  Paws: wringing, fidgeting.
+
+ SCARED   - Ears: FLAT BACK.          Tail: PUFFED UP, hugged around body.
+            Body: crouched low, small, trembling.
+            Face: huge wide eyes.       Paws: covering mouth or hugging tail.
+
+ SAD      - Ears: drooped sideways.   Tail: dragging on the ground.
+            Body: slumped, head down.
+            Face: half-closed eyes, looking down.  Paws: hanging limp.
+
+ SLEEPY   - Ears: folded down.        Tail: wrapped around body like a blanket.
+            Body: curled-up ball.
+            Face: eyes closed.          Paws: tucked under chin.
+
+
+---------------------------------------------------------------------
+ 4. THE ANIMATION LIST (make them in this order)
+---------------------------------------------------------------------
+
+ Format:  #. NAME  (LOOP or ONE-SHOT, length)
+          What it looks like
+          -> When the app plays it
+
+ ===== TIER 1 - MAKE THESE FIRST (the demo needs them) =====
+
+  1. Idle  (LOOP, ~3 sec)
+     Neutral breathing, looks left and right, one tail sway, a cheek
+     twitch.
+     -> Default resting state.
+
+  2. Talk  (LOOP, ~1.5 sec)
+     Head bobs, paws gesture while talking, tail flicks on emphasis.
+     Mouth moves (or use the MouthOpen shape key, section 6).
+     -> Whenever Chip is speaking.
+
+  3. Run  (LOOP, ~0.6 sec cycle)
+     Fast scamper on all fours, tail streaming behind.
+     -> Running across the desktop to another animal to hand it a task.
+
+  4. Handoff  (ONE-SHOT, ~1.2 sec)
+     Holds a little scroll out with both paws, pushes it forward,
+     small nod.
+     -> Giving a task to another animal.
+
+  5. Happy  (ONE-SHOT, ~1.2 sec)
+     Happy hop, quick spin, tail fluffs up, lands with a grin.
+     -> A task finished, or the user is happy.
+
+  6. Scared  (LOOP, ~1.5 sec)   ** Chip's signature emotion **
+     Ears flat back, tail puffed and hugged to his body, crouched
+     low and trembling, eyes darting.
+     -> The user is angry. (The app also turns Chip blue.)
+
+  7. Listen  (LOOP, ~2 sec)
+     Ears shoot up and point forward, leans toward the camera, head
+     tilts. Very attentive.
+     -> The user is holding Chip (click-and-hold) and talking to him.
+
+  8. Think  (LOOP, ~2 sec)
+     Paw on chin, eyes look up, taps his foot, tail curls into a
+     question-mark shape.
+     -> Waiting for the AI to answer.
+
+ >>> After Tier 1: EXPORT and test it in the app's Asset Lab
+     (Ctrl+Shift+A). Then switch to Warden the wolf's core
+     animations, and come back for Tiers 2-4 later.
+
+ ===== TIER 2 - EMOTIONS (the biome reacts to the user's mood) =====
+
+  9. Nervous  (LOOP, ~2 sec)
+     Fidgeting paws, glances side to side, ears twitching half-back,
+     shifting weight from foot to foot.
+     -> The user is stressed.
+
+ 10. Sad  (LOOP, ~3 sec)
+     Slumped, ears drooping, tail dragging, a slow sigh (shoulders
+     rise and fall).
+     -> The user is sad, or a task failed.
+
+ 11. Excited  (LOOP, ~1 sec)
+     Rapid little bounces in place, tail wagging wildly, paws pumping.
+     -> The user is excited.
+
+ 12. Relief  (ONE-SHOT, ~1.5 sec)
+     Big exhale (his whole body deflates), wipes his forehead with a
+     paw, then a small happy hop.
+     -> The user calms down right after being angry or stressed.
+
+ 13. Celebrate  (ONE-SHOT, ~2 sec)
+     Bigger than Happy: big jump, backflip or spin, arms up, ends in
+     a "ta-da!" pose.
+     -> Great news, like "my exam went great!"
+
+ ===== TIER 3 - SLEEP AND WAKE =====
+
+ 14. Yawn  (ONE-SHOT, ~1.5 sec)
+     Huge yawn, stretches arms up, eyes droop.
+     -> Chip starts falling asleep (no activity for a while).
+
+ 15. Sleep  (LOOP, ~4 sec)
+     Curled in a ball, tail wrapped over him like a blanket, slow
+     breathing, an ear twitch now and then.
+     -> Chip is asleep. (Chip sleeps in the biome but never leaves
+        it, so he does NOT need the SleepWalk animation the other
+        animals have.)
+
+ 16. WakeUp  (ONE-SHOT, ~1.2 sec)
+     Eyes pop open, ears spring up, shakes his head, quick stretch.
+     -> The user clicks Chip or types, or Chip needs to tell them
+        something.
+
+ ===== TIER 4 - PERSONALITY + "CHIP REACHES OUT FIRST" =====
+
+ 17. Greet  (ONE-SHOT, ~1.5 sec)
+     Stands tall, big wave with one paw, tail swish.
+     -> The app opens.
+
+ 18. Nudge  (ONE-SHOT, ~2 sec)   ** important for the demo **
+     Hops toward the camera and taps on the "glass" with his paw, as
+     if knocking on the inside of the screen, then tilts his head
+     like he's asking a question.
+     -> Chip asks the user something on his own, e.g.
+        "How did your exam go?"
+
+ 19. Dizzy  (ONE-SHOT, ~1.5 sec)
+     Shakes his head, wobbles, eyes spin (or his head circles), sits
+     down for a second.
+     -> Chip's AI failed ("My brain's a bit foggy...").
+
+ 20. Walk  (LOOP, ~1 sec cycle)
+     Calm hop-walk on all fours (slower and more relaxed than Run).
+     -> Moving around the biome casually.
+
+
+---------------------------------------------------------------------
+ 5. WHAT YOU DO *NOT* NEED TO MAKE
+---------------------------------------------------------------------
+
+ - No "talking while scared" or "talking while happy" versions.
+   The app always uses Talk and adds the mood on top (color, a
+   trembling shake, face shape keys).
+ - No color or glow animations. Code does those.
+ - No SleepWalk for Chip (he never leaves the biome).
+
+
+---------------------------------------------------------------------
+ 6. FACE SHAPE KEYS (optional, but a big wow factor)
+---------------------------------------------------------------------
+
+ Add these shape keys to Chip's head mesh, with these exact names:
+
+   MouthOpen  (0 = closed, 1 = open)
+       The app moves this to match Chip's voice, so his mouth
+       LIP-SYNCS to what he's saying. Biggest wow per minute of work.
+
+   Blink      (0 = open eyes, 1 = closed eyes)
+       The app makes Chip blink randomly every few seconds.
+
+   Smile      (nice to have)  cheeks up, mouth corners up.
+   Worried    (nice to have)  brows up in the middle, small mouth.
+
+ If shape keys aren't possible, just animate the mouth inside Talk.
+
+
+---------------------------------------------------------------------
+ 7. HOW THE APP PICKS ANIMATIONS (for reference)
+---------------------------------------------------------------------
+
+ Chip's mood  ->  resting animation  /  plays once when it starts
+   neutral    ->  Idle
+   happy      ->  Idle   /  Happy (Celebrate if VERY happy)
+   excited    ->  Excited  /  Happy
+   nervous    ->  Nervous
+   scared     ->  Scared
+   sad        ->  Sad
+   relieved   ->  Idle   /  Relief
+   sleepy     ->  Sleep  /  Yawn
+
+ One-shots (Happy, Handoff, Relief, Celebrate, Yawn, WakeUp, Greet,
+ Nudge, Dizzy) play once, then Chip goes back to the right loop.
+ Clips blend into each other over 0.25 seconds.
+
+
+---------------------------------------------------------------------
+ 8. SUGGESTED ORDER + TIME (Chip only)
+---------------------------------------------------------------------
+
+   1. Check the rig: ears, tail (4-6 bones), paws, jaw    ~25 min
+   2. Idle, Talk, Scared, Happy                          ~60 min
+   3. Run, Handoff, Listen, Think                        ~45 min
+   4. EXPORT + test in the Asset Lab (Ctrl+Shift+A)      ~10 min
+      --> switch to Warden the wolf's core animations here <--
+   5. Nervous, Sad, Excited, Relief, Celebrate           ~50 min
+   6. Yawn, Sleep, WakeUp                                ~30 min
+   7. Greet, Nudge, Dizzy, Walk                          ~40 min
+   8. Shape keys: MouthOpen, Blink (then Smile, Worried) ~30 min
+
+   Total: about 4.5-5 hours for Chip alone.
+
+ Thank you, Zarin!
+=====================================================================

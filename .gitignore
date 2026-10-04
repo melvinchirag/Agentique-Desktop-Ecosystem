@@ -1,0 +1,25 @@
+# secrets
+.env
+.env.*
+!.env.example
+
+# node / build
+node_modules/
+dist/
+out/
+build/
+*.log
+
+# ADE runtime data
+voice-cache/
+pending-events.jsonl
+
+# Blender backups
+*.blend1
+*.blend2
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

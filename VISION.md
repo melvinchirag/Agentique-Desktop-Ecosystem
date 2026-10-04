@@ -3,24 +3,25 @@
 *ADE = Agentique Desktop Ecosystem (formerly "Living Desktop"). Vision owner: Melvin Karupati. Architecture & implementation plan: Chanuth (lead engineer).*
 *This is the "vision contract": what the product must be. **How** it's built is the lead engineer's call.*
 
-> **Living document.** We update this file (and `concept.md`) as the project evolves. Items marked **[MELVIN DECIDES]** are open vision choices.
+> **Living document.** We update this file as the project evolves. Items marked **[MELVIN DECIDES]** are open vision choices.
+> **Updated Oct 4, 2026 (early morning)** to match the build decisions in `docs/DECISIONS.md` (names, team roles, integrations, scope). The original concept doc is archived at `docs/archive/concept-v0.md`.
 
 ## Team
 | Person | Role |
 |---|---|
-| **Melvin Karupati** | Idea and vision owner. Integrations (with Shaff) |
-| **Chanuth** | Lead engineer: the entire architecture and the implementation plan, which delegates tasks to Melvin, Shaff and their AI automation systems |
-| **Shaff** | Integrations (with Melvin) |
+| **Melvin Karupati** | Idea and vision owner. Builds each agent's logic, starting with **Chip** |
+| **Chanuth** | Lead engineer: the entire architecture and the per-agent plans; integration lead; builds the app shell |
+| **Shafeen (Shaff)** | Sponsor tech: **Backboard**, **ElevenLabs**, **Tiger Data** for every agent |
+| **Zarin** | All graphics: rigs and animates every animal in Blender |
 
-**Workflow:** Chanuth's master implementation plan splits the work into tasks for each person. Each person's AI tools (Claude, GPT, and Melvin's automation assistant Otto) build those tasks; the humans delegate, supervise and review. Everything lives in one master GitHub repo on Melvin's account; its structure is Chanuth's call.
+**Workflow:** Chanuth's master implementation plan splits the work into tasks for each person. Each person's AI tools (Claude, GPT, and Melvin's automation assistant Otto) build those tasks; the humans delegate, supervise and review. Everything lives in one master GitHub repo on Melvin's account; its structure is Chanuth's call. **Read `docs/DECISIONS.md` first**; branch rules are in `docs/GIT-WORKFLOW.md`.
 
-**Integrations Melvin and Shaff are working on:**
-- **Tiger Data**
-- **Backboard.io**
-- **Gemini API**
-- **Vultr** (maybe, later)
+**Integrations (MLH challenges we're entering):**
+- **Backboard.io**: every animal's brain and long-term memory, on the user's own AI model
+- **ElevenLabs**: every animal's original voice, emotions in the voice, hearing the user, sound effects
+- **Tiger Data**: the ecosystem's history: replay, audit trail, mood over time, reminders
 
-*The exact role of each integration is set in Chanuth's implementation plan.*
+Plus the **Google Workspace APIs** for the Google Workspace agent. *Gemini and Vultr are dropped.* Full plan: `docs/SPONSORS.md`.
 
 ---
 
@@ -63,23 +64,22 @@ Every agent is a character. Each creature's animal fits its job.
 
 | Character | Agent | Job |
 |---|---|---|
-| 🐜 **Ants** | **Planner** | A colony that takes your request, breaks it into steps, and hands work to the right agents |
-| 🐿️ **Chipmunk** | **Chip** (the main agent; formerly "Yappy") | The chatty one: your main point of contact. Talks with you, explains what's happening, keeps you company |
-| 🐺 **Wolf** | **Security / Guardian** | Watches every risky action and asks your permission first |
-| 🦫 **Beaver** | **File manager** | Builds, moves, sorts and organizes your files and folders |
-| 🦅 **Eagle** | **Browser** | Flies out to the web: searches, reads and acts in the browser |
-| 🦋 **Butterfly** | **Social media** | Handles your social media |
-| 🐦 **Nightingale** | **Music** | Plays and controls your music |
-| ✨ **Custom character** | **Google Workspace** | Gmail, Docs, Drive, Calendar. A character designed specifically for this agent **[MELVIN DECIDES the design]** |
+| 🐿️ **Chipmunk** | **Chip** (the main agent; formerly "Yappy") | Your only point of contact. Talks with you, reads your mood, and **hands work to the right animals** |
+| 🐜 **Ants** | **Swarm** (Planner) | Breaks big goals into steps. Swarm only plans: Chip hands out each step, and **an ant walks the task over to the animal doing it** |
+| 🐺 **Wolf** | **Warden** (Security / Guardian) | Checks every action, asks your permission first, keeps an audit trail |
+| 🦫 **Beaver** | **Archie** (File manager) | Builds, moves, sorts and organizes your files and folders; can make a file "tell you" what's in it |
+| 🦅 **Eagle** | **Scout** (Browser / research) | Flies off the screen to the web: searches and reads, always with sources |
+| ✨ **Custom character** | **Pixel** (Google Workspace) | Gmail, Calendar, Drive, Docs, Sheets. Writes drafts in your style; **never sends**. Design by Zarin |
+| 🦋 **Butterfly** | **Iris** (Social media, extra) | Drafts posts in your voice; never posts |
+| 🐦 **Nightingale** | **Celene** (Music, extra) | Music that matches your mood |
 
-**How themes fit:** the agent's job never changes. Themes (Desert, Snow, Rainforest…) can restyle the cast without changing any behavior. **[MELVIN DECIDES whether this cast is the default theme or appears in every theme]**
+**How themes fit:** the agent's job never changes. Themes (we call them **biomes**: forest, desert, snow…) can restyle the cast without changing any behavior. ✅ This cast is the default. **Biome visuals are deferred for the hackathon:** the animals live on the plain real desktop first.
 
 ### How you interact
-- **Click** any creature to talk to that one agent.
-- **Keyboard shortcuts:**
-  - one shortcut **activates the whole ecosystem**
-  - a shortcut per agent **activates just that agent**
-- **Talk to the whole ecosystem at once.** As you talk, you **watch the creatures react and work**: the ants organize, the eagle takes off for the browser, the beaver gets to work on files.
+- **You talk to Chip**: click-and-hold Chip to speak, or type in the Agent Hub. Chip hands the work to the others, and you **watch the creatures react and work**: an ant carries each step, Scout takes off for the web, Archie gets to work on files.
+- **The Agent Hub**: a small draggable box, the only app-like UI. It shows what every animal is doing, wakes animals that went to sleep, and holds the chat and memories.
+- **Clicking another animal** opens its inspect card: what it's doing, wake/sleep, what it remembers (not a chat).
+- **Keyboard shortcuts**: later (not for the hackathon).
 
 ### Look and feel
 - **Inspired by ChatGPT's desktop Pets and Dots:** the same polished texture and smooth, expressive animation quality those agent pets have.
@@ -103,31 +103,32 @@ Win **Ideation Matrix** (the wildcard track) and compete for overall top 3 with 
 |---|---|
 | **MUST** | Transparent overlay with creatures walking on the real Windows desktop; click-through works |
 | **MUST** | Click a pet → chat → it answers in character |
-| **MUST** | **Ants (Planner)** visibly hand work to other agents |
-| **MUST** | At least **2 agents doing real actions**: **Beaver (files)** + **Eagle (browser)** |
-| **MUST** | **Wolf (Guardian)** confirmation before anything destructive |
-| **MUST** | **Chip (Chipmunk, the main agent)** chats in character |
-| SHOULD | Keyboard shortcuts: whole ecosystem + per agent |
-| SHOULD | Google Workspace agent (custom character) |
+| **MUST** | **Chip** visibly hands work to other agents; for multi-step goals **Swarm (ants)** plans first and an ant carries each step |
+| **MUST** | Agents doing real actions: **Pixel (Google Workspace)**, **Archie (files)**, **Scout (web)** |
+| **MUST** | **Warden (Wolf)** confirmation before anything destructive; nothing is ever sent or posted |
+| **MUST** | **Chip (Chipmunk, the main agent)** chats in character, reads your mood, and reaches out first (reminders, "how did your exam go?") |
+| **MUST** | Every animal **speaks** with its own voice (ElevenLabs) |
+| LATER | Keyboard shortcuts: whole ecosystem + per agent |
+| **MUST** | Google Workspace agent (**Pixel**, custom character) |
 | COULD | Nightingale (music) and Butterfly (social media) |
 | **MUST** | The full demo task works end to end, at least 5 times in a row |
-| SHOULD | Object agents: a desktop file "wakes up" and describes itself |
-| SHOULD | **Theme switch live during the demo**, same agents, new look |
+| COULD | Object agents: a desktop file "wakes up" and describes itself (through Archie) |
+| LATER | **Biome (theme) switch**, same agents, new look |
 | COULD | Idle social behavior (pets playing, sleeping) |
-| COULD | Voice: talk to a pet out loud |
-| WON'T (hackathon) | macOS/Linux, accounts, theme marketplace, long-term memory, more than 3 themes |
+| **MUST** | Voice: talk to Chip out loud |
+| WON'T (hackathon) | macOS/Linux, accounts, theme marketplace, more than 1 biome. (*Long-term memory moved to MUST: every animal remembers you via Backboard, and you can see and erase it.*) |
 
 ### What we cut first if time runs short
-1. Idle social behavior → 2. Nightingale + Butterfly → 3. live theme switch → 4. Google Workspace agent → 5. Object agents.
-**Never cut:** creatures on the real desktop, Ants handing work to others, Beaver + Eagle doing real actions, Wolf (Guardian), Chipmunk chat.
+1. Idle social behavior → 2. Celene + Iris (extras) → 3. Object agents → 4. Swarm's ant animation (Chip still delegates).
+**Never cut:** creatures on the real desktop, Chip handing work to others, Pixel + Archie + Scout doing real actions, Warden, Chip chat + voice.
 
 ### The demo moment (about 3 minutes) **[MELVIN DECIDES the final task]**
 1. **(0:00)** Clean desktop. "Every AI today is invisible. What if you could *see* it?" Launch the app (or hit the ecosystem shortcut). The creatures appear and start wandering. *(First reaction.)*
 2. **(0:30)** A judge clicks Chip the chipmunk and chats with it. It answers in character.
 3. **(1:00)** The goal: *"Turn the notes on my desktop into a report with 3 sources."*
-4. **(1:15)** The Ants (Planner) swarm and split it up; speech bubbles show the plan. The Beaver hauls `notes.txt` over, which wakes up and hands over its contents. The Eagle flies off and searches the web. The Google Workspace agent writes the report into a Doc live. *(The main moment.)*
-5. **(2:15)** The Beaver tries to delete the old notes. The **Wolf (Guardian) steps in and asks permission**. "This society always asks first: the opposite of the Thronglets."
-6. **(2:40)** *(If built)* "Same society, new world": switch themes live. Same agents, new look.
+4. **(1:15)** Chip asks **Swarm** for a plan; then for each step an ant carries the task to the right animal. **Archie** hauls `notes.txt` over, which wakes up and hands over its contents. **Scout** flies off the screen and searches the web. **Pixel** writes the report into a Google Doc. *(The main moment.)*
+5. **(2:15)** Archie tries to delete the old notes. **Warden steps in and asks permission**. "This society always asks first: the opposite of the Thronglets."
+6. **(2:40)** *(Later, when biomes exist)* "Same society, new world": switch biomes live. Same agents, new look.
 7. **(3:00)** Close: "Not an assistant with a mascot. A living society that works for you."
 
 ### Demo safety rules
@@ -181,9 +182,9 @@ Win **Ideation Matrix** (the wildcard track) and compete for overall top 3 with 
 ## 7. Open vision decisions [MELVIN DECIDES]
 1. ~~Product name~~ → **ADE (Agentique Desktop Ecosystem)** ✅
 2. ~~Characters per agent~~ → **decided** (see The cast) ✅
-3. **Google Workspace custom character** design
-4. **Themes:** is the animal cast the default theme, and which theme(s) for the hackathon
-5. **Personality** of each character (voice, catchphrases) and the exact **keyboard shortcuts**
-6. **The exact demo task** (the report task above, or something else)
+3. ~~Google Workspace custom character~~ → **Pixel** (design by Zarin) ✅
+4. ~~Themes~~ → this cast is the default; biome visuals deferred for the hackathon ✅
+5. **Personality** of each character: voices are designed with ElevenLabs (`docs/SPONSORS.md`), catchphrases in each agent plan. Keyboard shortcuts → later.
+6. **The exact demo task**: the report task above is adopted; finalize once Pixel, Archie and Scout are planned
 7. **The one-sentence pitch** you'll say to judges
 8. **Long-term business model** (later)
