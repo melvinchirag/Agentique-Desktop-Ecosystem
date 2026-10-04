@@ -1,4 +1,4 @@
-import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { randomUUID } from 'node:crypto';
@@ -249,6 +249,14 @@ describe('TigerQueries', () => {
 });
 
 describe('connection config', () => {
+  it('resolves a relative CA path from the selected .env folder', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ade-ca-'));
+    try {
+      writeFileSync(join(dir, 'ca.pem'), 'test certificate');
+      const cfg = tigerPoolConfig({ TIGER_DATABASE_URL: 'postgres://u:p@host/db', TIGER_CA_FILE: 'ca.pem' }, dir);
+      expect(cfg.ssl).toMatchObject({ rejectUnauthorized: true, ca: 'test certificate' });
+    } finally { rmSync(dir, { recursive: true, force: true }); }
+  });
   it('keeps certificate verification on and strips sslmode', () => {
     const cfg = tigerPoolConfig({ TIGER_DATABASE_URL: 'postgres://u:p@host:5432/tsdb?sslmode=require' });
     expect(cfg.ssl).toMatchObject({ rejectUnauthorized: true });

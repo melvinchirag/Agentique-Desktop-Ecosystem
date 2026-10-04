@@ -38,6 +38,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
   const [voiceEnabled, setVoiceEnabled] = useState(true);
   const [googleConnected, setGoogleConnected] = useState<string | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
+  const [styleStatus, setStyleStatus] = useState('Connect Google to learn your email style.');
 
   const handleConnectGoogle = async () => {
     setIsConnecting(true);
@@ -45,7 +46,14 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
       const res = await api.connectGoogle();
       if (res?.email) {
         setGoogleConnected(res.email);
+        setStyleStatus('Pixel is learning how you write...');
+        try {
+          const result = await api.learnEmailStyle();
+          setStyleStatus(`Pixel learned from ${result.sampled} emails.`);
+        } catch (error) { setStyleStatus(`Style learning failed: ${error instanceof Error ? error.message : String(error)}`); }
       }
+    } catch (error) {
+      setStyleStatus(`Google connection failed: ${error instanceof Error ? error.message : String(error)}`);
     } finally {
       setIsConnecting(false);
     }
@@ -62,7 +70,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
     const patch = {
       models,
       voiceEnabled,
-      googleEmail: googleConnected ?? undefined,
+      ...(googleConnected ? { googleEmail: googleConnected } : {}),
     };
 
     const currentSettings = store.getState().settings;
@@ -136,7 +144,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
           </label>
         </div>
 
-        {/* 4. Pixel writing style (disabled) */}
+        {/* 4. Pixel writing style */}
         <div className="hub-setting-group">
           <div className="hub-setting-label">4. Pixel Learning Style</div>
           <div
@@ -151,10 +159,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
               alignItems: 'center',
             }}
           >
-            <span>Pixel is learning how you write</span>
-            <span style={{ fontSize: 9, padding: '2px 4px', borderRadius: 4, background: '#2c3038' }}>
-              Coming soon
-            </span>
+            <span role="status">{styleStatus}</span>
           </div>
         </div>
 
