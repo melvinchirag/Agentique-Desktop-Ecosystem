@@ -1,0 +1,90 @@
+=====================================================================
+  PIXEL (GOOGLE WORKSPACE HELPER) - ANIMATION LIST FOR ZARIN
+  ADE (Agentique Desktop Ecosystem) - Hack Dearborn 5
+  (PENDING APPROVAL)
+=====================================================================
+
+Pixel handles your email, calendar and documents: sorts letters,
+writes drafts, files reports. Crisp, clever, upbeat, tidy, a little
+techy. Lives on the real Windows desktop (left of Chip, above the
+taskbar).
+
+GRAPHICS MUST BE FAST: only 6 animations are needed. The app makes
+everything else (scared, sad, sleep, yawn, greet, ...) in code.
+
+
+---------------------------------------------------------------------
+ 1. CHARACTER BRIEF (you decide the look)
+---------------------------------------------------------------------
+
+ - A CUSTOM character, not an animal (robot, living envelope, paper
+   creature, sprite... your call). Accent color #7A6A9E (purple).
+ - Must read at about 70-90 px tall next to the animals: bold
+   silhouette, big hands, high contrast.
+ - Needs two hands that can hold a letter and a pen, plus a face for
+   eyes and a mouth (MouthOpen + Blink shape keys if you have time).
+ - If it floats, still make Walk (a hover-glide) with the base at the
+   origin. About 0.7 m tall, faces -Y, origin at the base.
+ - Props on a hand bone: Prop_Letter, Prop_Pen (Prop_Stamp optional).
+ - FIRST post 2-3 concept images to Chanuth. He picks one, then rig.
+
+
+---------------------------------------------------------------------
+ 2. GOLDEN RULES (same as the others)
+---------------------------------------------------------------------
+
+ - One Blender ACTION per animation, named EXACTLY as below.
+ - FAKE USER on for every Action. Animate IN PLACE. 30 fps.
+ - Loops: first frame = last frame. No color animation.
+ - Branch:  pixel/graphics
+   Blender file:  art/workspace/workspace.blend
+   Export to:     src/renderer/public/characters/workspace/default/model.glb
+ - Check + export with your Codex tools:
+     blender -b art/workspace/workspace.blend --python tools/blender/check_character.py -- workspace
+     blender -b art/workspace/workspace.blend --python tools/blender/export_character.py -- workspace
+
+
+---------------------------------------------------------------------
+ 3. THE 6 ANIMATIONS (this is everything)
+---------------------------------------------------------------------
+
+  1. Idle  (LOOP, ~3 sec)    Breathing/bobbing, a look around, a blink.
+  2. Walk  (LOOP, ~1 sec)    Walk or hover-glide, in place.
+  3. Talk  (LOOP, ~1.5 sec)  Head bobs, small hand gestures, mouth moves.
+  4. Happy (ONE-SHOT, ~1.2)  Hop, little spin, grin.
+  5. Write (LOOP, ~2 sec)    ** Pixel's signature ** Writes on a letter
+                             with the pen. Plays for ALL Google work.
+  6. Handoff (ONE-SHOT, 1.2) Holds the envelope out with both hands,
+                             small nod. (Giving a draft/file to Chip.)
+
+ >>> Then: CHECK, EXPORT, PUSH (git add / commit / push on pixel/graphics).
+
+
+---------------------------------------------------------------------
+ 4. THE CODE HANDLES THESE (do NOT make them)
+---------------------------------------------------------------------
+
+ Scared, Nervous, Sad, Excited, Think, Relief, Celebrate, Sleep, Yawn,
+ SleepWalk, WakeUp, Greet, and Pixel's stamp-press, reading, holding-up-
+ the-envelope and receiving-a-scroll moments. Moods are tints and
+ posture in code.
+
+ NOTE for your Codex: save
+   src/renderer/public/characters/workspace/character.json
+ with   "clipMap": { "Work": "Write" }
+ (add "Walk": "Fly" too if you named the floating move Fly), and add
+ the "workspace" entry to tools/blender/required_clips.json with
+ exactly: Idle, Walk, Talk, Happy, Write, Handoff.
+
+
+---------------------------------------------------------------------
+ 5. ORDER + TIME (Pixel only)
+---------------------------------------------------------------------
+   1. Concept images -> Chanuth picks            ~15 min
+   2. Model + rig (hands, face, props)           ~75 min
+   3. The 6 animations                           ~60 min
+   4. CHECK + EXPORT + PUSH                      ~10 min
+   Total: about 2.7 hours.
+
+ Use ChatGPT and Codex only (your plan). Thank you, Zarin!
+=====================================================================

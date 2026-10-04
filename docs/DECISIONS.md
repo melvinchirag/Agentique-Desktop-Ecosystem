@@ -201,6 +201,10 @@ Owner of this file: Chanuth (with Claude). Last updated: Sun Oct 4, 2026, early 
 | `agents/03-warden-BUILD-LANES.md` | Melvin's lanes for Warden (replaces Chip's stub gate) |
 | `agents/03-warden-SPONSOR-LANES-SHAFEEN.md` | Shafeen's lanes for Warden (voice lines, Tiger audit view + queries, Backboard classifier) |
 | `animations/warden-actions.md`, `animations/Warden_Animations_for_Zarin.txt` | Warden's animation list (19 actions) |
+| `agents/04-pixel-workspace.md` | Pixel (workspace, Google) spec v1 ⏳ **pending approval**: scopes, 18 tools, style learning, privacy, tests, 15 decisions |
+| `agents/04-pixel-BUILD-LANES.md` | Melvin's lanes for Pixel (human tasks H1–H5, lanes F H A S P K T1 T2 N I) ⏳ pending |
+| `agents/04-pixel-SPONSOR-LANES-SHAFEEN.md` | Shafeen's lanes for Pixel (PW1 PM1 PT1 PV1) ⏳ pending |
+| `animations/pixel-actions.md`, `animations/Pixel_Animations_for_Zarin.txt` | Pixel's character brief + only 6 required clips (the app does the rest in code) ⏳ pending |
 
 ## 15a. Melvin's original docs (repo)
 - `VISION.md` stays as the vision contract (north star, principles, Thronglets framing, demo safety, long-term phases), updated to match these decisions. `concept.md` is archived as `docs/archive/concept-v0.md`.
@@ -243,7 +247,22 @@ Owner of this file: Chanuth (with Claude). Last updated: Sun Oct 4, 2026, early 
 - The real gate keeps `StubWardenGate`'s method exactly: `review(r) → 'allow' | 'ask' | 'deny'`, emitting `wolf.verdict` from `'wolf'`. Main has no gate type yet, so it comes with the contracts PR.
 - All 14 decisions in `agents/03-warden-security.md §19` are approved (Oct 4): Warden never cowers (Guard/Proud), new rules W12–W16 (W16 taint is task-wide), no "always allow", 5-min approval timeout, the layer-2 classifier (env switch), screening specialist results + calendar text + `fs_ask_file` pre-screen, silent on allow with `warden`/`report` priorities, pre-generated + shipped lines, "new things in ADE-owned places = draft", contract additions via `contracts/warden` (gate/approvals/screen types in `types.ts`, `ToolInspection` + `ToolDefinition.inspect?`, optional `approval.resolve.how`), fail closed, Warden sleeps/docks but the gate never depends on presence, Approvals own the ref-counted job-clock pause, W1 segment matching + registry lint.
 
+## 15g. Pixel plan ⏳ PENDING APPROVAL (nothing below is decided yet)
+- Drafted Oct 4: `agents/04-pixel-workspace.md` (spec), `04-pixel-BUILD-LANES.md`, `04-pixel-SPONSOR-LANES-SHAFEEN.md`, `animations/pixel-actions.md`, `animations/Pixel_Animations_for_Zarin.txt`, `PROMPTS.md` (Pixel sections, "use only after approval"). Branches when approved: `pixel/logic`, `pixel/sponsors`, `pixel/graphics`.
+- **Chanuth's graphics rule for Pixel (given Oct 4, applies to this plan):** Zarin makes only **6 clips** (`Idle, Walk, Talk, Happy, Write, Handoff`); the app shell does Scared/Sad/Sleep/Yawn/Greet/etc. procedurally; `clipMap Work → Write`; the design brief is 5–6 lines.
+- The 15 decisions to confirm are in `04-pixel-workspace.md §19` (scopes, Docs/Sheets/Calendar limits, endpoint allowlist, style-learning policy, event privacy, contract additions, nudge/CalendarSource behavior, "send it" demo reliability, voice, graphics, priorities, live-test safety).
+- **Pending contract additions vs the real code on `main`** (a small PR `contracts/pixel` → `main` by Melvin, only after approval):
+  1. `events.ts`: `ArtifactKind` += `'google_doc'`.
+  2. `types.ts`: `MemoryWriter { add(agentId, text): Promise<{ id: string }> }` (BackboardMemoryApi already has `add`).
+  3. `types.ts`: `DraftRecord`, `DraftsLog` (Tiger `drafts_log` copy by Shafeen, local primary by Melvin).
+  4. `ipc.ts`: `AdeApi.disconnectGoogle()` + `IPC.disconnectGoogle = 'ade:google:disconnect'`.
+  5. `ipc.ts`: `AdeSettings.styleLearnedAt?: number` (optional).
+  - Already on `main`, no change needed: `CalendarSource`, `InjectionScreen`, `ToolInspection`/`inspect`, `ToolContext.threadId`, `DocumentsApi`, `connectGoogle`, `learnEmailStyle`, `AdeSettings.googleEmail`.
+  - Not contracts: `redactEventArgs` runtime helper, `GoogleApi` internals, `StyleProfile`, `character.json` keys, `pulse().pixel`.
+- **Pending tweak to the approved Warden plan (needs Chanuth's OK):** evaluate W1's tool-name-segment test before W10, so a hallucinated `gmail_send` gets the "I never send" line and `Block`.
+- **Heads-up for every Pixel lane:** Warden's generic argument scan treats params named `to`, `from`, `file`, `folder`, `url`, `link`… as paths/URLs, so Pixel's tools use `recipients`, `drive_file_id`, etc. (spec §3.1).
+
 ## 16. Next up
 1. Push all docs to the team GitHub (Chanuth sends the link; inspect the existing files first).
-2. Plan **Pixel** (Google Workspace) next, then Warden, Archie, Scout, Swarm; extras last.
+2. **Pixel** (Google Workspace) plan is drafted and **awaiting approval** (§15g); then Scout, Swarm; extras last. (Warden and Archie are approved, §15c/§15f.)
 3. After 4 agent plans: Chanuth builds the app shell.
