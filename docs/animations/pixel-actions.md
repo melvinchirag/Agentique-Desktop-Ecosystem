@@ -1,4 +1,4 @@
-# Pixel (Workspace) — Animation Actions for Zarin ⏳ PENDING APPROVAL
+# Pixel (Workspace) — Animation Actions for Zarin ✅ APPROVED (Oct 4)
 
 Graphics must be fast (Chanuth, Oct 4): **only 6 clips are required.** Everything else is done procedurally in code by the app shell.
 Same rules as Chip, Archie, Warden (`chip-actions.md`, `../ASSETS.md §2`): exact Action names, Fake User on, in place, 30 fps, loops seamless, no color animation.

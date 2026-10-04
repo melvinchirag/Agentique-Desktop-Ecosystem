@@ -12,7 +12,7 @@
 - **Wave 0:** any time after Chip's Wave 1 is merged into `chip/logic` (it is). The human tasks (§0) start at once.
 - **Waves 1–2:** need only the frozen `GoogleApi` interface (Wave 0), not AgentRuntime.
 - **Wave 3 (I):** after Archie's lane **R (AgentRuntime)** is merged into `beaver/logic`.
-**Status:** ⏳ PENDING APPROVAL. **Target:** Pixel P0+P1 working against `FakeGoogle` ≈ 3 h after Wave 0 starts; live against the demo account ≈ 3.5 h.
+**Status:** ✅ APPROVED (Oct 4). **Target:** Pixel P0+P1 working against `FakeGoogle` ≈ 3 h after Wave 0 starts; live against the demo account ≈ 3.5 h.
 
 ---
 

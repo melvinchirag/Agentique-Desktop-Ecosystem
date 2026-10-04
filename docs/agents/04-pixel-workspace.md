@@ -1,11 +1,11 @@
-# Agent 04 — Pixel (Workspace) — Google Workspace · Plan v1 (⏳ PENDING APPROVAL)
+# Agent 04 — Pixel (Workspace) — Google Workspace · Plan v1 (✅ APPROVED (Oct 4))
 
 **Id:** `workspace` · **Name:** Pixel · **Tier:** core · **Character:** custom (Zarin designs it; not an animal)
 **Builders:** logic → Melvin (`pixel/logic`) · sponsor tech → Shafeen (`pixel/sponsors`) · graphics → Zarin (`pixel/graphics`)
 **Read with:** `../DECISIONS.md`; the **real contracts on `main`**: `src/shared/events.ts` (`artifact`, `agent.status`, `agent.say`, `tool.request`), `src/shared/tools.ts` (`ToolDefinition.riskFor/inspect/preview`, `ToolInspection`, `ToolContext.threadId`), `src/shared/ipc.ts` (`connectGoogle`, `learnEmailStyle`, `AdeSettings.googleEmail`), `src/main/runtime/types.ts` (`CalendarSource`/`CalendarEvent`, `InjectionScreen`/`ScreenSource`, `WardenGate`, `DocumentsApi`, `MemoryApi`, `LlmClient`, `NudgeEngine`/`NudgeStore`); `01-chip-orchestrator.md` (§3 help jobs, §14 nudges, §16 output format); `02-archie-files.md` (§2 `safePath`, §14 AgentRuntime); `03-warden-security.md` (§3 rules, §4 inspect, §6 injection screen); `../SPONSORS.md` (Pixel rows); `../ARCHITECTURE.md §9`.
 **Replaces** the v0 "Hoot" section of `../AGENTS.md` and `ARCHITECTURE.md §9` (this file wins).
 
-> ⏳ **NOT APPROVED.** Nothing here is decided until Chanuth approves. Decisions to confirm are in §19.
+> ✅ **APPROVED (Oct 4).** The plan and all 15 decisions in §19 are approved by Chanuth.
 
 ---
 
@@ -568,18 +568,18 @@ Checked against `main` (which already has `ToolInspection`/`inspect`, `ToolConte
 
 ## 19. Decisions for Chanuth (with recommendations)
 
-1. **Scopes:** `gmail.readonly`, `gmail.compose`, `calendar.events`, `drive.readonly`, `drive.file` only; **no `documents` / `spreadsheets` scopes** (fallback if the G0 spike says otherwise). → **Yes.**
-2. **Docs:** `docs_create` = `draft` (silent; new, private); `docs_append` = `write` (asks), only on Docs Pixel made; new artifact kind `google_doc`. → **Yes.**
-3. **Sheets read-only** in v1 (no create/append). → **Yes.**
-4. **Calendar:** create/update only, always asks; no delete, no RSVP; attendees allowed with W8 and `sendUpdates:'none'` enforced in the client, and the preview says honestly that guests may still see the event on their Google Calendar. → **Yes** (stricter alternative: no attendees at all).
-5. **Hard endpoint allowlist** in the Google HTTP layer + no-send source grep, as a second backstop under Warden W1. → **Yes.**
-6. **Style learning policy:** explicit consent step; ≤ 100 sent mails read, ≤ 30 redacted excerpts sent once to the user's model; raw mail never stored; memory line without examples, local cache with ≤ 3 redacted snippets; erasing the memory erases the cache. → **Yes.**
-7. **Event privacy:** the runtime emits redacted tool args (long strings and body fields never reach events or Tiger), plus the canary test. Touches Archie's `agentRuntime.ts` at one hook. → **Yes.**
-8. **Contract additions** (§15) via `contracts/pixel`: `google_doc`, `MemoryWriter`, `DraftsLog`, `disconnectGoogle`, optional `styleLearnedAt`. → **Yes.**
-9. **Waiting-drafts nudge:** 3 h threshold, checked every 30 min, at most one per 6 h, `custom` kind from the public `schedule`; local registry primary, Tiger copy. → **Yes.**
-10. **`GoogleCalendarSource`:** titles screened, 5-min cache, `[]` when not connected, throws on network errors. → **Yes.**
-11. **"Send it" reliability:** (a) Warden tweak: check W1's name-segment before W10, so a hallucinated `gmail_send` gets "I never send" + `Block`, not "Not your tool"; (b) **demo-mode send probe**: when demo mode is on and a task for Pixel asks to send, a synthetic send-like call runs through the **real gate** (real deny, real audit row, labeled as a probe, never in normal use). → **Yes to both** (the live LLM may not try a send tool on cue, and this is the headline safety moment).
-12. **Pixel's voice:** generate previews now from the current description; re-describe or re-pick after Zarin's design. → **Yes.**
-13. **Graphics (changed by Chanuth):** Zarin makes only **6 clips** (`Idle, Walk, Talk, Happy, Write, Handoff`); `Work` maps to `Write`; the app shell does everything else procedurally. Zarin posts 2–3 concept images and Chanuth picks one before rigging. → **Yes.**
-14. **Priority order** P0 → P2 (§18) given the time left; cut from the bottom. → **Yes.**
-15. **Live-test safety:** a dedicated demo Google account only; a seeding script that refuses to run unless the signed-in address equals `DEMO_GOOGLE_EMAIL` (uses `gmail.insert`, dev only, never shipped); implementers get no MCP access. → **Yes.**
+1. **Scopes:** `gmail.readonly`, `gmail.compose`, `calendar.events`, `drive.readonly`, `drive.file` only; **no `documents` / `spreadsheets` scopes** (fallback if the G0 spike says otherwise). → **Yes.** ✅ APPROVED (Oct 4)
+2. **Docs:** `docs_create` = `draft` (silent; new, private); `docs_append` = `write` (asks), only on Docs Pixel made; new artifact kind `google_doc`. → **Yes.** ✅ APPROVED (Oct 4)
+3. **Sheets read-only** in v1 (no create/append). → **Yes.** ✅ APPROVED (Oct 4)
+4. **Calendar:** create/update only, always asks; no delete, no RSVP; attendees allowed with W8 and `sendUpdates:'none'` enforced in the client, and the preview says honestly that guests may still see the event on their Google Calendar. → **Yes** (stricter alternative: no attendees at all). ✅ APPROVED (Oct 4)
+5. **Hard endpoint allowlist** in the Google HTTP layer + no-send source grep, as a second backstop under Warden W1. → **Yes.** ✅ APPROVED (Oct 4)
+6. **Style learning policy:** explicit consent step; ≤ 100 sent mails read, ≤ 30 redacted excerpts sent once to the user's model; raw mail never stored; memory line without examples, local cache with ≤ 3 redacted snippets; erasing the memory erases the cache. → **Yes.** ✅ APPROVED (Oct 4)
+7. **Event privacy:** the runtime emits redacted tool args (long strings and body fields never reach events or Tiger), plus the canary test. Touches Archie's `agentRuntime.ts` at one hook. → **Yes.** ✅ APPROVED (Oct 4)
+8. **Contract additions** (§15) via `contracts/pixel`: `google_doc`, `MemoryWriter`, `DraftsLog`, `disconnectGoogle`, optional `styleLearnedAt`. → **Yes.** ✅ APPROVED (Oct 4)
+9. **Waiting-drafts nudge:** 3 h threshold, checked every 30 min, at most one per 6 h, `custom` kind from the public `schedule`; local registry primary, Tiger copy. → **Yes.** ✅ APPROVED (Oct 4)
+10. **`GoogleCalendarSource`:** titles screened, 5-min cache, `[]` when not connected, throws on network errors. → **Yes.** ✅ APPROVED (Oct 4)
+11. **"Send it" reliability:** (a) Warden tweak: check W1's name-segment before W10, so a hallucinated `gmail_send` gets "I never send" + `Block`, not "Not your tool"; (b) **demo-mode send probe**: when demo mode is on and a task for Pixel asks to send, a synthetic send-like call runs through the **real gate** (real deny, real audit row, labeled as a probe, never in normal use). → **Yes to both** (the live LLM may not try a send tool on cue, and this is the headline safety moment). ✅ APPROVED (Oct 4)
+12. **Pixel's voice:** generate previews now from the current description; re-describe or re-pick after Zarin's design. → **Yes.** ✅ APPROVED (Oct 4)
+13. **Graphics (changed by Chanuth):** Zarin makes only **6 clips** (`Idle, Walk, Talk, Happy, Write, Handoff`); `Work` maps to `Write`; the app shell does everything else procedurally. Zarin posts 2–3 concept images and Chanuth picks one before rigging. → **Yes.** ✅ APPROVED (Oct 4)
+14. **Priority order** P0 → P2 (§18) given the time left; cut from the bottom. → **Yes.** ✅ APPROVED (Oct 4)
+15. **Live-test safety:** a dedicated demo Google account only; a seeding script that refuses to run unless the signed-in address equals `DEMO_GOOGLE_EMAIL` (uses `gmail.insert`, dev only, never shipped); implementers get no MCP access. → **Yes.** ✅ APPROVED (Oct 4)

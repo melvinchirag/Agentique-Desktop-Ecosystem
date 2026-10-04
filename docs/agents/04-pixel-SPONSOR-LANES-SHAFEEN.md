@@ -5,7 +5,7 @@
 **Specs:** `04-pixel-workspace.md` §6.4 (style memory mirror), §10 (Backboard), §11 (voice/SFX/Tiger), §5.2 (`DraftsLog`), §15 (contracts); `../SPONSORS.md` Pixel rows (memory `Auto`, style profile as a memory, `drafts_log`, digital blip + stamp, thread documents for Drive/attachments).
 **Method:** Hydra (`C:\Chanuth\hydra\models.json`): Opus 5.5 orchestrator; Codex GPT-6 Sol for strong-floor code; AGY Gemini 3.8 Flash High (**attended, never unattended**) or Codex Luna only for value-floor asset work; Sonnet for verification; **Opus reviews PT1 and PM1**. No MCP for implementers.
 **When:** after Chip's sponsor kit is handed off (can overlap Warden's and Archie's sponsor lanes). `PT1` and `PM1` need `contracts/pixel` (`DraftsLog`, `MemoryWriter`): do `PW1` and `PV1` first. **Target: ≈ 1.25 h.**
-**Status:** ⏳ PENDING APPROVAL.
+**Status:** ✅ APPROVED (Oct 4).
 
 ---
 

@@ -401,7 +401,7 @@ Never touch other folders. Stop and tell me if any file is over 100 MB.
 
 ---
 
-# Pixel (workspace, Google Workspace) — ⏳ PLAN PENDING APPROVAL: use only after Chanuth approves
+# Pixel (workspace, Google Workspace) — ✅ APPROVED (Oct 4)
 
 Branches: `pixel/logic`, `pixel/sponsors`, `pixel/graphics`, lanes `lane/pixel-<track>-<x>`. The agent id in code and folders stays `workspace`.
 
@@ -412,7 +412,7 @@ Branches: `pixel/logic`, `pixel/sponsors`, `pixel/graphics`, lanes `lane/pixel-<
 | Zarin | Codex, repo root | Zarin — Pixel graphics |
 
 ## Melvin — Pixel logic orchestrator
-*Use only after approval. Paste into: Claude Code, **Opus 5.5**, `/effort high`, repo root. Start any time after Chip's Wave 1 is merged (can overlap Warden and Archie).*
+*Paste into: Claude Code, **Opus 5.5**, `/effort high`, repo root. Start any time after Chip's Wave 1 is merged (can overlap Warden and Archie).*
 
 ```text
 You are the ORCHESTRATOR for building PIXEL (the Google Workspace agent, id "workspace") in the ADE repo:
@@ -464,7 +464,7 @@ Never run Pixel against anyone's real inbox. STOP and ask on spec conflicts. Rep
 ```
 
 ## Shafeen — Pixel sponsor tech
-*Use only after approval. Paste into: Claude Code, **Opus 5.5**, `/effort high`, repo root. Start after Chip's sponsor kit is handed off.*
+*Paste into: Claude Code, **Opus 5.5**, `/effort high`, repo root. Start after Chip's sponsor kit is handed off.*
 
 ```text
 You are the ORCHESTRATOR for PIXEL's sponsor tech (Backboard memory rules + MemoryWriter + live memory checks,
@@ -496,7 +496,7 @@ committed file; deny MCP tool calls; STOP and ask if a real API differs from the
 ```
 
 ## Zarin — Pixel graphics
-*Use only after approval. Paste into: **Codex**, repo root. Graphics must be fast: only 6 clips.*
+*Paste into: **Codex**, repo root. Graphics must be fast: only 6 clips.*
 
 ```text
 Help me build and save PIXEL's 3D model and animations for the ADE project. Pixel is a CUSTOM character (not an
