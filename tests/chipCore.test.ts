@@ -273,7 +273,7 @@ describe('createChipCore', () => {
     expect(sink.enqueued).toHaveLength(sunk);
     expect(clock.pending()).toBe(0);
 
-    core.bus.emit({ type: 'user.message', text: 'late', source: 'text' } as never);   // the sink was unsubscribed
+    core.bus.emit({ type: 'user.message', agentId: 'chipmunk', text: 'late', source: 'text' });   // the sink was unsubscribed
     expect(sink.enqueued).toHaveLength(sunk);
   });
 });
