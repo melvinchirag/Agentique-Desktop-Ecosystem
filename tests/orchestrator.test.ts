@@ -182,6 +182,45 @@ describe('orchestrator', () => {
     expect(resultStatuses.map((e) => [e.status, e.taskId])).toEqual([['thinking', 'task1'], ['idle', 'task1']]);
   });
 
+  it('recovers a silent mood-only turn once and actually delegates the pending request', async () => {
+    const t = setup({ script: [requiresAction([mood()]), completed('(silent)'),
+      requiresAction([delegate('eagle', 'Pizza near campus')]), completed('(silent)')] });
+    await t.user('find pizza near campus');
+    expect(t.sends()).toHaveLength(2);
+    expect(t.sends()[1]!.memory).toBe('Readonly');
+    expect(t.sends()[1]!.tools?.map((tool) => tool.function.name)).not.toContain('report_user_mood');
+    expect(t.sends()[1]!.threadId).toBeTruthy();
+    expect(t.sends()[1]!.content).toContain('[runtime_feedback]');
+    expect(t.sends()[1]!.content).toContain('find pizza near campus');
+    expect(t.jobs.list()).toHaveLength(1);
+    expect(t.jobs.list()[0]).toMatchObject({ agent: 'eagle', parentTaskId: 'task1', state: 'running' });
+    expect(t.chipSays('ack')).toHaveLength(1);
+    expect(t.chipSays('chip')).toHaveLength(0);
+  });
+
+  it.each(['(silent)', ''])('bounds recovery for an unanswered %j response and explains failure', async (answer) => {
+    const t = setup({ script: [completed(answer), completed(answer)] });
+    await t.user('check my email');
+    expect(t.sends()).toHaveLength(2);
+    expect(t.jobs.list()).toHaveLength(0);
+    expect(t.chipSays('chip').at(-1)?.text).toBe("I couldn't finish that request. Please try again.");
+  });
+
+  it('does not retry an action that has already been attempted', async () => {
+    const t = setup({ script: [requiresAction([toolCall('unknown_tool', {})]), completed('(silent)')] });
+    await t.user('cancel the pending work please');
+    expect(t.sends()).toHaveLength(1);
+    expect(t.toolOutputs()).toHaveLength(1);
+    expect(t.chipSays('chip').at(-1)?.text).toBe("I couldn't finish that request. Please try again.");
+  });
+
+  it('answers instead of ending silently after a successful read-only history call', async () => {
+    const t = setup({ script: [requiresAction([toolCall('biome_history', { kind: 'recent_tasks' })]), completed('(silent)')] });
+    await t.user('What have you done for me today?');
+    expect(t.sends()).toHaveLength(1);
+    expect(t.chipSays('chip').at(-1)?.text).toBe("I couldn't finish that request. Please try again.");
+  });
+
   it('C6 chain: next_step reaches the result turn, then Chip delegates to Pixel with the result in the task', async () => {
     const t = setup({
       script: [

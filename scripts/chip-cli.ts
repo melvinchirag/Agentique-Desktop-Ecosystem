@@ -7,6 +7,7 @@
  * Commands: /ff 10m  /nudge  /jobs  /presence  /scenario C7  /quit
  */
 import { existsSync, readFileSync } from 'node:fs';
+import assert from 'node:assert/strict';
 import { createInterface } from 'node:readline';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { fileURLToPath } from 'node:url';
@@ -25,10 +26,12 @@ import { DEMO_TIMERS, makeTestSettings } from '../src/main/testing/settings';
 const SEC = 1000;
 const MIN = 60 * SEC;
 const HOUR = 60 * MIN;
+const LIVE_MODEL = { llm_provider: 'google', model_name: 'gemini-2.5-flash' } as const;
 
 const args = new Set(process.argv.slice(2));
 const LIVE = args.has('--live');
 const DEMO = args.has('--demo');
+const VERIFY_LIVE = args.has('--verify-live');
 
 // ── Colors + event lines ──────────────────────────────────
 
@@ -233,19 +236,27 @@ async function loadLiveLlm(): Promise<LlmClient> {
     process.exit(1);
   }
   // The offline stack uses a placeholder assistant id; point every request at Chip's real assistant.
+  const trace = (stage: string, response: LlmResponse): LlmResponse => {
+    if (VERIFY_LIVE) console.log(`BACKBOARD ${stage}: ${response.status}; tools=${response.tool_calls?.map((c) => c.function.name).join(',') || 'none'}`);
+    return response;
+  };
   return {
-    send: (p) => real.send({ ...p, assistantId }),
-    submitToolOutputs: (threadId, outputs, signal) => real.submitToolOutputs(threadId, outputs, signal),
+    send: async (p) => trace('send', await real.send({ ...p, assistantId })),
+    submitToolOutputs: async (threadId, outputs, signal) => trace('continue', await real.submitToolOutputs(threadId, outputs, signal)),
   };
 }
 
 function buildStack(llm: LlmClient, plannerLlm: LlmClient | undefined): Stack {
   const fake = LIVE ? null : new FakeClock(Date.now());
   const clock = fake ?? new RealClock();
+  const settings = makeTestSettings(LIVE
+    ? { models: Object.fromEntries(Object.keys(AGENTS).map((id) => [id, LIVE_MODEL])) as ReturnType<typeof makeTestSettings>['models'] }
+    : {});
   const chip = buildOfflineChip({
     clock, llm, specialists: specialistsFor(clock), calendar: new FakeCalendar(clock),
-    settings: makeTestSettings(DEMO ? { timers: DEMO_TIMERS, demoMode: true } : {}),
+    settings: DEMO ? makeTestSettings({ ...settings, timers: DEMO_TIMERS, demoMode: true }) : settings,
     ...(plannerLlm ? { plannerLlm } : {}),
+    ...(VERIFY_LIVE ? { startNudges: false } : {}),
   });
   return { chip, clock, startTs: clock.now(), fake };
 }
@@ -453,6 +464,101 @@ async function runScenario(id: string, out: (s: string) => void): Promise<void> 
 
 // ── REPL ──────────────────────────────────────────────────
 
+/** Real Chip calls, fake animals. Hold Scout until Pixel starts so API latency cannot hide overlap. */
+async function verifyLive(stack: Stack): Promise<void> {
+  const { chip } = stack;
+  const events: BiomeEvent[] = [];
+  const unsubscribe = chip.bus.subscribe((event) => events.push(event));
+  let releaseScout = (): void => {};
+  const scoutHeld = new Promise<void>((resolve) => { releaseScout = resolve; });
+  let current = 'C1';
+  const healthy = (): void => {
+    assert(!events.some((e) => e.type === 'agent.status' && e.status === 'error'), 'Chip emitted an error');
+    assert(!events.some((e) => e.type === 'job.update' && ['failed', 'cancelled'].includes(e.state)), 'A job failed or was cancelled');
+  };
+  const waitUntil = async (condition: () => boolean, why: string): Promise<void> => {
+    const deadline = Date.now() + 60_000;
+    while (!condition()) {
+      healthy();
+      assert(Date.now() < deadline, why);
+      await sleep(50);
+    }
+    healthy();
+  };
+  const send = async (text: string): Promise<string> => {
+    chip.orchestrator.submitUserMessage(text);
+    await chip.orchestrator.whenIdle();
+    healthy();
+    const user = events.findLast((e) => e.type === 'user.message');
+    assert(user?.taskId, 'Missing user task');
+    return user.taskId;
+  };
+  const jobFor = (taskId: string, agent: SpecialistId) => {
+    const job = chip.jobs.list().find((j) => j.parentTaskId === taskId && j.agent === agent);
+    assert(job, `No ${agent} delegation for the current request`);
+    return job;
+  };
+  const reported = (taskId: string, agent: SpecialistId, evidence: RegExp): boolean => {
+    const returned = events.find((e) => e.type === 'agent.return' && e.agentId === agent && e.taskId === taskId);
+    if (!returned) return false;
+    const resultTurn = events.find((e) => e.type === 'agent.status' && e.agentId === 'chipmunk'
+      && e.taskId === taskId && e.status === 'thinking' && e.ts >= returned.ts);
+    return !!resultTurn && events.some((e) => e.type === 'agent.say' && e.agentId === 'chipmunk'
+      && e.taskId === taskId && e.priority === 'chip' && e.ts >= resultTurn.ts && evidence.test(e.text));
+  };
+  try {
+    const greeting = await send('hi chip!');
+    assert.equal(chip.jobs.list().length, 0, 'Small talk started a job');
+    assert(events.some((e) => e.type === 'tool.request' && e.taskId === greeting && e.tool === 'report_user_mood'), 'Chip did not call the mood tool');
+    assert(events.some((e) => e.type === 'user.mood' && e.taskId === greeting), 'Missing mood');
+    assert(events.some((e) => e.type === 'agent.say' && e.taskId === greeting && e.priority === 'chip'
+      && !/couldn't finish|foggy/i.test(e.text)), 'Missing successful small-talk reply');
+    console.log('PASS C1: small talk, mood, speech, no jobs');
+
+    current = 'C2';
+    const email = await send('what emails did I get today?');
+    const pixel = jobFor(email, 'workspace');
+    await waitUntil(() => jobFor(email, 'workspace').state === 'done' && reported(email, 'workspace', /five|email|quiz/i), 'Missing Pixel result or result-turn summary grounded in its fixture result');
+    const sequence = events.filter((e) => e.taskId === email);
+    assert(sequence.some((e) => e.type === 'agent.say' && e.priority === 'ack'), 'Missing delegation acknowledgement');
+    assert(sequence.some((e) => e.type === 'agent.say' && e.agentId === 'workspace' && e.priority === 'report'), 'Missing Pixel report');
+    const returned = sequence.findIndex((e) => e.type === 'agent.return');
+    assert(!sequence.slice(0, returned).some((e) => e.type === 'agent.say' && e.agentId === 'chipmunk' && e.priority === 'chip'), 'Chip spoke in the user tool loop instead of waiting for the job result');
+    await chip.orchestrator.whenIdle();
+    console.log('PASS C2: acknowledgement, fake Pixel report, delayed Chip summary');
+
+    current = 'C3';
+    chip.specialists.setBehavior('eagle', async () => {
+      await scoutHeld;
+      return fakeResult('eagle', CANNED.eagle);
+    });
+    const pizza = await send('Find pizza near the University of Michigan-Dearborn campus.');
+    const scout = jobFor(pizza, 'eagle');
+    assert.equal(scout.state, 'running', 'Scout must be running before the follow-up');
+    const followup = await send('oh and check my email');
+    const parallelPixel = jobFor(followup, 'workspace');
+    const pixelStart = events.find((e) => e.type === 'job.update' && e.jobId === parallelPixel.jobId && e.state === 'running');
+    assert(pixelStart, 'Pixel did not start');
+    assert.equal(jobFor(pizza, 'eagle').state, 'running', 'Scout stopped before Pixel started');
+    assert(!events.some((e) => e.type === 'job.update' && e.jobId === parallelPixel.jobId && e.state === 'queued'), 'Pixel was queued');
+    assert.equal(chip.jobs.list().filter((j) => j.agent === 'eagle').length, 1, 'Scout was delegated twice');
+    console.log(`OVERLAP: Scout started +${((scout.startedAt! - stack.startTs) / SEC).toFixed(1)}s; Pixel started +${((pixelStart.ts - stack.startTs) / SEC).toFixed(1)}s while Scout was running`);
+    releaseScout();
+    await waitUntil(() => jobFor(pizza, 'eagle').state === 'done' && jobFor(followup, 'workspace').state === 'done'
+      && reported(pizza, 'eagle', /tony|slice|pie|pizza/i) && reported(followup, 'workspace', /five|email|quiz/i), 'Missing parallel result or result-turn summary grounded in its fixture result');
+    await chip.orchestrator.whenIdle();
+    healthy();
+    console.log('PASS C3: Pixel started alongside Scout; both finished and Chip summarized');
+  } catch (error) {
+    console.error(`FAIL ${current}: ${error instanceof Error ? error.message : 'verification failed'}`);
+    process.exitCode = 1;
+  } finally {
+    releaseScout();
+    unsubscribe();
+    chip.dispose();
+  }
+}
+
 const HELP = [
   'Type to talk to Chip. Commands:',
   '  /ff 10m      fast-forward the fake clock (30s, 2h, ...; offline only)',
@@ -464,11 +570,17 @@ const HELP = [
 ].join('\n');
 
 async function main(): Promise<void> {
+  if (VERIFY_LIVE && !LIVE) throw new Error('--verify-live requires --live; /scenario always uses the offline brain.');
   const llm = LIVE ? await loadLiveLlm() : new OfflineBrain();
   const out = (s: string): void => console.log(s);
   const stack = buildStack(llm, LIVE ? llm : undefined);
   const { chip } = stack;
   attachPrinter(chip, stack.startTs, out);
+
+  if (VERIFY_LIVE) {
+    out('Verifying C1-C3: LIVE Backboard, real clock, fake Pixel/Scout, nudges disabled.');
+    return verifyLive(stack);
+  }
 
   out(dim(`Chip CLI · ${LIVE ? 'LIVE Backboard (real clock, fake animals)' : 'offline (fake brain, fake clock)'}${DEMO ? ' · demo timers' : ''}`));
   out(dim(HELP));
