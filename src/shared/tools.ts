@@ -9,11 +9,22 @@ export type Risk =
   | 'destructive'  // removes things (trash a file)
   | 'external';    // sends/posts/pays on the user's behalf. NO TOOL MAY HAVE THIS. Wolf denies it.
 
+/** Details a tool knows about a call that Warden cannot infer from its arguments alone. */
+export interface ToolInspection {
+  paths?: string[];
+  writesPaths?: string[];
+  count?: number;
+  urls?: string[];
+  attachments?: string[];
+  hasAttendees?: boolean;
+}
+
 export interface ToolContext {
   agentId: AgentId;
   taskId: string;
   jobId: string;
   sessionId: string;
+  threadId: string;
   emit: (e: DistributiveOmit<BiomeEvent, 'id' | 'ts' | 'sessionId'>) => void;
   signal: AbortSignal;
 }
@@ -25,6 +36,8 @@ export interface ToolDefinition<I = any, O = any> {
   risk: Risk;
   /** Optional dynamic risk escalation, e.g. bulk file moves, events with attendees. */
   riskFor?: (input: I) => Risk;
+  /** Synchronous, side-effect-free details for Warden's review. */
+  inspect?: (input: I) => ToolInspection;
   /** Human-readable preview for Wolf's approval card. Required when risk can be write/destructive. */
   preview?: (input: I) => string;
   execute: (input: I, ctx: ToolContext) => Promise<O>;
