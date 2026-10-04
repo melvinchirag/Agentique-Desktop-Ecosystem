@@ -3,6 +3,10 @@
   ADE (Agentique Desktop Ecosystem) - Hack Dearborn 5
 =====================================================================
 
+┌─ FAST MODE (Oct 4): make ONLY these 6 essential clips — Idle, Walk,
+│ Talk, Happy, Carry, HoldNote. Everything else is optional / done in code.
+└─ Every other clip below: OPTIONAL — skip for now.
+
 Archie is the file manager: a hardworking, tidy, upbeat, slightly
 goofy builder who's proud of a well-built dam. He lives on the real
 Windows desktop (bottom-left, above the taskbar). No forest scene.
@@ -79,7 +83,7 @@ Windows desktop (bottom-left, above the taskbar). No forest scene.
      Head bobs, paw gestures, teeth show on emphasis.
      -> Whenever Archie speaks.
 
-  4. Work  (LOOP, ~2 sec)
+  4. Work  (LOOP, ~2 sec)  OPTIONAL — skip for now
      GNAWING a log held in both paws (Prop_Log visible).
      -> Searching / working on a job.
 
@@ -87,7 +91,7 @@ Windows desktop (bottom-left, above the taskbar). No forest scene.
      Hop, grin, tail wag.
      -> Job done, or the user is happy.
 
-  6. Scared  (LOOP, ~1.5 sec)
+  6. Scared  (LOOP, ~1.5 sec)  OPTIONAL — skip for now
      Crouched, trembling, paws over his face.
      -> The user is angry.
 
@@ -95,11 +99,11 @@ Windows desktop (bottom-left, above the taskbar). No forest scene.
      Waddle-walking with a log on his shoulder (Prop_Log).
      -> Moving files around (tidying a folder).
 
-  8. TailSlap  (ONE-SHOT, ~0.8 sec)   ** Archie's signature **
+  8. TailSlap  (ONE-SHOT, ~0.8 sec)   ** Archie's signature **  OPTIONAL — skip for now
      Tail lifts high and SLAPS the ground once, proud nod.
      -> A job is finished (plays with a "thwack" sound).
 
-  9. Read  (LOOP, ~2 sec)
+  9. Read  (LOOP, ~2 sec)  OPTIONAL — skip for now
      Holds a paper close to his face, eyes scanning left-right
      (Prop_Paper).
      -> Reading a file.
@@ -115,51 +119,51 @@ Windows desktop (bottom-left, above the taskbar). No forest scene.
 
  ===== TIER 2 - EMOTIONS + TEAMWORK =====
 
- 11. Nervous  (LOOP, ~2 sec)
+ 11. Nervous  (LOOP, ~2 sec)  OPTIONAL — skip for now
      Fidgeting, teeth chattering, glancing sideways (toward Warden).
      -> Waiting for the user to approve a change, or the user is stressed.
 
- 12. Sad  (LOOP, ~3 sec)
+ 12. Sad  (LOOP, ~3 sec)  OPTIONAL — skip for now
      Slumped, tail dragging, a slow sigh.
      -> The user is sad, or a job failed.
 
- 13. Excited  (LOOP, ~1 sec)
+ 13. Excited  (LOOP, ~1 sec)  OPTIONAL — skip for now
      Hopping, rapid tail slaps.
      -> The user is excited.
 
- 14. Think  (LOOP, ~2 sec)
+ 14. Think  (LOOP, ~2 sec)  OPTIONAL — skip for now
      Taps his chin, looks up, tail curls.
      -> Planning how to tidy a folder.
 
- 15. Handoff  (ONE-SHOT, ~1.2 sec)
+ 15. Handoff  (ONE-SHOT, ~1.2 sec)  OPTIONAL — skip for now
      Holds out a paper or log with both paws, nods.
      -> Handing a file to Pixel or Chip.
 
- 16. Sniff  (LOOP, ~2 sec)
+ 16. Sniff  (LOOP, ~2 sec)  OPTIONAL — skip for now
      Nose to the ground, moving side to side, whiskers twitching.
      -> Searching for a file.
 
  ===== TIER 3 - SLEEP =====
 
- 17. Yawn  (ONE-SHOT, ~1.5 sec)
+ 17. Yawn  (ONE-SHOT, ~1.5 sec)  OPTIONAL — skip for now
      Big toothy yawn and stretch.
      -> Falling asleep.
 
- 18. Sleep  (LOOP, ~4 sec)
+ 18. Sleep  (LOOP, ~4 sec)  OPTIONAL — skip for now
      Curled up, tail wrapped over him like a blanket, slow breathing.
      -> Asleep.
 
- 19. SleepWalk  (LOOP, ~1.2 sec cycle)
+ 19. SleepWalk  (LOOP, ~1.2 sec cycle)  OPTIONAL — skip for now
      Drowsy waddle, eyes half-closed.
      -> Walking sleepily to the Agent Hub to "dock" (turn off).
 
- 20. WakeUp  (ONE-SHOT, ~1.2 sec)
+ 20. WakeUp  (ONE-SHOT, ~1.2 sec)  OPTIONAL — skip for now
      Startles awake, shakes his head.
      -> Woken by a job or a click.
 
  ===== TIER 4 =====
 
- 21. Greet  (ONE-SHOT, ~1.5 sec)
+ 21. Greet  (ONE-SHOT, ~1.5 sec)  OPTIONAL — skip for now
      Waves a paw, one tail slap.
      -> App start.
 

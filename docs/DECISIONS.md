@@ -124,6 +124,7 @@ Owner of this file: Chanuth (with Claude). Last updated: Sun Oct 4, 2026, early 
   - `EL_VOICE_ANTS`, `EL_VOICE_NIGHTINGALE`
 
 ## 10. 3D + animation (Zarin)
+- FAST MODE (Oct 4): ~6 essential clips per animal (Archie: Idle, Walk, Talk, Happy, Carry, HoldNote; Warden: Idle, Walk, Talk, Block, Growl, Sit; Pixel: Idle, Walk, Talk, Happy, Write, Handoff); everything else procedural in code.
 - **Every animal is rigged in Blender.** Drag-and-drop pipeline: export `.glb` → drop into `characters/<agent>/default/` → it works. Procedural fallback for anything missing. Asset Lab (Ctrl+Shift+A) shows found/missing clips.
 - **Exact clip names** (`ASSETS.md`):
   - core 6 for every animal: Idle, Walk, Talk, Work, Happy, Scared

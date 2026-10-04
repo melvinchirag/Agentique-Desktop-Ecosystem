@@ -77,6 +77,8 @@ def validate(animal):
     targets = [rig] + [o.data.shape_keys for o in meshes if o.data.shape_keys]
     clips = {}
     for name, rule in spec['clips'].items():
+        if not rule.get('required', True):
+            continue
         action = bpy.data.actions.get(name)
         check(action is not None, 'Missing action: ' + name)
         if action is None: continue

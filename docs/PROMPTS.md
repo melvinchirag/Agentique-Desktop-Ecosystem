@@ -273,11 +273,10 @@ real API differs from the docs. Status table after every step.
 ```text
 Help me build and save ARCHIE THE BEAVER's 3D model and animations for the ADE project.
 
-1. Read docs/animations/Archie_Animations_for_Zarin.txt (my full list) and docs/ASSETS.md section 2
-   (export rules). Summarize the Tier 1 list for me in 10 lines.
+1. Read docs/animations/Archie_Animations_for_Zarin.txt and docs/ASSETS.md section 2
+   (export rules). Summarize ONLY the 6 essential clips.
 2. Git: git switch main && git pull && git switch -c beaver/graphics && git push -u origin beaver/graphics
-3. Make sure tools/blender/required_clips.json has the "beaver" entry with EXACTLY the clip names
-   from Archie_Animations_for_Zarin.txt (loop flags + tiers). Update it if needed.
+3. Make sure tools/blender/required_clips.json marks ONLY the 6 essential clips as required; keep other listed clips optional (required: false).
 4. When I say "check", run:
      blender -b art/beaver/beaver.blend --python tools/blender/check_character.py -- beaver
    and explain any FAIL lines in plain words.
@@ -382,12 +381,11 @@ ask if a real API differs from the docs. Status table after every step.
 ```text
 Help me build and save WARDEN THE WOLF's 3D model and animations for the ADE project.
 
-1. Read docs/animations/Warden_Animations_for_Zarin.txt (my full list) and docs/ASSETS.md sections 2
-   and 5 (export rules, character.json). Summarize the Tier 1 list for me in 10 lines. Note: Warden has
+1. Read docs/animations/Warden_Animations_for_Zarin.txt and docs/ASSETS.md sections 2
+   and 5 (export rules, character.json). Summarize ONLY the 6 essential clips. Note: Warden has
    Guard instead of Scared and Proud instead of Happy, and no Think/Sad/Nervous/Excited clips.
 2. Git: git switch main && git pull && git switch -c warden/graphics && git push -u origin warden/graphics
-3. Make sure tools/blender/required_clips.json has the "wolf" entry with EXACTLY the clip names
-   from Warden_Animations_for_Zarin.txt (loop flags + tiers), and that
+3. Make sure tools/blender/required_clips.json marks ONLY the 6 essential clips as required; keep other listed clips optional (required: false), and that
    src/renderer/public/characters/wolf/character.json has "clipMap": { "Scared": "Guard", "Happy": "Proud" }.
 4. When I say "check", run:
      blender -b art/wolf/wolf.blend --python tools/blender/check_character.py -- wolf
