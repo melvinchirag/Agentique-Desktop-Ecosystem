@@ -1,6 +1,6 @@
-# Agentique — Concept
+# ADE (Agentique Desktop Ecosystem) — Concept
 
-*Formerly "Living Desktop". Hack Dearborn: Conjure Reality · October 3–4, 2026 · University of Michigan–Dearborn*
+*ADE = Agentique Desktop Ecosystem (formerly "Living Desktop"). Hack Dearborn: Conjure Reality · October 3–4, 2026 · University of Michigan–Dearborn*
 *Living document: we update this file and `VISION.md` as the project evolves.*
 
 ## Team

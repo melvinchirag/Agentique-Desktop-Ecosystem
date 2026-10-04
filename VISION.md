@@ -1,6 +1,6 @@
-# Agentique: Vision
+# ADE (Agentique Desktop Ecosystem): Vision
 
-*Formerly "Living Desktop". Vision owner: Melvin Karupati. Architecture & implementation plan: Chanuth (lead engineer).*
+*ADE = Agentique Desktop Ecosystem (formerly "Living Desktop"). Vision owner: Melvin Karupati. Architecture & implementation plan: Chanuth (lead engineer).*
 *This is the "vision contract": what the product must be. **How** it's built is the lead engineer's call.*
 
 > **Living document.** We update this file (and `concept.md`) as the project evolves. Items marked **[MELVIN DECIDES]** are open vision choices.
@@ -28,7 +28,7 @@
 
 **Your computer becomes a living world: a society of AI creatures that live on your desktop, understand everything on it, and work together for you, where you can watch it happen.**
 
-Today, AI on a computer is invisible: a chat box, a sidebar, a script running somewhere. Agentique makes AI **visible, alive and social**. You don't open an assistant; you live alongside an ecosystem.
+Today, AI on a computer is invisible: a chat box, a sidebar, a script running somewhere. ADE makes AI **visible, alive and social**. You don't open an assistant; you live alongside an ecosystem.
 
 **Inspiration:** Black Mirror, *"Plaything"* (the Thronglets). In the episode, a digital society quietly takes control of its owner. **Ours is the opposite: a society that works for you, in the open, and always asks before it acts.** That contrast is part of the story we tell.
 
@@ -157,7 +157,7 @@ Win **Ideation Matrix** (the wildcard track) and compete for overall top 3 with 
 - macOS support
 
 ### Phase 3 (9+ months): "The visible layer for AI"
-- Agentique becomes **the human-friendly face of AI on your computer**: whatever AI tools you use, you see them as creatures doing the work, and you approve what matters
+- ADE becomes **the human-friendly face of AI on your computer**: whatever AI tools you use, you see them as creatures doing the work, and you approve what matters
 - Shared worlds: your society can collaborate with a teammate's society on a shared project
 - Possible model: free core app with a few themes; paid premium themes and pro agents; revenue share for theme artists **[MELVIN DECIDES]**
 
@@ -179,7 +179,7 @@ Win **Ideation Matrix** (the wildcard track) and compete for overall top 3 with 
 ---
 
 ## 7. Open vision decisions [MELVIN DECIDES]
-1. ~~Product name~~ → **Agentique** ✅
+1. ~~Product name~~ → **ADE (Agentique Desktop Ecosystem)** ✅
 2. ~~Characters per agent~~ → **decided** (see The cast) ✅
 3. **Google Workspace custom character** design
 4. **Themes:** is the animal cast the default theme, and which theme(s) for the hackathon
