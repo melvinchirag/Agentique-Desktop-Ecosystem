@@ -40,7 +40,7 @@ const VOICES: Record<string, VoiceSpec> = {
   },
   eagle: {
     name: 'Scout', env: 'EL_VOICE_EAGLE',
-    description: 'A crisp, confident, sharp eagle. News-anchor energy, clear and concise, sees far.',
+    description: 'A young, cute cartoon eagle character. A light, bright, boyish voice with eager, playful energy and a little cocky confidence. Quick, clear and friendly, like an enthusiastic rookie scout reporting back.',   // tuned from SPONSORS §3.2: the team wanted a younger, cuter Scout
     text: "Eyes on target. Three pizza spots found, all within a ten minute walk. Sources are in the brief. The top pick is open late and has the best reviews."
   },
   ants: {
