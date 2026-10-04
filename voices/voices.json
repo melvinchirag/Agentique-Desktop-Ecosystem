@@ -17,25 +17,12 @@
     "description": "A deep, calm, clear guardian with a wolf in his voice: a low rumbling growl sits under every word, slightly gravelly and husky, with a faint wolfish rasp at the start of phrases. Slow, steady, few words, protective, serious, never mean. Clear and easy to understand.",
     "previews": [
       {
-        "n": 1,
-        "file": "voices/previews/wolf-1.mp3",
-        "generated_voice_id": "yMjA3ZnnIFp8Ds9COFUy"
-      },
-      {
-        "n": 2,
-        "file": "voices/previews/wolf-2.mp3",
-        "generated_voice_id": "dtXkur1UFLeF9cDW6i7y"
-      },
-      {
-        "n": 3,
-        "file": "voices/previews/wolf-3.mp3",
-        "generated_voice_id": "1VWo8FViCNqIPBh0Kd9Z"
-      },
-      {
         "n": 4,
-        "file": "voices/previews/wolf-4-previous-pick.mp3",
+        "file": "voices/previews/wolf-4.mp3",
         "generated_voice_id": "kAEj7YFC1uxzcysihuC9"
       }
-    ]
+    ],
+    "voice_id": "kAEj7YFC1uxzcysihuC9",
+    "picked": 4
   }
 }

@@ -1,0 +1,118 @@
+{
+  "agent": "wolf",
+  "model": "eleven_v4_turbo",
+  "lines": [
+    {
+      "trigger": "ask",
+      "text": "Need your OK on this one.",
+      "file": "ask.mp3",
+      "alignment": "ask.json",
+      "hash": "acfe556dd615169e"
+    },
+    {
+      "trigger": "ask-big-batch",
+      "text": "That's a big batch. Your call.",
+      "file": "ask-big-batch.mp3",
+      "alignment": "ask-big-batch.json",
+      "hash": "5d2fdb15ac057f92"
+    },
+    {
+      "trigger": "approved",
+      "text": "Go ahead.",
+      "file": "approved.mp3",
+      "alignment": "approved.json",
+      "hash": "5178df5201badcbd"
+    },
+    {
+      "trigger": "declined",
+      "text": "Understood. Standing down.",
+      "file": "declined.mp3",
+      "alignment": "declined.json",
+      "hash": "d512108f9f7485d0"
+    },
+    {
+      "trigger": "timeout",
+      "text": "No answer, so no.",
+      "file": "timeout.mp3",
+      "alignment": "timeout.json",
+      "hash": "6d357e08702cd4e6"
+    },
+    {
+      "trigger": "deny-w1-send",
+      "text": "I never send. It's in your drafts.",
+      "file": "deny-w1-send.mp3",
+      "alignment": "deny-w1-send.json",
+      "hash": "fcb4b79caf8e4756"
+    },
+    {
+      "trigger": "deny-w1-share",
+      "text": "Sharing and buying are your call, not mine.",
+      "file": "deny-w1-share.mp3",
+      "alignment": "deny-w1-share.json",
+      "hash": "20f90bba7cdd2684"
+    },
+    {
+      "trigger": "deny-w5",
+      "text": "That's outside your safe folders.",
+      "file": "deny-w5.mp3",
+      "alignment": "deny-w5.json",
+      "hash": "a3ef4ea77e8164c2"
+    },
+    {
+      "trigger": "deny-w7",
+      "text": "No programs. Not on my watch.",
+      "file": "deny-w7.mp3",
+      "alignment": "deny-w7.json",
+      "hash": "dc3f3ade567a6ac8"
+    },
+    {
+      "trigger": "deny-w9",
+      "text": "Stop. We already tried that.",
+      "file": "deny-w9.mp3",
+      "alignment": "deny-w9.json",
+      "hash": "bfc865fadc1134c8"
+    },
+    {
+      "trigger": "deny-not-your-tool",
+      "text": "Not your tool. Blocked.",
+      "file": "deny-not-your-tool.mp3",
+      "alignment": "deny-not-your-tool.json",
+      "hash": "ba91b55b095adf31"
+    },
+    {
+      "trigger": "deny-w12",
+      "text": "That link's not safe to open.",
+      "file": "deny-w12.mp3",
+      "alignment": "deny-w12.json",
+      "hash": "cb81ac2cdea5f7b2"
+    },
+    {
+      "trigger": "deny-w13",
+      "text": "Can't attach that file.",
+      "file": "deny-w13.mp3",
+      "alignment": "deny-w13.json",
+      "hash": "9da1c161a5ef8545"
+    },
+    {
+      "trigger": "deny-w0",
+      "text": "Something's off. Blocking to be safe.",
+      "file": "deny-w0.mp3",
+      "alignment": "deny-w0.json",
+      "hash": "c42f8e85754b6928"
+    },
+    {
+      "trigger": "alert-injection",
+      "text": "Trick spotted. I've got it.",
+      "file": "alert-injection.mp3",
+      "alignment": "alert-injection.json",
+      "hash": "0eed301563c15fd5"
+    },
+    {
+      "trigger": "app-start",
+      "text": "Warden on watch.",
+      "file": "app-start.mp3",
+      "alignment": "app-start.json",
+      "hash": "b90023cb417cfb90"
+    }
+  ]
+}

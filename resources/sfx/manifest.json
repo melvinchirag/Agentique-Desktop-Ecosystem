@@ -60,6 +60,12 @@
     "prompt": "wolf sniffing the air twice, close, short, clean"
   },
   {
+    "id": "wolf.paw-thump",
+    "file": "resources/sfx/wolf/paw-thump.mp3",
+    "durationMs": 1074,
+    "prompt": "one heavy wolf paw thumping down on a wooden floor, single soft heavy thud, close, clean"
+  },
+  {
     "id": "wolf.poke",
     "file": "resources/sfx/wolf/poke.mp3",
     "durationMs": 2066,
