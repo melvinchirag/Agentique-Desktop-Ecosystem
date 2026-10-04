@@ -242,9 +242,9 @@ describe('TigerQueries', () => {
 
   it('pulse returns mood, jobs, and activity; empty when Tiger is down', async () => {
     const db = new FakeDb();
-    expect(Object.keys(await new TigerQueries(db, quiet).pulse())).toEqual(['mood', 'jobs', 'activity']);
+    expect(Object.keys(await new TigerQueries(db, quiet).pulse())).toEqual(['mood', 'jobs', 'activity', 'warden']);
     db.down = true;
-    expect(await new TigerQueries(db, quiet).pulse()).toEqual({ mood: [], jobs: [], activity: [] });
+    expect(await new TigerQueries(db, quiet).pulse()).toEqual({ mood: [], jobs: [], activity: [], warden: { allowed: 0, asked: 0, denied: 0, alerts: 0 } });
   });
 });
 
@@ -262,6 +262,6 @@ describe('connection config', () => {
     const statements = splitStatements(readFileSync(join(__dirname, '..', 'scripts', 'tiger-schema.sql'), 'utf8'));
     expect(statements.length).toBeGreaterThan(25);
     expect(statements.every((s) => !s.includes(';\n'))).toBe(true);
-    expect(statements.filter((s) => s.includes('materialized_only = false'))).toHaveLength(3);
+    expect(statements.filter((s) => s.includes('materialized_only = false'))).toHaveLength(4);
   });
 });

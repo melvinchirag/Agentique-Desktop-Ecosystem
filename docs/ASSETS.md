@@ -58,6 +58,7 @@ src/renderer/public/
 ## 3. Animation clips — exact names (case-sensitive)
 
 The app plays clips **by name**. A missing clip falls back to procedural animation, so the app never breaks.
+Fast mode: per animal only the essential clips listed in each animal's txt are required; the app animates the rest procedurally.
 Looping clips: the first frame must equal the last frame.
 
 ### 3.1 Core set — every animal (priority order)
