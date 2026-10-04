@@ -1,0 +1,1 @@
+SUMMARY: The parser can ignore case when sorting the headings.
