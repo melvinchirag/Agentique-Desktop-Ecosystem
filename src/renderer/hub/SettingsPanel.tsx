@@ -271,6 +271,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
       </div>
 
       {/* Google Connect */}
+      {settings?.historyEnabled === false && <div className="hub-setting-group"><div className="hub-setting-label">Tiger Data</div><div role="status">not configured</div></div>}
       <div className="hub-setting-group">
         <div className="hub-setting-label">Google Workspace</div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>

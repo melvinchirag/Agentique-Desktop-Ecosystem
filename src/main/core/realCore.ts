@@ -41,7 +41,7 @@ import type { InjectionScreen, SpecialistRunner, VoiceService } from '../runtime
 import { assistantIdsFromEnv, readEnvFile, voiceIdsFromEnv, type Env } from '../sponsors/env';
 import { BackboardMemoryApi } from '../sponsors/backboardMemory';
 import type { CoreAdapter } from '../shell/contracts';
-import { createTigerPool, TigerEventSink, adeDataDir } from '../store/tiger';
+import { createTigerPool, TigerEventSink, adeDataDir, type Db } from '../store/tiger';
 import { TigerHistoryStore } from '../store/tigerHistory';
 import { TigerNudgeStore } from '../store/tigerNudges';
 import { TigerQueries } from '../store/tigerQueries';
@@ -56,18 +56,23 @@ import { defaultFolders } from './defaultFolders';
 const ids = Object.keys(AGENTS) as AgentId[];
 const silent = () => new ArrayBuffer(0);
 
-/** Only Backboard and Tiger are required for the live Chip path. Voice is optional. */
-export function missingRealCoreKeys(env: Env): string[] {
-  const missing = ['BACKBOARD_API_KEY', 'BB_ASSISTANT_CHIPMUNK', 'TIGER_DATABASE_URL']
-    .filter(key => !env[key]?.trim());
-  if (env.TIGER_DATABASE_URL?.trim()) {
+/** Tiger controls persisted history, never whether Chip can start. */
+export function decideCore(env: Env): { core: 'real' | 'fake'; reasons: string[]; historyEnabled: boolean } {
+  const reasons = ['BACKBOARD_API_KEY', 'BB_ASSISTANT_CHIPMUNK'].filter(key => !env[key]?.trim());
+  const historyEnabled = !!env.TIGER_DATABASE_URL?.trim();
+  if (historyEnabled) {
     try {
-      const url = new URL(env.TIGER_DATABASE_URL);
-      if (!url.username || !url.password) missing.push('TIGER_DATABASE_URL credentials');
-    } catch { missing.push('TIGER_DATABASE_URL format'); }
+      const url = new URL(env.TIGER_DATABASE_URL!);
+      if (!url.username || !url.password) reasons.push('TIGER_DATABASE_URL credentials');
+    } catch { reasons.push('TIGER_DATABASE_URL format'); }
   }
-  return missing;
+  return { core: reasons.length ? 'fake' : 'real', reasons, historyEnabled };
 }
+
+export function missingRealCoreKeys(env: Env): string[] { return decideCore(env).reasons; }
+
+/** Local fallback stores use their in-memory copies without attempting a connection. */
+const offlineDb: Db = { query: async () => { throw new Error('History is off'); } };
 
 function defaultSettings(options: RealCoreOptions): AdeSettings {
   const model = { llm_provider: 'openai', model_name: 'gpt-4o' };
@@ -163,11 +168,13 @@ export function savePersistedSettings(file: string, settings: AdeSettings): void
 export function createRealCore(options: RealCoreOptions = {}): CoreAdapter {
   if (options.demoMode) return fallbackCore(options.resourcesDir, false);
   const { env, baseDir } = loadRealCoreEnv(options);
-  if (missingRealCoreKeys(env).length) return fallbackCore(options.resourcesDir, true);
+  const decision = decideCore(env);
+  if (decision.core === 'fake') return fallbackCore(options.resourcesDir, true);
 
   const modelPreferencesPath = join(options.dataDir ?? adeDataDir(env), 'model-preferences.json');
   const settingsFile = join(options.dataDir ?? adeDataDir(env), 'settings.json');
   let settings = loadPersistedSettings(settingsFile, defaultSettings(options));
+  settings.historyEnabled = decision.historyEnabled;
   settings.models = { ...settings.models, ...loadModelPreferences(modelPreferencesPath) };
   const persistSettings = () => {
     try { savePersistedSettings(settingsFile, settings); }
@@ -181,10 +188,12 @@ export function createRealCore(options: RealCoreOptions = {}): CoreAdapter {
       ? 'wolf' : (assistantId ? ids.find(id => assistantIds[id] === assistantId) : undefined) ?? 'chipmunk';
     return settings.models[agentId];
   } });
-  const db = createTigerPool(env, baseDir);
-  const plans = new TigerPlanStore(db, () => clock.now());
-  const research = new TigerResearchStore(db);
-  const queries = new TigerQueries(db);
+  const db = decision.historyEnabled ? createTigerPool(env, baseDir) : undefined;
+  const storeDb = db ?? offlineDb;
+  const quiet = () => {};
+  const plans = new TigerPlanStore(storeDb, () => clock.now(), db ? undefined : quiet);
+  const research = new TigerResearchStore(storeDb, db ? undefined : quiet);
+  const queries = db ? new TigerQueries(db) : undefined;
   const memory = new BackboardMemoryApi(llm, assistantIds);
   const voiceIds = voiceIdsFromEnv(env);
   const shippedLines = new ShippedLines(join(options.resourcesDir ?? (options.packaged ? process.resourcesPath : join(process.cwd(), 'resources')), 'voice-lines'));
@@ -192,7 +201,7 @@ export function createRealCore(options: RealCoreOptions = {}): CoreAdapter {
     ? new ElevenLabsVoice({ apiKey: env.ELEVENLABS_API_KEY, voiceIds, voiceEnabled: () => settings.voiceEnabled,
       shipped: shippedLines })
     : undefined;
-  const eventSink = new TigerEventSink({ db });
+  const eventSink = db ? new TigerEventSink({ db }) : undefined;
   let activeScreen: InjectionScreen | undefined;
   const injectionScreen: InjectionScreen = { screen: (text, source) => {
     if (!activeScreen) throw new Error('Warden screen is unavailable');
@@ -234,7 +243,8 @@ export function createRealCore(options: RealCoreOptions = {}): CoreAdapter {
   const core = createChipCore({
     llm, runner, calendar: { listEvents: (from, to) => settings.googleEmail ? liveCalendar.listEvents(from, to) : disconnectedCalendar().listEvents() }, settings: () => settings,
     chipAssistantId: assistantIds.chipmunk!, clock, eventSink,
-    nudgeStore: new TigerNudgeStore(db), history: new TigerHistoryStore(db, () => clock.now(), undefined, research), plans,
+    nudgeStore: db ? new TigerNudgeStore(db) : undefined,
+    history: db ? new TigerHistoryStore(db, () => clock.now(), undefined, research) : { query: async () => [] }, plans,
     warden: { registry: agentId => agentId === 'workspace' ? pixelTools : undefined,
       classifier: env.BB_ASSISTANT_WARDEN_SCREEN
         ? createWardenClassifier({ llm, assistantId: env.BB_ASSISTANT_WARDEN_SCREEN }) : undefined },
@@ -319,7 +329,7 @@ export function createRealCore(options: RealCoreOptions = {}): CoreAdapter {
     setSettings: async patch => {
       settings = { ...settings, ...patch, models: { ...settings.models, ...patch.models },
         installed: { ...settings.installed, ...patch.installed },
-        timers: { ...settings.timers, ...patch.timers }, nudges: { ...settings.nudges, ...patch.nudges } };
+        timers: { ...settings.timers, ...patch.timers }, nudges: { ...settings.nudges, ...patch.nudges }, historyEnabled: decision.historyEnabled };
       if (patch.models) saveModelPreferences(modelPreferencesPath, settings.models);
       if (patch.demoMode !== undefined) settings.timers = patch.demoMode
         ? { ...settings.timers, sleepAfterSec: 30, dockAfterSec: 60 }
@@ -332,14 +342,14 @@ export function createRealCore(options: RealCoreOptions = {}): CoreAdapter {
     connectGoogle: async () => { if (!googleAuth) throw new Error('Google OAuth needs GOOGLE_CLIENT_ID and Electron safeStorage.'); const result = await googleAuth.connect(); settings = { ...settings, googleEmail: result.email }; persistSettings(); void learnStyleOnce().catch(error => console.warn('[core] Pixel style learning failed', error)); return result; },
     disconnectGoogle: async () => { await googleAuth?.disconnect(); settings = { ...settings, googleEmail: undefined }; persistSettings(); },
     learnEmailStyle: learnStyleOnce,
-    getTimeline: (from, to) => queries.timeline(from, to),
-    getTaskEvents: taskId => queries.taskEvents(taskId),
+    getTimeline: (from, to) => queries?.timeline(from, to) ?? Promise.resolve([]),
+    getTaskEvents: taskId => queries?.taskEvents(taskId) ?? Promise.resolve([]),
     getMemories: async agentId => (await memory.list(agentId)).map(row => ({ id: row.id, memory: row.content })),
     searchMemories: async (agentId, q) => (await memory.search(agentId, q)).map(row => ({ id: row.id, memory: row.content })),
     updateMemory: (agentId, id, text) => memory.update(agentId, id, text),
     deleteMemory: (agentId, id) => memory.remove(agentId, id),
-    getPulse: () => queries.pulse(),
-    getWardenAudit: limit => queries.wardenAudit(limit),
-    dispose: () => { index.stopWatching(); void core.dispose().then(() => eventSink.dispose()).then(() => db.end()); },
+    getPulse: () => queries?.pulse() ?? Promise.resolve({}),
+    getWardenAudit: limit => queries?.wardenAudit(limit) ?? Promise.resolve([]),
+    dispose: () => { index.stopWatching(); void core.dispose().then(() => eventSink?.dispose()).then(() => db?.end()); },
   };
 }
