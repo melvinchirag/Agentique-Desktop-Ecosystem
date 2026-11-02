@@ -10,6 +10,7 @@ import {
 } from '../agents/chipmunk/prompt';
 import { chipTools } from '../agents/chipmunk/tools';
 import { ANSWER_WINDOW_MS } from './nudges';
+import { directNote } from './steering';
 import type {
   AgentResult, HistoryKind, Job, LlmResponse, LlmToolCall, Nudge, Orchestrator, OrchestratorDeps, SpecialistId, TimerHandle,
 } from './types';
@@ -213,6 +214,13 @@ export function createOrchestrator(deps: OrchestratorDeps, opts: OrchestratorOpt
           if (presence.get('chipmunk') === 'sleeping') await presence.wake('chipmunk', 'user');
           say(turn.taskId, line.text, line.bubble, 'chip');
           return;                                                // finally → idle
+        }
+        // "Archie, skip the PDFs" while Archie works: straight to the job, no model call.
+        const direct = directNote(item.text);
+        if (direct && deps.steering?.tell(direct.agent, direct.note)) {
+          presence.touch('chipmunk');
+          say(turn.taskId, `Telling ${nameOf(direct.agent)}.`, 'Passing it on', 'chip');
+          return;
         }
         answerNudge(item.text);
       } else if (item.kind === 'nudge') {
