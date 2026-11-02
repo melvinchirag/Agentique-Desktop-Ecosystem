@@ -42,6 +42,7 @@ import { assistantIdsFromEnv, readEnvFile, voiceIdsFromEnv, type Env } from '../
 import { CliBrainClient } from '../brain/cliBrain';
 import { binEnvKey } from '../brain/detect';
 import { vendorFromEnv } from '../brain/vendors';
+import { onEgressDenied } from '../egress';
 import { SqliteThreadStore } from '../store/localThreads';
 import type { DocumentsApi, LlmClient } from '../runtime/types';
 import { LocalMemoryStore, withLocalMemory } from '../memory/localMemory';
@@ -290,6 +291,9 @@ export function createRealCore(options: RealCoreOptions = {}): CoreAdapter {
     } } : {}),
   });
   activeScreen = core.warden!.screen;
+  // A refused connection is an audit event: Warden reports it, the Audit tab shows it, ade.db keeps it.
+  onEgressDenied((host) => core.bus.emit({ type: 'wolf.alert', agentId: 'wolf', source: 'egress',
+    reason: `Blocked a connection to ${host}. ADE only talks to the services on its egress list.` }));
   standIns.connect(core.bus);
   // Pixel joins ChipCore's registry; Archie and Scout registered during core construction.
   if (google && assistantIds.workspace) {

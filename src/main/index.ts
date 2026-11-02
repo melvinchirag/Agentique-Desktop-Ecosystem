@@ -17,6 +17,7 @@ import { loadRealCoreEnv } from './core/realCore';
 import { binEnvKey, detectCli } from './brain/detect';
 import { vendorFromEnv } from './brain/vendors';
 import { registerSetup } from './setup/window';
+import { installEgressGuard } from './egress';
 import { createTray } from './shell/tray';
 import { AccountStore } from './account/store';
 import { SupabaseAccountClient } from './account/supabase';
@@ -39,6 +40,9 @@ if (!app.requestSingleInstanceLock()) {
 } else {
   app.on('second-instance', () => focusExistingHub?.());
   app.whenReady().then(async () => {
+    // Every connection ADE itself makes goes to a host on the egress list, or is refused and logged (src/main/egress.ts).
+    const egress = installEgressGuard();
+    egress.onDeny = (host) => console.warn(`[egress] refused a connection to ${host}`);
     const mainDir = fileURLToPath(new URL('.', import.meta.url));
     const rendererDir = join(mainDir, '../renderer');
     const preload = join(mainDir, '../preload/index.cjs');
