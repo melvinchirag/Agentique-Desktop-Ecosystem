@@ -107,7 +107,8 @@ if (!app.requestSingleInstanceLock()) {
       for (const target of targets()) if (!target.isDestroyed()) target.send(SHELL_IPC.settingsChanged, settings);
       broadcastLayout();
     };
-    const disposeTray = createTray({ showHub: hub.focus, animalsHidden: () => animalsHidden, toggleAnimals: () => setAnimalsHidden(!animalsHidden) });
+    const disposeTray = createTray({ showHub: hub.focus, animalsHidden: () => animalsHidden, toggleAnimals: () => setAnimalsHidden(!animalsHidden),
+      resetSpots: () => { if (!overlay.isDestroyed()) overlay.webContents.send(SHELL_IPC.resetAnimalSpots); } });
     const disposeShellIpc = registerShellIpc({
       overlay, hub: hub.window, controller, layout,
       focusChat: hub.focusChat, focusHub: hub.focus, blurHub: hub.blur,

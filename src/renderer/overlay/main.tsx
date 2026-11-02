@@ -52,8 +52,34 @@ function OverlayApp({ display }: { display: DisplayLayout }) {
     void window.ade.getSettings().then(settings => {
       store.getState().setSettings(settings); applyAudioSettings(settings, speech, sfx);
     });
+    // Drag an animal along the ground; the spot is remembered on this computer (Tray > Reset animal spots undoes it).
+    const SPOTS_KEY = 'ade-animal-spots';
+    const readSpots = (): Partial<Record<AgentId, number>> => {
+      try { return JSON.parse(localStorage.getItem(SPOTS_KEY) ?? '{}') ?? {}; } catch { return {}; }
+    };
+    const writeSpots = (spots: Partial<Record<AgentId, number>>) => {
+      try { localStorage.setItem(SPOTS_KEY, JSON.stringify(spots)); } catch { /* spot lasts until restart */ }
+    };
+    for (const [id, x] of Object.entries(readSpots())) if (typeof x === 'number') director.setUserSpot?.(id as AgentId, x);
+    const offReset = window.adeShell.onResetAnimalSpots?.(() => {
+      for (const id of Object.keys(readSpots())) director.setUserSpot?.(id as AgentId, null);
+      writeSpots({});
+    }) ?? (() => {});
+
+    const DRAG_PX = 8;
+    let press: { id: AgentId; x: number; dx: number; dragging: boolean } | null = null;
     const point = (event: PointerEvent | MouseEvent) => ({ x: event.clientX, y: event.clientY });
-    const move = (event: MouseEvent) => hit.pointerMove(point(event));
+    const move = (event: MouseEvent) => {
+      hit.pointerMove(point(event));
+      if (!press) return;
+      if (!press.dragging && Math.abs(event.clientX - press.x) < DRAG_PX) return;
+      if (!press.dragging) {
+        if (!director.dragTo?.(press.id, event.clientX + press.dx)) { press = null; return; }
+        press.dragging = true;
+        if (press.id === 'chipmunk') talk.cancel?.();
+      }
+      director.dragTo?.(press.id, event.clientX + press.dx);
+    };
     const down = (event: PointerEvent) => {
       if (event.button !== 0) return;
       const shape = hit.hitTest(point(event));
@@ -61,16 +87,28 @@ function OverlayApp({ display }: { display: DisplayLayout }) {
       const id = shape.id.slice('animal:'.length) as AgentId;
       sfx.play(pokeSound(id));
       hit.setCaptured(true);
+      const feet = layer.position(id);
+      press = { id, x: event.clientX, dx: feet ? feet.x - event.clientX : 0, dragging: false };
       if (id === 'chipmunk') talk.pointerDown();
-      else ui.openInspect(id);
     };
-    const up = () => { talk.pointerUp(); hit.setCaptured(false); };
+    const up = (event: PointerEvent) => {
+      const done = press; press = null;
+      hit.setCaptured(false);
+      if (done?.dragging) {
+        const x = layer.position(done.id)?.x ?? event.clientX + done.dx;
+        director.setUserSpot?.(done.id, x);
+        writeSpots({ ...readSpots(), [done.id]: Math.round(x) });
+        return;
+      }
+      if (done?.id === 'chipmunk') talk.pointerUp();
+      else if (done) ui.openInspect(done.id);
+    };
     window.addEventListener('mousemove', move);
     window.addEventListener('pointerdown', down);
     window.addEventListener('pointerup', up);
     window.addEventListener('pointercancel', up);
     return () => {
-      dispatch = null; offLayout(); offSettings(); offInspect(); offReplay();
+      dispatch = null; offLayout(); offSettings(); offInspect(); offReplay(); offReset();
       window.removeEventListener('mousemove', move);
       window.removeEventListener('pointerdown', down);
       window.removeEventListener('pointerup', up);

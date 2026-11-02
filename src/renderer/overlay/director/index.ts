@@ -26,6 +26,10 @@ export const createAnimationDirector: CreateAnimationDirector = (deps: DirectorD
   const { layer, speech, sfx, ui } = deps;
   const clock = deps.clock ?? systemClock;
   let layout = deps.getLayout();
+  // Spots the user dragged animals to; they override the default spots and survive layout changes.
+  const userSpots: Partial<Record<AgentId, number>> = {};
+  const clampX = (x: number) => Math.max(40, Math.min(x, layout.width - 40));
+  const homeOf = (id: AgentId) => clampX(userSpots[id] ?? layout.spots[id]);
   const agents = Object.fromEntries(IDS.map(id => [id, {
     presence: 'not_installed', status: 'idle', mood: 'neutral', docked: false, away: false,
     home: layout.spots[id], bubble: null,
@@ -414,13 +418,29 @@ export const createAnimationDirector: CreateAnimationDirector = (deps: DirectorD
       layer.setLayout(next);
       for (const id of IDS) {
         const a = agents[id];
-        a.home = next.spots[id];
+        a.home = homeOf(id);
         queue([id], async () => {
           if (a.presence !== 'active' || a.status !== 'idle' || a.docked || a.away) return;
           await layer.moveTo(id, a.home, { gait: 'walk' });
           await loop(id);
         });
       }
+    },
+    dragTo(id: AgentId, x: number) {
+      const a = agents[id];
+      if (disposed || replaying || a.presence !== 'active' || a.status !== 'idle' || a.docked || a.away) return false;
+      layer.spawn(id, clampX(x));
+      return true;
+    },
+    setUserSpot(id: AgentId, x: number | null) {
+      const a = agents[id];
+      if (x === null) delete userSpots[id]; else userSpots[id] = clampX(x);
+      a.home = homeOf(id);
+      queue([id], async () => {
+        if (a.presence !== 'active' || a.status !== 'idle' || a.docked || a.away) return;
+        await layer.moveTo(id, a.home, { gait: 'walk' });   // already there after a drag; walks there on load or reset
+        await loop(id);
+      });
     },
     dispose() {
       if (disposed) return;

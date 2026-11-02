@@ -113,4 +113,11 @@ describe('SFX, mic, and push to talk', () => {
     ptt.pointerDown(); ptt.pointerUp(); await tick(); expect(focus).toHaveBeenCalledOnce(); expect(sendVoice).not.toHaveBeenCalled();
     ptt.pointerDown(); clock.advance(300); ptt.pointerUp(); await tick(); expect(sendVoice).toHaveBeenCalledWith(expect.any(ArrayBuffer), 'audio/webm');
   });
+
+  it('a press that turns into a drag stops the mic and sends nothing', async () => {
+    const clock = fakeClock(), focus = vi.fn(), sendVoice = vi.fn(), stop = vi.fn(async () => ({ audio: new Uint8Array([1]).buffer, mime: 'audio/webm' }));
+    const ptt = createPushToTalk({ mic: { recording: false, start: vi.fn(async () => undefined), stop }, sendVoice, focusChat: focus, clock });
+    ptt.pointerDown(); clock.advance(600); ptt.cancel?.(); ptt.pointerUp(); await tick();
+    expect(stop).toHaveBeenCalledOnce(); expect(sendVoice).not.toHaveBeenCalled(); expect(focus).not.toHaveBeenCalled();
+  });
 });

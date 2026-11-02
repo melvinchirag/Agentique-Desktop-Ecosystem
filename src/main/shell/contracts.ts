@@ -81,6 +81,8 @@ export interface AdeShellApi {
   // main → overlay
   onInspectAgent(cb: (agentId: AgentId) => void): () => void;
   onReplayTask(cb: (taskId: string) => void): () => void;
+  /** Tray "Reset animal spots": the overlay forgets dragged spots and walks everyone home. */
+  onResetAnimalSpots?(cb: () => void): () => void;
 }
 
 /**
@@ -102,6 +104,7 @@ export const SHELL_IPC = {
   blurHub: 'shell:hub:blur',                     // send (hub only)
   setHubCollapsed: 'shell:hub:collapse',         // send (hub only)
   quitApp: 'shell:app:quit',                     // send (hub only)
+  resetAnimalSpots: 'shell:overlay:reset-spots', // push → overlay (tray menu)
   settingsChanged: 'shell:settings:changed',     // push → every window (AdeSettings)
   replayTask: 'shell:overlay:replay',            // send (taskId); then push → overlay
 } as const;
