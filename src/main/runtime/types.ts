@@ -254,6 +254,8 @@ export interface OrchestratorDeps {
   chipAssistantId: string;
   /** IANA zone for the [context] "now:" line, e.g. 'America/Detroit'. Default: the system zone. */
   timeZone?: string;
+  /** "Archie, skip the PDFs" goes straight to a running job (runtime/steering.ts). Optional. */
+  steering?: { tell(agent: SpecialistId, note: string): boolean };
 }
 export interface Orchestrator {
   /** Queues a user message (typed or transcribed). Returns at once; the turn runs from the inbox. */
