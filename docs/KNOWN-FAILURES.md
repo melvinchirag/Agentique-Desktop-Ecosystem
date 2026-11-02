@@ -8,7 +8,7 @@ the quick gate is a trustworthy signal; each exclusion is named in `scripts/veri
 ## 1. Load timeouts (7): pass alone, fail under 107 parallel workers
 
 `beaver-organize` A7+A8 undo, `scenarios/archie/integration` x3, `scenarios/warden/realIntegration`
-cold undo, `beaver-read` A14 (path), `orchestrator` nudge (see 2; it also fails alone).
+cold undo, `orchestrator` nudge (see 2; it also fails alone). `beaver-read` A14 passes since Nov 2 (PR #68: PDFs are read locally; the Backboard path is tested with a .docx).
 
 - Evidence: all pass when their files run alone; `verify:quick` runs 207 core tests at `--maxWorkers=2`
   with zero timeouts.
