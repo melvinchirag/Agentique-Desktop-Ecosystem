@@ -226,14 +226,14 @@ describe.each(['standin', 'real'] as const)('Archie through Chip and AgentRuntim
     expect(await r.journal.lastBatch()).toBeNull();
   });
 
-  it('A14 attaches a PDF to the job thread and answers from indexed content', async () => {
-    const r = await setup([toolStep('fs_ask_file', { path: 'Documents/syllabus.pdf' }), doneStep('Late work has a one-day grace period.')]);
-    await writeFile(path.join(r.fixture.documents, 'syllabus.pdf'), '%PDF fixture: late work has a one-day grace period');
-    expect(await readFile(path.join(r.fixture.documents, 'syllabus.pdf'), 'utf8')).toContain('one-day grace period');
+  it('A14 attaches a Word file to the job thread and answers from indexed content (PDFs are read locally)', async () => {
+    const r = await setup([toolStep('fs_ask_file', { path: 'Documents/syllabus.docx' }), doneStep('Late work has a one-day grace period.')]);
+    await writeFile(path.join(r.fixture.documents, 'syllabus.docx'), 'PK docx fixture: late work has a one-day grace period');
+    expect(await readFile(path.join(r.fixture.documents, 'syllabus.docx'), 'utf8')).toContain('one-day grace period');
     const result = await r.run('what does my syllabus say about late work?');
     expect(toolOutputs(r)[0]).toMatchObject({ ok: true, chunks: 1 });
     expect(r.documentCalls).toEqual([
-      { kind: 'upload', threadId: 'thread-1', path: path.join(r.fixture.documents, 'syllabus.pdf') },
+      { kind: 'upload', threadId: 'thread-1', path: path.join(r.fixture.documents, 'syllabus.docx') },
       { kind: 'index', documentId: 'fixture-document', timeoutMs: 60_000 },
     ]);
     expect(result.summary).toMatch(/one-day grace period/);

@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { adeDataDir } from '../store/tiger';
+import { adeDataDir } from '../paths';
 
 export interface CachedClip { audio: ArrayBuffer; alignment?: object }
 

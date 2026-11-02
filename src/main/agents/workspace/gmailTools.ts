@@ -6,6 +6,7 @@ import type { InjectionScreen, DocumentsApi, DraftsLog } from '../../runtime/typ
 import type { ToolContext, ToolDefinition } from '../../../shared/tools';
 import { PixelRegistry, registryLabel } from './registry';
 import { withTempFile } from './tempFile';
+import { extractPdfText } from '../../connectors/fs/pdfText';
 
 const MAX_DRAFT_BYTES = 25 * 1024 * 1024;
 const MAX_ASK_BYTES = 20 * 1024 * 1024;
@@ -178,6 +179,14 @@ export function createGmailTools(deps: GmailToolDeps): ToolDefinition[] {
       const bytes = await deps.google.gmail.getAttachment(input.message_id, input.attachment_id);
       if (bytes.byteLength > MAX_ASK_BYTES) return error('ATTACHMENT_TOO_LARGE');
       if (['.txt', '.md', '.csv', '.json'].includes(extension)) await deps.screen.screen(sanitizeUntrusted(Buffer.from(bytes).toString('utf8').slice(0, 20_000)), { kind: 'doc', name: 'Gmail attachment', taskId: ctx.taskId, jobId: ctx.jobId });
+      // PDFs are read on this machine (pdf.js): the text comes back screened, nothing is uploaded.
+      if (extension === '.pdf') return withTempFile(bytes, item.filename, async path => {
+        ctx.signal.throwIfAborted();
+        const pdf = await extractPdfText(path, 24_000);
+        if ('error' in pdf) return error(pdf.error);
+        const screened = await deps.screen.screen(pdf.text, { kind: 'doc', name: 'Gmail attachment', taskId: ctx.taskId, jobId: ctx.jobId });
+        return { ok: true, name: item.filename, pages: pdf.pages, pages_read: pdf.pagesRead, truncated: pdf.truncated, text: screened.wrapped, flagged: screened.flagged };
+      }, deps.dataDir, ctx.signal);
       return withTempFile(bytes, item.filename, async path => {
         ctx.signal.throwIfAborted();
         const uploaded = await deps.documents.uploadToThread(ctx.threadId, path);

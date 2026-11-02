@@ -8,7 +8,7 @@ import type { PulseResponse, WardenAuditRow } from '../../renderer/hub/responses
 import type { Bus, EventSink, TigerQueries } from '../runtime/types';
 import type { LocalDb } from './localDb';
 import { tx } from './localDb';
-import { mapWardenAuditRow, type WardenCounts } from './tigerWarden';
+import { mapWardenAuditRow, type WardenCounts } from './wardenAudit';
 
 /** Same privacy cap as v1: anything this big is probably an email body or file text. */
 const MAX_PAYLOAD_BYTES = 4096;

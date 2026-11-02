@@ -15,8 +15,8 @@ Every result is either **passed**, **failed**, or **blocked**. A test is never d
 1. **Static checks:** run TypeScript typechecking for changed TypeScript.
 2. **Unit and scenario checks:** run the relevant targeted tests, then `npm test` after a lane merge or integration change.
 3. **Boundary checks:** verify owned paths only, no shared-contract edits outside their approved contract PR, and no test touches a real user folder.
-4. **Sponsor smoke:** run `npx tsx scripts/sponsor-smoke.ts` only when its required account credentials and Tiger CA certificate are present. Record each Backboard, ElevenLabs, and Tiger result separately.
-5. **Live behavior:** run the real CLI or app after its own required checks pass. Record the real and fake components explicitly: Backboard-only Chip orchestration can be verified while voice and Tiger are blocked, but that is not a pass for those integrations. Use the smallest specified sequence first, then the full scenario.
+4. **Live services:** `npx tsx scripts/backboard-verify.ts ready` when Backboard is the brain; the Setup screen's detector checks the CLI brains. Tiger is gone: history, nudges, plans and research live in `ade.db`, covered by `src/main/store/*.test.ts`.
+5. **Live behavior:** run the real CLI or app after its own required checks pass. Record the real and fake components explicitly: Chip orchestration can be verified while voice is blocked, but that is not a pass for voice. Use the smallest specified sequence first, then the full scenario.
 
 ## Credentials and live services
 

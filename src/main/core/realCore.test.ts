@@ -52,16 +52,13 @@ describe('real core startup fallback', () => {
       expect(loaded.models.chipmunk).toEqual(saved.models.chipmunk);
     } finally { rmSync(root, { recursive: true, force: true }); }
   });
-  it('requires only the Backboard pair and reports Tiger history separately', () => {
+  it('requires only a brain: the Backboard pair or a CLI brain; history is always on, locally', () => {
     expect(missingRealCoreKeys({})).toEqual(['BACKBOARD_API_KEY', 'BB_ASSISTANT_CHIPMUNK']);
-    expect(missingRealCoreKeys({ BACKBOARD_API_KEY: 'bb', BB_ASSISTANT_CHIPMUNK: 'chip', TIGER_DATABASE_URL: 'postgres://user:pass@example/db' })).toEqual([]);
-    expect(decideCore({})).toEqual({ core: 'fake', reasons: ['BACKBOARD_API_KEY', 'BB_ASSISTANT_CHIPMUNK'], historyEnabled: false });
-    expect(decideCore({ BACKBOARD_API_KEY: 'bb', BB_ASSISTANT_CHIPMUNK: 'chip' })).toEqual({ core: 'real', reasons: [], historyEnabled: false });
-    expect(decideCore({ BACKBOARD_API_KEY: 'bb', BB_ASSISTANT_CHIPMUNK: 'chip', TIGER_DATABASE_URL: ' ' }).historyEnabled).toBe(false);
-    expect(decideCore({ BACKBOARD_API_KEY: 'bb', BB_ASSISTANT_CHIPMUNK: 'chip', TIGER_DATABASE_URL: 'postgres://user:pass@example/db' }).historyEnabled).toBe(true);
-    // A Tiger URL without a password (the dev .env on Nov 2) must not stop Chip: Tiger just stays off.
-    expect(decideCore({ BACKBOARD_API_KEY: 'bb', BB_ASSISTANT_CHIPMUNK: 'chip', TIGER_DATABASE_URL: 'postgres://user@example/db' })).toEqual({ core: 'real', reasons: [], historyEnabled: false });
-    expect(decideCore({ BACKBOARD_API_KEY: 'bb', BB_ASSISTANT_CHIPMUNK: 'chip', TIGER_DATABASE_URL: 'not a url' })).toEqual({ core: 'real', reasons: [], historyEnabled: false });
+    expect(decideCore({})).toEqual({ core: 'fake', reasons: ['BACKBOARD_API_KEY', 'BB_ASSISTANT_CHIPMUNK'], historyEnabled: true });
+    expect(decideCore({ BACKBOARD_API_KEY: 'bb', BB_ASSISTANT_CHIPMUNK: 'chip' })).toEqual({ core: 'real', reasons: [], historyEnabled: true });
+    expect(decideCore({ ADE_BRAIN: 'claude-cli' })).toEqual({ core: 'real', reasons: [], historyEnabled: true });
+    // Leftover Tiger settings in an old .env are ignored.
+    expect(decideCore({ BACKBOARD_API_KEY: 'bb', BB_ASSISTANT_CHIPMUNK: 'chip', TIGER_DATABASE_URL: 'postgres://user@example/db' })).toEqual({ core: 'real', reasons: [], historyEnabled: true });
   });
 
   it('keeps --demo on FakeCore and warns in the Hub when normal startup lacks keys', async () => {
