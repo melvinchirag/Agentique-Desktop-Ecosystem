@@ -56,7 +56,7 @@ export const OverlayUiLayer: OverlayUiComponent = (props) => {
       showBubble(agentId, text, kind = 'say', ttlMs) {
         const key = ++nextKey.current;
         setBubbles(previous => ({ ...previous, [agentId]: { text, kind, key } }));
-        const ttl = ttlMs ?? BUBBLE_TTL[kind];
+        const ttl = ttlMs ?? (kind === 'say' ? sayBubbleTtl(text) : BUBBLE_TTL[kind]);
         if (ttl !== null) armTimer(`bubble:${agentId}`, () => setBubbles(previous => {
           if (previous[agentId]?.key !== key) return previous;
           const next = { ...previous }; delete next[agentId]; return next;
@@ -109,7 +109,7 @@ export const OverlayUiLayer: OverlayUiComponent = (props) => {
           current.hit.set(key, mode === 'bubble' ? 'bubble' : 'card', { x: rect.x, y: rect.y, width: rect.width, height: rect.height });
         }
       };
-      for (const [id, bubble] of Object.entries(bubbles)) if (bubble) putAnchor(`bubble:${id}`, id as AgentId, 224, bubble.kind === 'status' ? 42 : 58, 'bubble');
+      for (const [id, bubble] of Object.entries(bubbles)) if (bubble) putAnchor(`bubble:${id}`, id as AgentId, 224, bubble.kind === 'status' ? 42 : 24 + 18 * Math.max(2, wrapBubble(bubble.text, bubble.kind).split('\n').length), 'bubble');
       for (const [id, effect] of Object.entries(effects)) if (effect) putAnchor(`effect:${id}`, id as AgentId, 44, 44, 'effect');
       approvals.forEach(approval => putAnchor(`card:approval:${approval.callId}`, approval.nearAgent, 284, 210, 'card', approval.offset));
       if (inspect) putAnchor('card:inspect', inspect.agentId, 284, 270, 'card', inspect.offset);
@@ -185,7 +185,7 @@ export const OverlayUiLayer: OverlayUiComponent = (props) => {
   const approve = async (callId: string, allowed: boolean) => { await props.api.resolveApproval(callId, allowed); setApprovals(previous => previous.filter(item => item.callId !== callId)); };
   return <div ref={root} className="overlay-ui" aria-live="polite" data-dragging={dragging || undefined}>
     {Object.entries(bubbles).map(([id, bubble]) => bubble && <div key={id} ref={register(`bubble:${id}`)} className={`overlay-bubble bubble-${bubble.kind}`} style={{ ...locationStyle(`bubble:${id}`), borderTopColor: AGENTS[id as AgentId].color }} data-agent={id}>
-      {bubble.kind === 'waiting' ? <span className="waiting-dots" aria-label="waiting">…</span> : <span>{wrapBubble(bubble.text)}</span>}
+      {bubble.kind === 'waiting' ? <span className="waiting-dots" aria-label="waiting">…</span> : <span>{wrapBubble(bubble.text, bubble.kind)}</span>}
     </div>)}
     {Object.entries(effects).map(([id, effect]) => effect && <div key={id} className={`overlay-effect effect-${effect.kind}`} style={locationStyle(`effect:${id}`)} aria-label={effect.kind === 'sparkle' ? 'Recall' : effect.label}>{effect.label}</div>)}
     {approvals.map(approval => <ApprovalCard key={approval.callId} approval={approval} style={locationStyle(`card:approval:${approval.callId}`)} register={register(`card:approval:${approval.callId}`)} onDrag={beginDrag(`card:approval:${approval.callId}`, approval.offset, offset => setApprovals(previous => previous.map(item => item.callId === approval.callId ? { ...item, offset } : item)))} onResolve={approve} />)}
@@ -197,16 +197,24 @@ export const OverlayUiLayer: OverlayUiComponent = (props) => {
 
 function without<T>(record: Partial<Record<AgentId, T>>, id: AgentId): Partial<Record<AgentId, T>> { const next = { ...record }; delete next[id]; return next; }
 
-function wrapBubble(text: string): string {
-  const words = text.slice(0, 48).split(/\s+/);
+/** A spoken line is shown in full (up to 6 lines); status and warning bubbles stay at 2 short lines. */
+export function wrapBubble(text: string, kind: BubbleKind = 'say'): string {
+  const maxLines = kind === 'say' ? 6 : 2;
+  const words = text.trim().split(/\s+/);
   const lines: string[] = [];
+  let cut = false;
   for (const word of words) {
     const last = lines.length - 1;
     if (last >= 0 && lines[last].length + word.length + 1 <= 24) lines[last] += ` ${word}`;
-    else if (lines.length < 2) lines.push(word.slice(0, 24));
+    else if (lines.length < maxLines) lines.push(word.slice(0, 24));
+    else { cut = true; break; }
   }
+  if (cut && lines.length) lines[lines.length - 1] = `${lines[lines.length - 1].slice(0, 22)}…`;
   return lines.join('\n');
 }
+
+/** Long enough to read: about 60 ms a character, between 4 and 12 seconds. */
+export const sayBubbleTtl = (text: string) => clamp(2500 + 60 * text.length, 4000, 12000);
 
 function ApprovalCard({ approval, style, register, onDrag, onResolve }: { approval: Approval; style: CSSProperties; register: (element: HTMLElement | null) => void; onDrag: (event: ReactPointerEvent<HTMLElement>) => void; onResolve: (callId: string, allowed: boolean) => void }) {
   const [busy, setBusy] = useState(false);
