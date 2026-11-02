@@ -57,15 +57,19 @@ import { defaultFolders } from './defaultFolders';
 const ids = Object.keys(AGENTS) as AgentId[];
 const silent = () => new ArrayBuffer(0);
 
-/** Tiger controls persisted history, never whether Chip can start. */
+/**
+ * Only Backboard decides whether Chip starts. Tiger is an optional cloud copy: a missing or malformed
+ * TIGER_DATABASE_URL just leaves it off (historyEnabled false); local history in ade.db is always on.
+ */
 export function decideCore(env: Env): { core: 'real' | 'fake'; reasons: string[]; historyEnabled: boolean } {
   const reasons = ['BACKBOARD_API_KEY', 'BB_ASSISTANT_CHIPMUNK'].filter(key => !env[key]?.trim());
-  const historyEnabled = !!env.TIGER_DATABASE_URL?.trim();
-  if (historyEnabled) {
+  let historyEnabled = false;
+  if (env.TIGER_DATABASE_URL?.trim()) {
     try {
-      const url = new URL(env.TIGER_DATABASE_URL!);
-      if (!url.username || !url.password) reasons.push('TIGER_DATABASE_URL credentials');
-    } catch { reasons.push('TIGER_DATABASE_URL format'); }
+      const url = new URL(env.TIGER_DATABASE_URL);
+      historyEnabled = !!url.username && !!url.password;
+      if (!historyEnabled) console.warn('[core] TIGER_DATABASE_URL has no username or password; Tiger stays off.');
+    } catch { console.warn('[core] TIGER_DATABASE_URL is not a valid URL; Tiger stays off.'); }
   }
   return { core: reasons.length ? 'fake' : 'real', reasons, historyEnabled };
 }

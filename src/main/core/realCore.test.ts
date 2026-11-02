@@ -59,7 +59,9 @@ describe('real core startup fallback', () => {
     expect(decideCore({ BACKBOARD_API_KEY: 'bb', BB_ASSISTANT_CHIPMUNK: 'chip' })).toEqual({ core: 'real', reasons: [], historyEnabled: false });
     expect(decideCore({ BACKBOARD_API_KEY: 'bb', BB_ASSISTANT_CHIPMUNK: 'chip', TIGER_DATABASE_URL: ' ' }).historyEnabled).toBe(false);
     expect(decideCore({ BACKBOARD_API_KEY: 'bb', BB_ASSISTANT_CHIPMUNK: 'chip', TIGER_DATABASE_URL: 'postgres://user:pass@example/db' }).historyEnabled).toBe(true);
-    expect(decideCore({ BACKBOARD_API_KEY: 'bb', BB_ASSISTANT_CHIPMUNK: 'chip', TIGER_DATABASE_URL: 'postgres://user@example/db' }).reasons).toEqual(['TIGER_DATABASE_URL credentials']);
+    // A Tiger URL without a password (the dev .env on Nov 2) must not stop Chip: Tiger just stays off.
+    expect(decideCore({ BACKBOARD_API_KEY: 'bb', BB_ASSISTANT_CHIPMUNK: 'chip', TIGER_DATABASE_URL: 'postgres://user@example/db' })).toEqual({ core: 'real', reasons: [], historyEnabled: false });
+    expect(decideCore({ BACKBOARD_API_KEY: 'bb', BB_ASSISTANT_CHIPMUNK: 'chip', TIGER_DATABASE_URL: 'not a url' })).toEqual({ core: 'real', reasons: [], historyEnabled: false });
   });
 
   it('keeps --demo on FakeCore and warns in the Hub when normal startup lacks keys', async () => {
@@ -97,7 +99,7 @@ describe('real core startup fallback', () => {
       await new Promise(resolve => setTimeout(resolve, 700));           // one event-sink flush
       expect((await core.getTimeline(0, Date.now())).some(e => e.type === 'agent.presence')).toBe(true);
       expect(await core.getWardenAudit(50)).toEqual([]);
-      expect((await core.getPulse()).wardenBlocks).toBe(0);
+      expect(await core.getPulse()).toMatchObject({ wardenBlocks: 0 });
       core.dispose?.();
       await new Promise(resolve => setTimeout(resolve, 200));           // dispose closes ade.db asynchronously
     } finally { rmSync(root, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 }); }
