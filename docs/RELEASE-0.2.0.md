@@ -27,3 +27,7 @@ Use a fresh Windows user profile or VM with no existing ADE settings or configur
 8. If the test profile has approved Google OAuth access, try **Connect Google** and verify the result separately. If it has an ElevenLabs key, repeat with the key to verify generated voice separately. If Tiger Data is configured, repeat the history views to verify stored data separately.
 
 Never paste keys, connection strings, or certificate contents into a test report.
+
+## Account
+
+When ADE account setup is enabled, first run asks for an email and a six-digit sign-in code before the Backboard step. ADE stores the email, a random device identifier, app version, and first and last use timestamps for install and active-user counts. It does not send files, mail, memories, or desktop content to the account service. In Settings > Account, choose **Sign out** to remove the local session and stop the heartbeat. The sign-in step returns on the next launch. Existing install history remains in the service.
