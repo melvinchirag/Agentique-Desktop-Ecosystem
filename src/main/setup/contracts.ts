@@ -3,12 +3,22 @@ export const SETUP_IPC = {
   restart: 'setup:restart', demo: 'setup:demo', open: 'setup:open',
   accountStatus: 'setup:account-status', sendCode: 'setup:send-code',
   verifyCode: 'setup:verify-code', signOut: 'setup:sign-out',
+  brainStatus: 'setup:brain-status', brainInstall: 'setup:brain-install', brainSignIn: 'setup:brain-sign-in', brainUse: 'setup:brain-use',
 } as const;
 
 export interface AccountStatus { enabled: boolean; signedIn: boolean; email?: string }
+/** The Claude Code CLI on this machine, for "use the AI you already have". */
+export interface BrainStatus { installed: boolean; version?: string; signedIn: boolean; email?: string; active: boolean }
 
 export interface SetupApi {
   status(): Promise<{ backboard: string | null; elevenLabs: string | null }>;
+  brainStatus(): Promise<BrainStatus>;
+  /** Runs the official Claude Code installer; progress lines arrive on onProgress. */
+  brainInstall(): Promise<{ ok: boolean }>;
+  /** Opens Claude Code's own sign-in (browser). Check brainStatus() again afterwards. */
+  brainSignIn(): Promise<{ ok: boolean }>;
+  /** Makes the installed Claude Code the brain (ADE_BRAIN=claude-cli). Restart ADE to finish. */
+  brainUse(): Promise<{ ok: true } | { ok: false; error: string }>;
   verify(key: string): Promise<{ status: 'connected'; balance: number } | { status: 'rejected' | 'unreachable' }>;
   save(backboardKey: string, elevenLabsKey?: string): Promise<{ ok: true } | { ok: false; error: string }>;
   restart(): void;

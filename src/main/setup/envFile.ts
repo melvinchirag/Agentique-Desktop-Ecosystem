@@ -41,5 +41,6 @@ export function saveSetupKeys(file: string, backboardKey: string, elevenLabsKey?
   const previous = readEnvFile(file);
   const changedAccount = !!previous.BACKBOARD_API_KEY && previous.BACKBOARD_API_KEY !== backboardKey;
   const remove = changedAccount ? Object.keys(previous).filter(key => key.startsWith('BB_ASSISTANT_')) : [];
-  writeSetupEnv(file, { BACKBOARD_API_KEY: backboardKey, ...(elevenLabsKey ? { ELEVENLABS_API_KEY: elevenLabsKey } : {}) }, remove);
+  // Choosing Backboard in Setup means Backboard is the brain: drop the Claude Code switch if it was set.
+  writeSetupEnv(file, { BACKBOARD_API_KEY: backboardKey, ...(elevenLabsKey ? { ELEVENLABS_API_KEY: elevenLabsKey } : {}) }, [...remove, 'ADE_BRAIN']);
 }
