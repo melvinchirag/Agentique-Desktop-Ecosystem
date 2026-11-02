@@ -160,7 +160,7 @@ export const GEMINI: BrainVendor = {
   versionArgs: ['--version'],
   loginArgs: [],
   installer: { win32: ['npm.cmd', ['install', '-g', '@google/gemini-cli']], posix: ['npm', ['install', '-g', '@google/gemini-cli']] },
-  note: 'Built on the documented interface; not yet tested on a machine with Gemini CLI installed.',
+  note: 'Built on the documented interface, not tested here. Google moved personal (free, AI Pro, AI Ultra) accounts from Gemini CLI to Antigravity CLI on June 18, 2026; this adapter works with a Gemini API key or a Workspace/Enterprise sign-in until an Antigravity adapter exists.',
 };
 
 export const VENDORS: Record<BrainVendorId, BrainVendor> = { 'claude-cli': CLAUDE, 'codex-cli': CODEX, 'gemini-cli': GEMINI };
