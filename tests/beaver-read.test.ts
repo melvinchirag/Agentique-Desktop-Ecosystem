@@ -395,17 +395,43 @@ describe('Archie read tools (lane T)', () => {
   });
 
   describe('A14: ask a file (fs_ask_file)', () => {
-    it('uploads to the job thread, waits up to 60 s for indexing, and returns the document', async () => {
-      await fs.writeFile(path.join(box.documents, 'syllabus.pdf'), '%PDF syllabus');
+    // PDFs are read locally (pdf.js), so the Backboard upload path is exercised with a Word file.
+    const makePdf = (pages: string[]): Buffer => {
+      const objs: string[] = []; const add = (s: string) => { objs.push(s); return objs.length; };
+      const font = add('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>'); const pageIds: number[] = []; const pagesId = objs.length + 1 + pages.length * 2;
+      for (const text of pages) { const stream = `BT /F1 14 Tf 40 760 Td (${text}) Tj ET`; const content = add(`<< /Length ${stream.length} >>\nstream\n${stream}\nendstream`);
+        pageIds.push(add(`<< /Type /Page /Parent ${pagesId} 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 ${font} 0 R >> >> /Contents ${content} 0 R >>`)); }
+      const kids = add(`<< /Type /Pages /Kids [${pageIds.map((i) => `${i} 0 R`).join(' ')}] /Count ${pageIds.length} >>`); const catalog = add(`<< /Type /Catalog /Pages ${kids} 0 R >>`);
+      let body = '%PDF-1.4\n'; const offsets: number[] = []; objs.forEach((o, i) => { offsets.push(Buffer.byteLength(body)); body += `${i + 1} 0 obj\n${o}\nendobj\n`; });
+      const xref = Buffer.byteLength(body); body += `xref\n0 ${objs.length + 1}\n0000000000 65535 f \n` + offsets.map((o) => String(o).padStart(10, '0') + ' 00000 n \n').join('') + `trailer\n<< /Size ${objs.length + 1} /Root ${catalog} 0 R >>\nstartxref\n${xref}\n%%EOF\n`;
+      return Buffer.from(body, 'latin1');
+    };
+
+    it('reads a PDF on this machine, screened, with page markers; never uploads it', async () => {
+      await fs.writeFile(path.join(box.documents, 'syllabus.pdf'), makePdf(['Week 3: the water cycle.', 'Homework: chapter 4 by Friday.']));
       const out = await run('fs_ask_file', { path: 'Documents/syllabus.pdf' });
-      expect(out).toEqual({ ok: true, document_id: 'doc-1', chunks: 12, name: 'syllabus.pdf' });
-      expect(documents.uploads).toEqual([{ threadId: 'thread-1', absPath: path.join(docs, 'syllabus.pdf') }]);
+      expect(out).toMatchObject({ ok: true, name: 'syllabus.pdf', pages: 2, pages_read: 2, truncated: false, flagged: false });
+      expect(out.text).toContain('<untrusted');
+      expect(out.text).toContain('[page 2]');
+      expect(out.text).toContain('Homework: chapter 4 by Friday.');
+      expect(documents.uploads).toEqual([]);
+      // The fixture resume.pdf is not a real PDF: a clear error, still no upload.
+      expect(await run('fs_ask_file', { path: 'Documents/resume.pdf' })).toMatchObject({ error: 'PDF_UNREADABLE' });
+      expect(documents.uploads).toEqual([]);
+    });
+
+    it('uploads other document types to the job thread, waits up to 60 s for indexing, and returns the document', async () => {
+      await fs.writeFile(path.join(box.documents, 'syllabus.docx'), 'PK docx');
+      const out = await run('fs_ask_file', { path: 'Documents/syllabus.docx' });
+      expect(out).toEqual({ ok: true, document_id: 'doc-1', chunks: 12, name: 'syllabus.docx', path: path.join(docs, 'syllabus.docx') });
+      expect(documents.uploads).toEqual([{ threadId: 'thread-1', absPath: path.join(docs, 'syllabus.docx') }]);
       expect(documents.waits).toEqual([{ documentId: 'doc-1', timeoutMs: 60_000 }]);
     });
 
     it('reports INDEXING_TIMEOUT when the document never indexes', async () => {
+      await fs.writeFile(path.join(box.documents, 'resume.docx'), 'PK docx');
       documents.result = { status: 'error', chunks: 0 };
-      expect(await run('fs_ask_file', { path: 'Documents/resume.pdf' })).toMatchObject({ error: 'INDEXING_TIMEOUT' });
+      expect(await run('fs_ask_file', { path: 'Documents/resume.docx' })).toMatchObject({ error: 'INDEXING_TIMEOUT' });
     });
 
     it('checks the type and size before uploading anything', async () => {
@@ -420,19 +446,21 @@ describe('Archie read tools (lane T)', () => {
     });
 
     it('maps upload failures to safe errors', async () => {
+      await fs.writeFile(path.join(box.documents, 'resume.docx'), 'PK docx');
       documents.uploadError = 'UNSUPPORTED_TYPE: Backboard cannot read ".x" files';
-      expect(await run('fs_ask_file', { path: 'Documents/resume.pdf' })).toMatchObject({ error: 'UNSUPPORTED_TYPE' });
-      documents.uploadError = 'TOO_LARGE: resume.pdf is over 20 MB';
-      expect(await run('fs_ask_file', { path: 'Documents/resume.pdf' })).toMatchObject({ error: 'TOO_LARGE' });
+      expect(await run('fs_ask_file', { path: 'Documents/resume.docx' })).toMatchObject({ error: 'UNSUPPORTED_TYPE' });
+      documents.uploadError = 'TOO_LARGE: resume.docx is over 20 MB';
+      expect(await run('fs_ask_file', { path: 'Documents/resume.docx' })).toMatchObject({ error: 'TOO_LARGE' });
       documents.uploadError = 'HTTP 500 with a secret in the body';
-      const out = await run('fs_ask_file', { path: 'Documents/resume.pdf' });
+      const out = await run('fs_ask_file', { path: 'Documents/resume.docx' });
       expect(out.error).toBe('UPLOAD_FAILED');
       expect(JSON.stringify(out)).not.toContain('secret');
     });
 
-    it('is unavailable without a document API or a job thread', async () => {
-      expect(await run('fs_ask_file', { path: 'Documents/resume.pdf' }, { documents: undefined })).toMatchObject({ error: 'NOT_AVAILABLE' });
-      const noThread = await tools().fs_ask_file!.execute({ path: 'Documents/resume.pdf' }, { ...ctx, threadId: '' });
+    it('is unavailable without a document API or a job thread (non-PDF types)', async () => {
+      await fs.writeFile(path.join(box.documents, 'resume.docx'), 'PK docx');
+      expect(await run('fs_ask_file', { path: 'Documents/resume.docx' }, { documents: undefined })).toMatchObject({ error: 'NOT_AVAILABLE' });
+      const noThread = await tools().fs_ask_file!.execute({ path: 'Documents/resume.docx' }, { ...ctx, threadId: '' });
       expect(noThread).toMatchObject({ error: 'NO_THREAD' });
       expect(documents.uploads).toEqual([]);
     });
