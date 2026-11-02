@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createRealCore, decideCore, defaultSettings, disconnectedCalendar, loadPersistedSettings, loadRealCoreEnv, missingRealCoreKeys, savePersistedSettings } from './realCore';
@@ -82,7 +82,7 @@ describe('real core startup fallback', () => {
     fallback.dispose?.();
   });
 
-  it('starts real core with Backboard alone and leaves history queries empty', async () => {
+  it('starts real core with Backboard alone; history is local, on, and recorded in ade.db', async () => {
     const root = mkdtempSync(join(tmpdir(), 'ade-no-tiger-'));
     try {
       const core = createRealCore({ env: { BACKBOARD_API_KEY: 'test', BB_ASSISTANT_CHIPMUNK: 'test' }, dataDir: root,
@@ -90,13 +90,16 @@ describe('real core startup fallback', () => {
       const alerts: string[] = [];
       core.subscribe(event => { if (event.type === 'wolf.alert') alerts.push(event.reason); });
       core.start?.();
-      expect((await core.getSettings()).historyEnabled).toBe(false);
+      expect((await core.getSettings()).historyEnabled).toBe(true);
       expect((await core.getSettings()).demoMode).toBe(false);
       expect(alerts).not.toContain('Running demo core: missing keys');
-      expect(await core.getTimeline(0, Date.now())).toEqual([]);
+      expect(existsSync(join(root, 'ade.db'))).toBe(true);
+      await new Promise(resolve => setTimeout(resolve, 700));           // one event-sink flush
+      expect((await core.getTimeline(0, Date.now())).some(e => e.type === 'agent.presence')).toBe(true);
       expect(await core.getWardenAudit(50)).toEqual([]);
-      expect(await core.getPulse()).toEqual({});
+      expect((await core.getPulse()).wardenBlocks).toBe(0);
       core.dispose?.();
-    } finally { rmSync(root, { recursive: true, force: true }); }
+      await new Promise(resolve => setTimeout(resolve, 200));           // dispose closes ade.db asynchronously
+    } finally { rmSync(root, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 }); }
   });
 });
