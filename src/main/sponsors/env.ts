@@ -1,5 +1,6 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import type { AgentId } from '../../shared/agents';
+import designedVoices from '../../../voices/voices.json';
 
 export type Env = Record<string, string | undefined>;
 
@@ -39,5 +40,14 @@ const perAgent = (env: Env, prefix: string): Partial<Record<AgentId, string>> =>
 
 /** BB_ASSISTANT_<AGENT> → assistant ids. */
 export const assistantIdsFromEnv = (env: Env) => perAgent(env, 'BB_ASSISTANT_');
-/** EL_VOICE_<AGENT> → voice ids. */
-export const voiceIdsFromEnv = (env: Env) => perAgent(env, 'EL_VOICE_');
+/** The team's designed voices, committed in voices/voices.json (voice IDs are identifiers, not keys). */
+export const DESIGNED_VOICE_IDS: Partial<Record<AgentId, string>> = Object.fromEntries(
+  AGENT_IDS.flatMap((id) => {
+    const v = (designedVoices as Record<string, { voice_id?: unknown } | undefined>)[id]?.voice_id;
+    return typeof v === 'string' && v ? [[id, v]] : [];
+  }),
+);
+
+/** EL_VOICE_<AGENT> → voice ids. A missing line falls back to the designed voice; .env always wins. */
+export const voiceIdsFromEnv = (env: Env, designed: Partial<Record<AgentId, string>> = DESIGNED_VOICE_IDS) =>
+  ({ ...designed, ...perAgent(env, 'EL_VOICE_') });
