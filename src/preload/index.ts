@@ -64,9 +64,9 @@ contextBridge.exposeInMainWorld('adeShell', shell);
 const setup: SetupApi = {
   status: () => ipcRenderer.invoke(SETUP_IPC.status),
   brainStatus: () => ipcRenderer.invoke(SETUP_IPC.brainStatus),
-  brainInstall: () => ipcRenderer.invoke(SETUP_IPC.brainInstall),
-  brainSignIn: () => ipcRenderer.invoke(SETUP_IPC.brainSignIn),
-  brainUse: () => ipcRenderer.invoke(SETUP_IPC.brainUse),
+  brainInstall: id => ipcRenderer.invoke(SETUP_IPC.brainInstall, id),
+  brainSignIn: id => ipcRenderer.invoke(SETUP_IPC.brainSignIn, id),
+  brainUse: id => ipcRenderer.invoke(SETUP_IPC.brainUse, id),
   verify: key => ipcRenderer.invoke(SETUP_IPC.verify, key),
   save: (key, voice) => ipcRenderer.invoke(SETUP_IPC.save, key, voice),
   restart: () => ipcRenderer.send(SETUP_IPC.restart),

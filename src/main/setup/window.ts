@@ -1,9 +1,10 @@
 import { app, BrowserWindow, ipcMain, shell } from 'electron';
 import { join } from 'node:path';
 import { adeDataDir } from '../store/tiger';
-import { loadRealCoreEnv, usesCliBrain } from '../core/realCore';
+import { loadRealCoreEnv } from '../core/realCore';
 import { readEnvFile } from '../sponsors/env';
-import { detectClaudeCli, installClaudeCli, signInClaudeCli } from '../brain/detect';
+import { binEnvKey, detectCli, installCli, signInCli, vendorById } from '../brain/detect';
+import { BRAIN_VENDOR_IDS, VENDORS, vendorFromEnv } from '../brain/vendors';
 import { SETUP_IPC } from './contracts';
 import { writeSetupEnv } from './envFile';
 import { completeSetup, verifyBackboardKey } from './setupService';
@@ -40,34 +41,41 @@ export function registerSetup(opts: { preload: string; rendererDir: string; devU
     const env = loadRealCoreEnv({ exePath: app.getPath('exe'), envPaths: opts.envPaths }).env;
     return { backboard: mask(env.BACKBOARD_API_KEY), elevenLabs: mask(env.ELEVENLABS_API_KEY) };
   });
-  // "Use the AI you already have": Claude Code on this machine.
-  let brainPath: string | undefined;
+  // "Use the AI you already have": Claude Code, Codex or Gemini CLI on this machine.
   const currentEnv = () => loadRealCoreEnv({ exePath: app.getPath('exe'), envPaths: opts.envPaths }).env;
   ipcMain.handle(SETUP_IPC.brainStatus, async () => {
     const env = currentEnv();
-    const found = await detectClaudeCli(env.ADE_CLAUDE_BIN);
-    brainPath = found.path;
-    return { installed: found.installed, version: found.version, signedIn: found.signedIn, email: found.email, active: usesCliBrain(env) };
+    const active = vendorFromEnv(env)?.id;
+    return Promise.all(BRAIN_VENDOR_IDS.map(async (id) => {
+      const vendor = VENDORS[id];
+      const found = await detectCli(vendor, env[binEnvKey(vendor)]);
+      return { id, name: vendor.name, company: vendor.company, note: vendor.note, installed: found.installed, version: found.version,
+        signedIn: found.signedIn, email: found.email, active: active === id };
+    }));
   });
-  ipcMain.handle(SETUP_IPC.brainInstall, async (event) => {
-    if (!own(event)) return { ok: false };
-    const ok = await installClaudeCli(message => { if (window && !window.isDestroyed()) window.webContents.send(SETUP_IPC.progress, message); });
+  ipcMain.handle(SETUP_IPC.brainInstall, async (event, id: unknown) => {
+    const vendor = typeof id === 'string' ? vendorById(id) : undefined;
+    if (!own(event) || !vendor) return { ok: false };
+    const ok = await installCli(vendor, message => { if (window && !window.isDestroyed()) window.webContents.send(SETUP_IPC.progress, message); });
     return { ok };
   });
-  ipcMain.handle(SETUP_IPC.brainSignIn, async (event) => {
-    if (!own(event)) return { ok: false };
-    const found = await detectClaudeCli(currentEnv().ADE_CLAUDE_BIN);
+  ipcMain.handle(SETUP_IPC.brainSignIn, async (event, id: unknown) => {
+    const vendor = typeof id === 'string' ? vendorById(id) : undefined;
+    if (!own(event) || !vendor) return { ok: false };
+    const found = await detectCli(vendor, currentEnv()[binEnvKey(vendor)]);
     if (!found.installed) return { ok: false };
-    return { ok: signInClaudeCli(found.path ?? 'claude') };
+    // Gemini CLI signs in on its first interactive run; open it in its own window.
+    return { ok: signInCli(vendor, found.path ?? vendor.bin) };
   });
-  ipcMain.handle(SETUP_IPC.brainUse, async (event) => {
-    if (!own(event)) return { ok: false, error: 'Not allowed' };
+  ipcMain.handle(SETUP_IPC.brainUse, async (event, id: unknown) => {
+    const vendor = typeof id === 'string' ? vendorById(id) : undefined;
+    if (!own(event) || !vendor) return { ok: false, error: 'Not allowed' };
     if (!await signedIn()) return { ok: false, error: 'Sign in to ADE first' };
-    const found = await detectClaudeCli(currentEnv().ADE_CLAUDE_BIN);
-    if (!found.installed) return { ok: false, error: 'Claude Code is not installed yet' };
-    if (!found.signedIn) return { ok: false, error: 'Claude Code is not signed in yet' };
-    writeSetupEnv(file, { ADE_BRAIN: 'claude-cli', ...(found.path ? { ADE_CLAUDE_BIN: found.path } : {}) }, found.path ? [] : ['ADE_CLAUDE_BIN']);
-    brainPath = found.path;
+    const found = await detectCli(vendor, currentEnv()[binEnvKey(vendor)]);
+    if (!found.installed) return { ok: false, error: `${vendor.name} is not installed yet` };
+    if (!found.signedIn) return { ok: false, error: `${vendor.name} is not signed in yet` };
+    const key = binEnvKey(vendor);
+    writeSetupEnv(file, { ADE_BRAIN: vendor.id, ...(found.path ? { [key]: found.path } : {}) }, found.path ? [] : [key]);
     return { ok: true };
   });
   ipcMain.handle(SETUP_IPC.accountStatus, async () => {
