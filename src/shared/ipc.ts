@@ -28,6 +28,7 @@ export interface AdeApi {
 }
 
 export interface AdeSettings {
+  historyEnabled?: boolean;        // Tiger configured; supplied by main, never user editable
   models: Record<AgentId, ModelChoice>;
   voiceEnabled: boolean;
   sfxEnabled?: boolean;

@@ -349,7 +349,7 @@ If the live build is missing a beat (Scout, Archie), cut that shot and keep the 
 ### ADE install and keys
 
 - [ ] `ADE.exe` built from the latest `main`, installed, and launches. Two desktop shortcuts: **ADE** and **ADE (demo)** with the argument `--demo`.
-- [ ] `.env` (next to the app or in the ADE data folder) has all of: `BACKBOARD_API_KEY`, `BB_ASSISTANT_CHIPMUNK` and the other animal IDs (`BB_ASSISTANT_WORKSPACE`, `_WOLF`, `_BEAVER`, `_EAGLE`, `_ANTS`, `_BUTTERFLY`, `_NIGHTINGALE`, plus `BB_ASSISTANT_WARDEN_SCREEN`), `ELEVENLABS_API_KEY` and all `EL_VOICE_*`, **`TIGER_DATABASE_URL` with username and password**, `.tiger-ca.pem` present, `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`.
+- [ ] Backboard requires `BACKBOARD_API_KEY` and `BB_ASSISTANT_CHIPMUNK`; the other animal IDs, ElevenLabs, Google, and Tiger Data are optional for core startup. Without `TIGER_DATABASE_URL`, ADE still runs actions and Warden checks, while audit, replay, and pulse history are off.
 - [ ] Launch ADE and **check there is no "Running demo core: missing keys" alert from Warden.** That alert means ADE silently fell back to the scripted FakeCore.
 - [ ] Hub, Settings: **voices on**, volume set, **Demo mode ON** (this is what registers `Ctrl+Shift+N`, `Ctrl+Shift+A`, `Ctrl+Shift+H`). Models set per animal (Chip on the verified model).
 - [ ] **Ambience: OFF** for the live room (the forest loop is wasted in a noisy hall and fights the voices). SFX and voices ON. Turn ambience on only in the recorded video.
