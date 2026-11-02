@@ -72,7 +72,7 @@ function Setup() {
         <button className="secondary" disabled={busy} onClick={() => { setCodeSent(false); setCode(''); setAccountMessage(''); }}>Change email</button>
       </>}
       <p role="status" className="status">{accountMessage}</p>
-      <p>We store your email and when you use ADE, nothing else. Your files, mail and memories stay on this computer.</p>
+      <p>On our side we keep your email and when you use ADE, nothing else. Your files, mail and memories stay on this computer.</p>
     </section>}
     {account && (!account.enabled || account.signedIn) && <section>
     {account?.enabled && <h2>Step 2 of 2 · Backboard</h2>}
