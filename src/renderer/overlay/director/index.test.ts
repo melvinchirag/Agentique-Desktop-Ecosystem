@@ -242,6 +242,9 @@ describe('AnimationDirector event choreography', () => {
     h.director.handle(event('agent.mood', { mood: 'scared', intensity: 1, cause: 'user' })); await settle();
     h.director.handle(event('agent.say', { text: 'Full text', bubble: 'Oh!', priority: 'chip' })); await settle();
     expect(h.items[0]).toEqual({ agentId: 'chipmunk', text: 'Full text', mood: 'scared', priority: 'chip' });
+    // The cloud shows what is said; the 1-2 word tag is only the fallback for an empty line.
+    expect(h.events('showBubble').at(-1)?.args).toEqual(['chipmunk', 'Full text', 'say']);
+    h.director.handle(event('agent.say', { text: ' ', bubble: 'Oh!', priority: 'chip' })); await settle();
     expect(h.events('showBubble').at(-1)?.args).toEqual(['chipmunk', 'Oh!', 'say']);
     h.fireStart(); await settle(); expect(h.clips('chipmunk').at(-1)).toBe('TalkScared');
     h.fireEnd(); await settle(); expect(h.clips('chipmunk').at(-1)).toBe('Scared');
