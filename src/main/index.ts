@@ -13,6 +13,8 @@ import { createOverlayWindow } from './shell/overlayWindow';
 import { installPermissions } from './shell/permissions';
 import { registerShellIpc } from './shell/shellIpc';
 import { watchSettings } from './shell/settingsWatch';
+import { loadRealCoreEnv } from './core/realCore';
+import { registerSetup } from './setup/window';
 
 const argv = process.argv;
 const devMode = !app.isPackaged || argv.includes('--dev');
@@ -35,6 +37,12 @@ if (!app.requestSingleInstanceLock()) {
     const preload = join(mainDir, '../preload/index.cjs');
     const resourcesDir = app.isPackaged ? process.resourcesPath : join(mainDir, '../../resources');
     const devUrl = process.env.ELECTRON_RENDERER_URL;
+    const envPaths = [join(app.getAppPath(), '.env'), join(dirname(process.execPath), '.env')];
+    const openSetup = registerSetup({ preload, rendererDir, devUrl, envPaths });
+    if (!demoMode && !loadRealCoreEnv({ exePath: app.getPath('exe'), envPaths }).env.BACKBOARD_API_KEY?.trim()) {
+      openSetup();
+      return;
+    }
     const display = readDisplay();
     const pointerMode = option('--pointer') === 'poll' || process.env.ADE_POINTER === 'poll' ? 'poll' : 'forward';
     const { window: overlay, controller } = createOverlayWindow({
@@ -97,7 +105,7 @@ if (!app.requestSingleInstanceLock()) {
       overlay, hub: hub.window, isCollapsed: () => hub.collapsed, layout, targets,
     });
     const core = watchSettings(createRealCore({ demoMode, demoTimers: argv.includes('--demo-timers'), resourcesDir,
-      envPaths: [join(app.getAppPath(), '.env'), join(dirname(process.execPath), '.env')],
+      envPaths,
       exePath: app.getPath('exe'), packaged: app.isPackaged,
       desktopRoot: app.getPath('desktop'), documentsRoot: app.getPath('documents'), downloadsRoot: app.getPath('downloads'),
       safeStorage, fsShell: shell, openExternal: url => shell.openExternal(url), onSettingsChanged: onSettings }), onSettings);

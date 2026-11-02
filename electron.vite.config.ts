@@ -51,6 +51,7 @@ export default defineConfig({
           overlay: resolve('src/renderer/overlay.html'),
           hub: resolve('src/renderer/hub.html'),
           assetlab: resolve('src/renderer/assetlab.html'),
+          setup: resolve('src/renderer/setup.html'),
         },
       },
     },
