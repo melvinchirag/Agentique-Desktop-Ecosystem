@@ -1,0 +1,152 @@
+[
+  {
+    "root": "01a10553-1eec-70d3-9fe2-b04ffaae5907",
+    "start": "2026-10-04T05:13:40.247Z",
+    "end": "2026-10-04T11:57:55.288Z",
+    "lastFinal": {
+      "time": "2026-10-04T11:57:55.213Z",
+      "chars": 938
+    },
+    "models": {
+      "gpt-5.6-luna": {
+        "input": 58327,
+        "cached": 33280,
+        "output": 367,
+        "reasoning": 72,
+        "requests": 2,
+        "credits": 0.152885,
+        "inputCredits": 0.125235,
+        "cachedCredits": 0.01664,
+        "outputCredits": 0.01101
+      },
+      "gpt-5.6-terra": {
+        "input": 13392268,
+        "cached": 13026304,
+        "output": 55319,
+        "reasoning": 26177,
+        "requests": 116,
+        "credits": 100.02542,
+        "inputCredits": 18.2982,
+        "cachedCredits": 65.13152,
+        "outputCredits": 16.5957
+      },
+      "gpt-6-astra": {
+        "input": 9029586,
+        "cached": 8666368,
+        "output": 30092,
+        "reasoning": 7913,
+        "requests": 65,
+        "credits": 345.0787,
+        "inputCredits": 90.8045,
+        "cachedCredits": 216.6592,
+        "outputCredits": 37.615
+      },
+      "gpt-6.1-sol": {
+        "input": 9543884,
+        "cached": 8438272,
+        "output": 52054,
+        "reasoning": 10040,
+        "requests": 114,
+        "credits": 89.38978,
+        "inputCredits": 55.28060000000001,
+        "cachedCredits": 21.095679999999998,
+        "outputCredits": 13.0135
+      },
+      "gpt-6-luna": {
+        "input": 6400835,
+        "cached": 5942784,
+        "output": 25727,
+        "reasoning": 11597,
+        "requests": 46,
+        "credits": 2.9524109999999997,
+        "inputCredits": 1.1451275,
+        "cachedCredits": 1.4856960000000001,
+        "outputCredits": 0.3215875
+      },
+      "gpt-6-sol": {
+        "input": 21876390,
+        "cached": 20897664,
+        "output": 134176,
+        "reasoning": 42469,
+        "requests": 254,
+        "credits": 186.96862000000002,
+        "inputCredits": 48.9363,
+        "cachedCredits": 104.48832,
+        "outputCredits": 33.544000000000004
+      }
+    },
+    "sum": {
+      "input": 60301290,
+      "cached": 57004672,
+      "output": 297735,
+      "reasoning": 98268,
+      "requests": 597,
+      "credits": 724.567816
+    },
+    "workers": 12
+  },
+  {
+    "root": "01a106c7-e863-7421-98cc-d9f9d44f0165",
+    "start": "2026-10-04T11:59:03.723Z",
+    "end": "2026-10-04T12:56:14.334Z",
+    "lastFinal": {
+      "time": "2026-10-04T12:46:11.448Z",
+      "chars": 324
+    },
+    "models": {
+      "gpt-6.1-sol": {
+        "input": 14049718,
+        "cached": 13612032,
+        "output": 32997,
+        "reasoning": 8177,
+        "requests": 110,
+        "credits": 64.16363,
+        "inputCredits": 21.8843,
+        "cachedCredits": 34.03008,
+        "outputCredits": 8.24925
+      },
+      "gpt-6-luna": {
+        "input": 1382726,
+        "cached": 1187072,
+        "output": 2359,
+        "reasoning": 1525,
+        "requests": 7,
+        "credits": 0.8153905,
+        "inputCredits": 0.489135,
+        "cachedCredits": 0.296768,
+        "outputCredits": 0.0294875
+      },
+      "gpt-6-sol": {
+        "input": 19361255,
+        "cached": 18964736,
+        "output": 75952,
+        "reasoning": 18814,
+        "requests": 246,
+        "credits": 133.63763,
+        "inputCredits": 19.82595,
+        "cachedCredits": 94.82368,
+        "outputCredits": 18.988
+      },
+      "gpt-6-astra": {
+        "input": 6365031,
+        "cached": 6169856,
+        "output": 15682,
+        "reasoning": 3247,
+        "requests": 82,
+        "credits": 222.64265,
+        "inputCredits": 48.79375,
+        "cachedCredits": 154.2464,
+        "outputCredits": 19.6025
+      }
+    },
+    "sum": {
+      "input": 41158730,
+      "cached": 39933696,
+      "output": 126990,
+      "reasoning": 31763,
+      "requests": 445,
+      "credits": 421.2593005
+    },
+    "workers": 7
+  }
+]

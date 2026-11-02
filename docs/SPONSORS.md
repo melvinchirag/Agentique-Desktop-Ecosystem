@@ -1,5 +1,7 @@
 # ADE Sponsor Plan — Backboard · ElevenLabs · Tiger Data
 
+> **v0.2 update (Nov 2, 2026):** this document was written for the Hack Dearborn build (Oct 4). Since v0.2, memories, Timeline, Audit, Pulse, Replay and chat history are stored locally in `%APPDATA%\ADE\ade.db` (no Backboard memory, no Tiger; Tiger is optional and off by default). Backboard still runs the AI (Gemini 2.5 Flash by default) and Archie's document reading, until the CLI brain replaces it (decided Nov 2). What the code does now: [`docs/RELEASE-0.2.0.md`](RELEASE-0.2.0.md).
+
 **Goal:** each sponsor tool owns a clear job, used deeply and visibly in the demo.
 
 | Sponsor | Owns | One-line pitch |

@@ -1,0 +1,86 @@
+[
+  {
+    "id": "01a105b7-6c3c-7a82-862f-fb046ca150f7",
+    "cwd": "C:\\Users\\mkarupat\\Desktop\\ade-wt-chip-logic-a",
+    "start": "2026-10-04T07:01:13.326Z",
+    "end": "2026-10-04T07:01:31.609Z",
+    "total": {
+      "input_tokens": 71067,
+      "cached_input_tokens": 63488,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 382,
+      "reasoning_output_tokens": 87,
+      "total_tokens": 71449
+    }
+  },
+  {
+    "id": "01a105b7-6c3c-7ba0-9a18-b4af2871d3b9",
+    "cwd": "C:\\Users\\mkarupat\\Desktop\\ade-wt-chip-logic-c",
+    "start": "2026-10-04T07:01:13.082Z",
+    "end": "2026-10-04T07:01:23.460Z",
+    "total": {
+      "input_tokens": 52318,
+      "cached_input_tokens": 33280,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 298,
+      "reasoning_output_tokens": 44,
+      "total_tokens": 52616
+    }
+  },
+  {
+    "id": "01a105b7-6ed7-7d70-8558-3cb23949d83e",
+    "cwd": "C:\\Users\\mkarupat\\Desktop\\ade-wt-chip-logic-e",
+    "start": "2026-10-04T07:01:13.248Z",
+    "end": "2026-10-04T07:01:33.203Z",
+    "total": {
+      "input_tokens": 70290,
+      "cached_input_tokens": 50432,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 516,
+      "reasoning_output_tokens": 200,
+      "total_tokens": 70806
+    }
+  },
+  {
+    "id": "01a105b7-7042-7761-b011-3e2c3326d831",
+    "cwd": "C:\\Users\\mkarupat\\Desktop\\ade-wt-chip-logic-h",
+    "start": "2026-10-04T07:01:13.375Z",
+    "end": "2026-10-04T07:01:32.907Z",
+    "total": {
+      "input_tokens": 70732,
+      "cached_input_tokens": 52352,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 451,
+      "reasoning_output_tokens": 159,
+      "total_tokens": 71183
+    }
+  },
+  {
+    "id": "01a105b8-5ce2-7bf3-8e56-4e13905060fe",
+    "cwd": "C:\\Users\\mkarupat\\Desktop\\ade-wt-chip-logic-e",
+    "start": "2026-10-04T07:02:12.777Z",
+    "end": "2026-10-04T07:08:19.003Z",
+    "total": {
+      "input_tokens": 649493,
+      "cached_input_tokens": 601600,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 14446,
+      "reasoning_output_tokens": 3954,
+      "total_tokens": 663939
+    }
+  },
+  {
+    "id": "01a105d3-4fc4-7c72-a218-ac3d404fed18",
+    "cwd": "C:\\Users\\mkarupat\\AppData\\Local\\Temp\\claude\\C--Users-mkarupat-Desktop-ADE\\2bfd75c5-90f2-4430-9eb2-ec9d1ca5eed4\\scratchpad",
+    "start": "2026-10-04T07:31:38.398Z",
+    "end": "2026-10-04T07:34:03.565Z",
+    "total": {
+      "input_tokens": 30380,
+      "cached_input_tokens": 0,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 5073,
+      "reasoning_output_tokens": 4594,
+      "total_tokens": 35453
+    }
+  }
+]
