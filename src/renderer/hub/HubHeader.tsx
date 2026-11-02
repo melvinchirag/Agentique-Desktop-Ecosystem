@@ -156,6 +156,18 @@ export const HubHeader: React.FC<HubHeaderProps> = ({
         >
           {collapsed ? '▾' : '▴'}
         </button>
+
+        {/* Quit: closes every ADE window (same as tray "Quit ADE" or Ctrl+Shift+Q) */}
+        <button
+          type="button"
+          className="hub-icon-btn"
+          onClick={() => shell.quitApp()}
+          aria-label="Quit ADE"
+          title="Quit ADE (Ctrl+Shift+Q)"
+          data-testid="hub-quit"
+        >
+          ✕
+        </button>
       </div>
     </header>
   );

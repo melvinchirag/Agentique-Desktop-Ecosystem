@@ -1,6 +1,6 @@
 {
   "name": "ade",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "description": "ADE: Agentique Desktop Ecosystem",
   "type": "module",
@@ -10,6 +10,9 @@
     "test:e2e": "npm run build && playwright test tests/e2e",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
+    "verify:quick": "node scripts/verify.mjs quick",
+    "verify:full": "node scripts/verify.mjs full",
+    "verify:local": "node scripts/verify.mjs local",
     "dev": "electron-vite dev",
     "build": "electron-vite build",
     "perf:models": "tsx tools/perf-six-models.ts",

@@ -36,7 +36,8 @@ export const createHubWindow = (opts: {
   window.on('resize', scheduleLayout);
   window.on('closed', () => app.quit());
   window.webContents.once('did-finish-load', () => {
-    if (opts.devMode) window.webContents.openDevTools({ mode: 'detach' });
+    // DevTools only on request (--devtools or ADE_DEVTOOLS=1); opening it on every dev launch got in the way.
+    if (opts.devMode && (process.argv.includes('--devtools') || process.env.ADE_DEVTOOLS === '1')) window.webContents.openDevTools({ mode: 'detach' });
     window.setAlwaysOnTop(true, 'floating');
     if (!window.isAlwaysOnTop()) window.setAlwaysOnTop(true, 'screen-saver');
   });

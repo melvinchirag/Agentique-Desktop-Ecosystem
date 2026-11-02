@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import type { AdeApi } from '../../shared/ipc';
 import type { AdeShellApi } from '../../main/shell/contracts';
 import type { HubStoreHook } from '../shell/contracts';
 import { AGENTS } from '../../shared/config';
 import type { AgentId, ModelChoice } from '../../shared/agents';
+import type { AccountStatus } from '../../main/setup/contracts';
 
 interface SettingsPanelProps {
   store: HubStoreHook;
@@ -17,6 +18,7 @@ export const AVAILABLE_MODELS: { label: string; choice: ModelChoice }[] = [
   { label: 'OpenAI GPT-4o-mini', choice: { llm_provider: 'openai', model_name: 'gpt-4o-mini' } },
   { label: 'Anthropic Claude Sonnet 4', choice: { llm_provider: 'anthropic', model_name: 'claude-sonnet-4-20250514' } },
   { label: 'Google Gemini 2.5 Pro', choice: { llm_provider: 'google', model_name: 'gemini-2.5-pro' } },
+  { label: 'Google Gemini 2.5 Flash', choice: { llm_provider: 'google', model_name: 'gemini-2.5-flash' } },
 ];
 
 export const SettingsPanel: React.FC<SettingsPanelProps> = ({
@@ -30,6 +32,10 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   const [connectingGoogle, setConnectingGoogle] = useState(false);
   const [googleError, setGoogleError] = useState('');
   const [styleStatus, setStyleStatus] = useState('');
+  const [keys, setKeys] = useState<{ backboard: string | null; elevenLabs: string | null }>();
+  const [account, setAccount] = useState<AccountStatus>();
+  useEffect(() => { void window.adeSetup.status().then(setKeys).catch(() => undefined); }, []);
+  useEffect(() => { void window.adeSetup.accountStatus().then(setAccount).catch(() => undefined); }, []);
 
   const currentModels = settings?.models ?? ({} as Record<AgentId, ModelChoice>);
   const voiceEnabled = settings?.voiceEnabled ?? true;
@@ -144,7 +150,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
             const choice = currentModels[id];
             const currentValueKey = choice
               ? `${choice.llm_provider}:${choice.model_name}`
-              : 'openai:gpt-4o';
+              : 'google:gemini-2.5-flash';
 
             return (
               <div
@@ -178,6 +184,24 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
             );
           })}
         </div>
+      </div>
+
+      {/* Key status */}
+      {account?.enabled && <div className="hub-setting-group">
+        <div className="hub-setting-label">Account</div>
+        <div style={{ fontSize: 11, color: 'var(--hub-text-secondary)' }}>
+          {account.signedIn ? `Signed in as ${account.email}` : 'Not signed in'}
+        </div>
+        {account.signedIn
+          ? <button type="button" className="hub-tray-btn" onClick={() => void window.adeSetup.signOut().then(() => setAccount({ enabled: true, signedIn: false }))}>Sign out</button>
+          : <button type="button" className="hub-tray-btn" onClick={() => window.adeSetup.open()}>Sign in</button>}
+      </div>}
+      <div className="hub-setting-group">
+        <div className="hub-setting-label">Keys</div>
+        <div style={{ fontSize: 11, color: 'var(--hub-text-secondary)' }}>
+          Backboard: {keys?.backboard ?? 'Not set'} · ElevenLabs: {keys?.elevenLabs ?? 'Not set'}
+        </div>
+        <button type="button" className="hub-tray-btn" onClick={() => window.adeSetup.open()}>Change keys</button>
       </div>
 
       {/* Voice Toggle */}
@@ -271,6 +295,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
       </div>
 
       {/* Google Connect */}
+      {settings?.historyEnabled === false && <div className="hub-setting-group"><div className="hub-setting-label">Tiger Data</div><div role="status">not configured</div></div>}
       <div className="hub-setting-group">
         <div className="hub-setting-label">Google Workspace</div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>

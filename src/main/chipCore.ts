@@ -234,13 +234,32 @@ export function createChipCore(config: ChipCoreConfig): ChipCore {
     });
     archieRuntime = {
       async run(agentId, task, runCtx) {
+        // Archie's rule is "plan, then fs_apply_plan once; Warden asks the user". Live runs on Gemini Flash (Nov 2)
+        // often stopped after the plan, so nothing moved and no card appeared. If a plan was made in this job and
+        // never applied, ask Archie once more for exactly that step. The user still decides on the Warden card.
+        let planId: string | undefined;
+        let applyTried = false;
+        const stopWatching = bus.subscribe((e) => {
+          if (e.taskId !== runCtx.taskId || e.agentId !== 'beaver') return;
+          if (e.type === 'artifact' && e.kind === 'file_plan') {
+            const id = (e.data as { planId?: unknown } | undefined)?.planId;
+            if (typeof id === 'string') { planId = id; applyTried = false; }
+          }
+          if (e.type === 'tool.request' && (e.tool === 'fs_apply_plan' || e.tool === 'fs_undo')) applyTried = true;
+        });
         try {
-          const result = await runtime.run(agentId, task, runCtx);
+          let result = await runtime.run(agentId, task, runCtx);
+          if (planId && !applyTried && !runCtx.signal.aborted) {
+            result = await runtime.run(agentId,
+              `You made plan ${planId} but did not apply it. Call fs_apply_plan with plan_id "${planId}" now; Warden will ask the user. Then give your FINAL ANSWER saying what actually happened.`,
+              runCtx);
+          }
           const name = described.get(runCtx.jobId);
           if (!name || !result.ok || !result.say) return result;
           bus.emit({ type: 'artifact', agentId: 'beaver', taskId: runCtx.taskId, kind: 'file_note', title: name, data: { name, line: result.say } });
           return { ...result, artifacts: [...result.artifacts, { kind: 'file_note', title: name }] };
         } finally {
+          stopWatching();
           described.delete(runCtx.jobId);
         }
       },

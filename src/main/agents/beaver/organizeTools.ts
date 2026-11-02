@@ -539,6 +539,8 @@ export function createOrganizeToolBindings(deps: OrganizeToolDeps): Pick<Require
       plan_id: plan.planId, title, moves: plan.moves.length, folders, sample,
       skipped: skipped.slice(0, MAX_LISTED), skipped_count: skipped.length, already_in_place: builder.alreadyInPlace,
       expires_in_minutes: 30, summary,
+      // Live runs on Nov 2 (Gemini Flash and GPT-4o alike) stopped after the plan, so nothing moved and Chip claimed it had.
+      next_step: 'Now call fs_apply_plan with this plan_id. Warden shows the user an approval card; files move only if they allow it. Until then nothing has moved, so never say it has.',
     };
   }
 

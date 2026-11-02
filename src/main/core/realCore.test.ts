@@ -1,11 +1,26 @@
 import { describe, expect, it } from 'vitest';
-import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { createRealCore, disconnectedCalendar, loadPersistedSettings, loadRealCoreEnv, missingRealCoreKeys, savePersistedSettings } from './realCore';
+import { createRealCore, decideCore, defaultSettings, disconnectedCalendar, loadPersistedSettings, loadRealCoreEnv, missingRealCoreKeys, savePersistedSettings } from './realCore';
 import { makeTestSettings } from '../testing/settings';
 
 describe('real core startup fallback', () => {
+  it('defaults new installs to the verified Gemini Flash model and preserves saved choices', () => {
+    const defaults = defaultSettings({});
+    for (const choice of Object.values(defaults.models)) {
+      expect(choice).toEqual({ llm_provider: 'google', model_name: 'gemini-2.5-flash' });
+    }
+    const root = mkdtempSync(join(tmpdir(), 'ade-model-default-'));
+    try {
+      const file = join(root, 'settings.json');
+      const saved = makeTestSettings();
+      saved.models.chipmunk = { llm_provider: 'openai', model_name: 'gpt-4o' };
+      savePersistedSettings(file, saved);
+      const loaded = loadPersistedSettings(file, defaults);
+      expect(loaded.models.chipmunk).toEqual(saved.models.chipmunk);
+    } finally { rmSync(root, { recursive: true, force: true }); }
+  });
   it('uses an empty calendar while Google is disconnected', async () => {
     expect(await disconnectedCalendar().listEvents()).toEqual([]);
   });
@@ -37,10 +52,16 @@ describe('real core startup fallback', () => {
       expect(loaded.models.chipmunk).toEqual(saved.models.chipmunk);
     } finally { rmSync(root, { recursive: true, force: true }); }
   });
-  it('requires the Chip and Tiger credentials but treats voice as optional', () => {
-    expect(missingRealCoreKeys({})).toEqual(['BACKBOARD_API_KEY', 'BB_ASSISTANT_CHIPMUNK', 'TIGER_DATABASE_URL']);
+  it('requires only the Backboard pair and reports Tiger history separately', () => {
+    expect(missingRealCoreKeys({})).toEqual(['BACKBOARD_API_KEY', 'BB_ASSISTANT_CHIPMUNK']);
     expect(missingRealCoreKeys({ BACKBOARD_API_KEY: 'bb', BB_ASSISTANT_CHIPMUNK: 'chip', TIGER_DATABASE_URL: 'postgres://user:pass@example/db' })).toEqual([]);
-    expect(missingRealCoreKeys({ BACKBOARD_API_KEY: 'bb', BB_ASSISTANT_CHIPMUNK: 'chip', TIGER_DATABASE_URL: 'postgres://user@example/db' })).toEqual(['TIGER_DATABASE_URL credentials']);
+    expect(decideCore({})).toEqual({ core: 'fake', reasons: ['BACKBOARD_API_KEY', 'BB_ASSISTANT_CHIPMUNK'], historyEnabled: false });
+    expect(decideCore({ BACKBOARD_API_KEY: 'bb', BB_ASSISTANT_CHIPMUNK: 'chip' })).toEqual({ core: 'real', reasons: [], historyEnabled: false });
+    expect(decideCore({ BACKBOARD_API_KEY: 'bb', BB_ASSISTANT_CHIPMUNK: 'chip', TIGER_DATABASE_URL: ' ' }).historyEnabled).toBe(false);
+    expect(decideCore({ BACKBOARD_API_KEY: 'bb', BB_ASSISTANT_CHIPMUNK: 'chip', TIGER_DATABASE_URL: 'postgres://user:pass@example/db' }).historyEnabled).toBe(true);
+    // A Tiger URL without a password (the dev .env on Nov 2) must not stop Chip: Tiger just stays off.
+    expect(decideCore({ BACKBOARD_API_KEY: 'bb', BB_ASSISTANT_CHIPMUNK: 'chip', TIGER_DATABASE_URL: 'postgres://user@example/db' })).toEqual({ core: 'real', reasons: [], historyEnabled: false });
+    expect(decideCore({ BACKBOARD_API_KEY: 'bb', BB_ASSISTANT_CHIPMUNK: 'chip', TIGER_DATABASE_URL: 'not a url' })).toEqual({ core: 'real', reasons: [], historyEnabled: false });
   });
 
   it('keeps --demo on FakeCore and warns in the Hub when normal startup lacks keys', async () => {
@@ -61,5 +82,26 @@ describe('real core startup fallback', () => {
     expect(await fallback.getMemories('chipmunk')).toEqual([]);
     expect(await fallback.searchMemories('chipmunk', 'sample')).toEqual([]);
     fallback.dispose?.();
+  });
+
+  it('starts real core with Backboard alone; history is local, on, and recorded in ade.db', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'ade-no-tiger-'));
+    try {
+      const core = createRealCore({ env: { BACKBOARD_API_KEY: 'test', BB_ASSISTANT_CHIPMUNK: 'test' }, dataDir: root,
+        desktopRoot: root, documentsRoot: root, downloadsRoot: root });
+      const alerts: string[] = [];
+      core.subscribe(event => { if (event.type === 'wolf.alert') alerts.push(event.reason); });
+      core.start?.();
+      expect((await core.getSettings()).historyEnabled).toBe(true);
+      expect((await core.getSettings()).demoMode).toBe(false);
+      expect(alerts).not.toContain('Running demo core: missing keys');
+      expect(existsSync(join(root, 'ade.db'))).toBe(true);
+      await new Promise(resolve => setTimeout(resolve, 700));           // one event-sink flush
+      expect((await core.getTimeline(0, Date.now())).some(e => e.type === 'agent.presence')).toBe(true);
+      expect(await core.getWardenAudit(50)).toEqual([]);
+      expect(await core.getPulse()).toMatchObject({ wardenBlocks: 0 });
+      core.dispose?.();
+      await new Promise(resolve => setTimeout(resolve, 200));           // dispose closes ade.db asynchronously
+    } finally { rmSync(root, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 }); }
   });
 });

@@ -39,12 +39,13 @@ import { BackboardClient } from '../runtime/backboard';
 import { RealClock } from '../runtime/clock';
 import type { InjectionScreen, SpecialistRunner, VoiceService } from '../runtime/types';
 import { assistantIdsFromEnv, readEnvFile, voiceIdsFromEnv, type Env } from '../sponsors/env';
-import { BackboardMemoryApi } from '../sponsors/backboardMemory';
+import { LocalMemoryStore, withLocalMemory } from '../memory/localMemory';
+import { localDbPath, openLocalDb } from '../store/localDb';
+import { LocalEventSink, LocalQueries } from '../store/localEvents';
 import type { CoreAdapter } from '../shell/contracts';
-import { createTigerPool, TigerEventSink, adeDataDir } from '../store/tiger';
+import { createTigerPool, adeDataDir, type Db } from '../store/tiger';
 import { TigerHistoryStore } from '../store/tigerHistory';
 import { TigerNudgeStore } from '../store/tigerNudges';
-import { TigerQueries } from '../store/tigerQueries';
 import { TigerPlanStore } from '../store/tigerPlans';
 import { TigerResearchStore } from '../store/tigerResearch';
 import { createWardenClassifier } from '../sponsors/wardenClassifier';
@@ -56,21 +57,30 @@ import { defaultFolders } from './defaultFolders';
 const ids = Object.keys(AGENTS) as AgentId[];
 const silent = () => new ArrayBuffer(0);
 
-/** Only Backboard and Tiger are required for the live Chip path. Voice is optional. */
-export function missingRealCoreKeys(env: Env): string[] {
-  const missing = ['BACKBOARD_API_KEY', 'BB_ASSISTANT_CHIPMUNK', 'TIGER_DATABASE_URL']
-    .filter(key => !env[key]?.trim());
+/**
+ * Only Backboard decides whether Chip starts. Tiger is an optional cloud copy: a missing or malformed
+ * TIGER_DATABASE_URL just leaves it off (historyEnabled false); local history in ade.db is always on.
+ */
+export function decideCore(env: Env): { core: 'real' | 'fake'; reasons: string[]; historyEnabled: boolean } {
+  const reasons = ['BACKBOARD_API_KEY', 'BB_ASSISTANT_CHIPMUNK'].filter(key => !env[key]?.trim());
+  let historyEnabled = false;
   if (env.TIGER_DATABASE_URL?.trim()) {
     try {
       const url = new URL(env.TIGER_DATABASE_URL);
-      if (!url.username || !url.password) missing.push('TIGER_DATABASE_URL credentials');
-    } catch { missing.push('TIGER_DATABASE_URL format'); }
+      historyEnabled = !!url.username && !!url.password;
+      if (!historyEnabled) console.warn('[core] TIGER_DATABASE_URL has no username or password; Tiger stays off.');
+    } catch { console.warn('[core] TIGER_DATABASE_URL is not a valid URL; Tiger stays off.'); }
   }
-  return missing;
+  return { core: reasons.length ? 'fake' : 'real', reasons, historyEnabled };
 }
 
-function defaultSettings(options: RealCoreOptions): AdeSettings {
-  const model = { llm_provider: 'openai', model_name: 'gpt-4o' };
+export function missingRealCoreKeys(env: Env): string[] { return decideCore(env).reasons; }
+
+/** Local fallback stores use their in-memory copies without attempting a connection. */
+const offlineDb: Db = { query: async () => { throw new Error('History is off'); } };
+
+export function defaultSettings(options: RealCoreOptions): AdeSettings {
+  const model = { llm_provider: 'google', model_name: 'gemini-2.5-flash' };
   const folders = defaultFolders({ desktop: options.desktopRoot, documents: options.documentsRoot, downloads: options.downloadsRoot });
   return {
     models: Object.fromEntries(ids.map(id => [id, { ...model }])) as AdeSettings['models'],
@@ -163,11 +173,14 @@ export function savePersistedSettings(file: string, settings: AdeSettings): void
 export function createRealCore(options: RealCoreOptions = {}): CoreAdapter {
   if (options.demoMode) return fallbackCore(options.resourcesDir, false);
   const { env, baseDir } = loadRealCoreEnv(options);
-  if (missingRealCoreKeys(env).length) return fallbackCore(options.resourcesDir, true);
+  const decision = decideCore(env);
+  if (decision.core === 'fake') return fallbackCore(options.resourcesDir, true);
 
   const modelPreferencesPath = join(options.dataDir ?? adeDataDir(env), 'model-preferences.json');
   const settingsFile = join(options.dataDir ?? adeDataDir(env), 'settings.json');
   let settings = loadPersistedSettings(settingsFile, defaultSettings(options));
+  // History now lives in the local file, so it is always on; Tiger only adds optional cloud stores below.
+  settings.historyEnabled = true;
   settings.models = { ...settings.models, ...loadModelPreferences(modelPreferencesPath) };
   const persistSettings = () => {
     try { savePersistedSettings(settingsFile, settings); }
@@ -176,23 +189,27 @@ export function createRealCore(options: RealCoreOptions = {}): CoreAdapter {
   };
   const clock = new RealClock();
   const assistantIds = assistantIdsFromEnv(env);
-  const llm = new BackboardClient({ apiKey: env.BACKBOARD_API_KEY!, defaultModel: assistantId => {
-    const agentId = assistantId && assistantId === env.BB_ASSISTANT_WARDEN_SCREEN
-      ? 'wolf' : (assistantId ? ids.find(id => assistantIds[id] === assistantId) : undefined) ?? 'chipmunk';
-    return settings.models[agentId];
-  } });
-  const db = createTigerPool(env, baseDir);
-  const plans = new TigerPlanStore(db, () => clock.now());
-  const research = new TigerResearchStore(db);
-  const queries = new TigerQueries(db);
-  const memory = new BackboardMemoryApi(llm, assistantIds);
+  const agentFor = (assistantId: string): AgentId | undefined => assistantId === env.BB_ASSISTANT_WARDEN_SCREEN
+    ? 'wolf' : ids.find(id => assistantIds[id] === assistantId);
+  const backboard = new BackboardClient({ apiKey: env.BACKBOARD_API_KEY!, defaultModel: assistantId =>
+    settings.models[(assistantId ? agentFor(assistantId) : undefined) ?? 'chipmunk'] });
+  // ADE's own data on this machine: memories, the event log and audit, in %APPDATA%\ADE\ade.db.
+  const localDb = openLocalDb(localDbPath(options.dataDir ?? adeDataDir(env)));
+  const memory = new LocalMemoryStore(localDb);
+  const llm = withLocalMemory(backboard, memory, { agentFor, onError: (agentId, error) => console.warn(`[memory] ${agentId}: ${(error as Error).message}`) });
+  const queries = new LocalQueries(localDb);
+  const db = decision.historyEnabled ? createTigerPool(env, baseDir) : undefined;
+  const storeDb = db ?? offlineDb;
+  const quiet = () => {};
+  const plans = new TigerPlanStore(storeDb, () => clock.now(), db ? undefined : quiet);
+  const research = new TigerResearchStore(storeDb, db ? undefined : quiet);
   const voiceIds = voiceIdsFromEnv(env);
   const shippedLines = new ShippedLines(join(options.resourcesDir ?? (options.packaged ? process.resourcesPath : join(process.cwd(), 'resources')), 'voice-lines'));
   const voice: VoiceService | undefined = env.ELEVENLABS_API_KEY
     ? new ElevenLabsVoice({ apiKey: env.ELEVENLABS_API_KEY, voiceIds, voiceEnabled: () => settings.voiceEnabled,
       shipped: shippedLines })
     : undefined;
-  const eventSink = new TigerEventSink({ db });
+  const eventSink = new LocalEventSink(localDb);
   let activeScreen: InjectionScreen | undefined;
   const injectionScreen: InjectionScreen = { screen: (text, source) => {
     if (!activeScreen) throw new Error('Warden screen is unavailable');
@@ -234,7 +251,8 @@ export function createRealCore(options: RealCoreOptions = {}): CoreAdapter {
   const core = createChipCore({
     llm, runner, calendar: { listEvents: (from, to) => settings.googleEmail ? liveCalendar.listEvents(from, to) : disconnectedCalendar().listEvents() }, settings: () => settings,
     chipAssistantId: assistantIds.chipmunk!, clock, eventSink,
-    nudgeStore: new TigerNudgeStore(db), history: new TigerHistoryStore(db, () => clock.now(), undefined, research), plans,
+    nudgeStore: db ? new TigerNudgeStore(db) : undefined,
+    history: db ? new TigerHistoryStore(db, () => clock.now(), undefined, research) : { query: async () => [] }, plans,
     warden: { registry: agentId => agentId === 'workspace' ? pixelTools : undefined,
       classifier: env.BB_ASSISTANT_WARDEN_SCREEN
         ? createWardenClassifier({ llm, assistantId: env.BB_ASSISTANT_WARDEN_SCREEN }) : undefined },
@@ -319,7 +337,7 @@ export function createRealCore(options: RealCoreOptions = {}): CoreAdapter {
     setSettings: async patch => {
       settings = { ...settings, ...patch, models: { ...settings.models, ...patch.models },
         installed: { ...settings.installed, ...patch.installed },
-        timers: { ...settings.timers, ...patch.timers }, nudges: { ...settings.nudges, ...patch.nudges } };
+        timers: { ...settings.timers, ...patch.timers }, nudges: { ...settings.nudges, ...patch.nudges }, historyEnabled: true };
       if (patch.models) saveModelPreferences(modelPreferencesPath, settings.models);
       if (patch.demoMode !== undefined) settings.timers = patch.demoMode
         ? { ...settings.timers, sleepAfterSec: 30, dockAfterSec: 60 }
@@ -340,6 +358,6 @@ export function createRealCore(options: RealCoreOptions = {}): CoreAdapter {
     deleteMemory: (agentId, id) => memory.remove(agentId, id),
     getPulse: () => queries.pulse(),
     getWardenAudit: limit => queries.wardenAudit(limit),
-    dispose: () => { index.stopWatching(); void core.dispose().then(() => eventSink.dispose()).then(() => db.end()); },
+    dispose: () => { index.stopWatching(); void core.dispose().then(() => eventSink.dispose()).then(() => llm.whenIdle()).then(() => { localDb.close(); return db?.end(); }); },
   };
 }

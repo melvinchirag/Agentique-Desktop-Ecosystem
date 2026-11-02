@@ -217,7 +217,8 @@ export const createAnimationDirector: CreateAnimationDirector = (deps: DirectorD
         });
         break;
       case 'agent.say':
-        ui.showBubble(id, e.bubble, 'say');
+        // Show what the animal actually says, not just the 1-2 word tag (Melvin, Nov 2: the cloud stayed nearly empty).
+        ui.showBubble(id, e.text?.trim() ? e.text : e.bubble, 'say');
         a.bubble = null;
         queue([id], () => {
           const item: SpeechItem = { agentId: id, text: e.text, mood: a.mood, priority: e.priority };

@@ -18,6 +18,18 @@ describe('HubApp (Lane L5)', () => {
     cleanup();
   });
 
+  it('shows one history-off state without requesting Tiger data', () => {
+    const store = createHubStore({ ...demoSeedState(), settings: { ...demoSeedState().settings!, historyEnabled: false } });
+    const api = createMockAdeApi();
+    const shell = createMockShellApi();
+    render(<HubApp store={store} api={api} shell={shell} />);
+    for (const tab of ['Timeline', 'Pulse', 'Audit']) {
+      fireEvent.click(screen.getByRole('tab', { name: tab }));
+      expect(screen.getAllByText(/History is off\. ADE is running without a Tiger Data connection/)).toHaveLength(1);
+    }
+    expect(api.calls.some(call => ['getTimeline', 'getPulse', 'getWardenAudit'].includes(call.method))).toBe(false);
+  });
+
   it('Rows render from the seed', () => {
     const store = createHubStore(demoSeedState());
     const api = createMockAdeApi();

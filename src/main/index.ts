@@ -13,6 +13,13 @@ import { createOverlayWindow } from './shell/overlayWindow';
 import { installPermissions } from './shell/permissions';
 import { registerShellIpc } from './shell/shellIpc';
 import { watchSettings } from './shell/settingsWatch';
+import { loadRealCoreEnv } from './core/realCore';
+import { registerSetup } from './setup/window';
+import { createTray } from './shell/tray';
+import { AccountStore } from './account/store';
+import { SupabaseAccountClient } from './account/supabase';
+import { AccountHeartbeat } from './account/heartbeat';
+import { accountEnabled } from './account/flags';
 
 const argv = process.argv;
 const devMode = !app.isPackaged || argv.includes('--dev');
@@ -35,6 +42,20 @@ if (!app.requestSingleInstanceLock()) {
     const preload = join(mainDir, '../preload/index.cjs');
     const resourcesDir = app.isPackaged ? process.resourcesPath : join(mainDir, '../../resources');
     const devUrl = process.env.ELECTRON_RENDERER_URL;
+    const envPaths = [join(app.getAppPath(), '.env'), join(dirname(process.execPath), '.env')];
+    const accountStore = new AccountStore(safeStorage, undefined, devMode);
+    const accountClient = new SupabaseAccountClient();
+    const heartbeat = new AccountHeartbeat(accountStore, accountClient, app.getVersion());
+    const openSetup = registerSetup({ preload, rendererDir, devUrl, envPaths,
+      account: { store: accountStore, client: accountClient, heartbeat } });
+    const signedIn = accountEnabled() && !!await accountStore.load().catch(() => null);
+    if (signedIn) heartbeat.start();
+    app.once('before-quit', () => { void heartbeat.stop(); });
+    if (!demoMode && ((accountEnabled() && !signedIn) ||
+      !loadRealCoreEnv({ exePath: app.getPath('exe'), envPaths }).env.BACKBOARD_API_KEY?.trim())) {
+      openSetup();
+      return;
+    }
     const display = readDisplay();
     const pointerMode = option('--pointer') === 'poll' || process.env.ADE_POINTER === 'poll' ? 'poll' : 'forward';
     const { window: overlay, controller } = createOverlayWindow({
@@ -86,18 +107,20 @@ if (!app.requestSingleInstanceLock()) {
       for (const target of targets()) if (!target.isDestroyed()) target.send(SHELL_IPC.settingsChanged, settings);
       broadcastLayout();
     };
+    const disposeTray = createTray({ showHub: hub.focus, animalsHidden: () => animalsHidden, toggleAnimals: () => setAnimalsHidden(!animalsHidden) });
     const disposeShellIpc = registerShellIpc({
       overlay, hub: hub.window, controller, layout,
       focusChat: hub.focusChat, focusHub: hub.focus, blurHub: hub.blur,
       setHubCollapsed: hub.setCollapsed,
       openAssetLab: () => { assetLab.open(); },
       setAnimalsHidden,
+      quitApp: () => app.quit(),
     });
     const disposeDisplay = watchDisplay({
       overlay, hub: hub.window, isCollapsed: () => hub.collapsed, layout, targets,
     });
     const core = watchSettings(createRealCore({ demoMode, demoTimers: argv.includes('--demo-timers'), resourcesDir,
-      envPaths: [join(app.getAppPath(), '.env'), join(dirname(process.execPath), '.env')],
+      envPaths,
       exePath: app.getPath('exe'), packaged: app.isPackaged,
       desktopRoot: app.getPath('desktop'), documentsRoot: app.getPath('documents'), downloadsRoot: app.getPath('downloads'),
       safeStorage, fsShell: shell, openExternal: url => shell.openExternal(url), onSettingsChanged: onSettings }), onSettings);
@@ -106,6 +129,7 @@ if (!app.requestSingleInstanceLock()) {
     shortcuts.update(settingsDemoMode, devMode);
     app.once('will-quit', shortcuts.dispose);
     app.once('before-quit', () => {
+      disposeTray();
       disposeDisplay();
       disposeShellIpc();
       disposeCoreIpc();
