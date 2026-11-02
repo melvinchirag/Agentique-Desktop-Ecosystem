@@ -16,12 +16,13 @@ export const QUIT_SHORTCUT = 'CommandOrControl+Shift+Q';
  * ADE has no window frame and no taskbar button, so it needs an obvious way out:
  * a tray icon (Show Hub, Hide/Show animals, Quit ADE) and Ctrl+Shift+Q, which always quits.
  */
-export function createTray(opts: { showHub(): void; animalsHidden(): boolean; toggleAnimals(): void }): () => void {
+export function createTray(opts: { showHub(): void; animalsHidden(): boolean; toggleAnimals(): void; resetSpots?(): void }): () => void {
   const tray = new Tray(dotIcon());
   tray.setToolTip('ADE (right-click to quit)');
   const rebuild = () => tray.setContextMenu(Menu.buildFromTemplate([
     { label: 'Show Hub', click: () => opts.showHub() },
     { label: opts.animalsHidden() ? 'Show animals' : 'Hide animals', click: () => { opts.toggleAnimals(); rebuild(); } },
+    ...(opts.resetSpots ? [{ label: 'Reset animal spots', click: () => opts.resetSpots!() }] : []),
     { type: 'separator' },
     { label: 'Quit ADE', accelerator: QUIT_SHORTCUT, click: () => app.quit() },
   ]));

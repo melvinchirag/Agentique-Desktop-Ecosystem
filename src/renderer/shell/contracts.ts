@@ -173,6 +173,8 @@ export type CreateMicRecorder = (opts?: { maxMs?: number }) => MicRecorder;
 export interface PushToTalk {
   pointerDown(): void;
   pointerUp(): void;
+  /** The press turned into a drag: stop the mic and send nothing. */
+  cancel?(): void;
   readonly recording: boolean;
 }
 /** src/renderer/audio/pushToTalk.ts exports `createPushToTalk`. */
@@ -298,6 +300,10 @@ export interface AnimationDirector {
   stopReplay(): void;
   /** Hub dragged / work area changed: homes and the dock point move. */
   setLayout(layout: DesktopLayout): void;
+  /** The user drags an animal along the ground. False when it is busy, away or docked (no drag then). */
+  dragTo?(id: AgentId, x: number): boolean;
+  /** The user's own home spot for an animal (null = back to the default spot). */
+  setUserSpot?(id: AgentId, x: number | null): void;
   dispose(): void;
 }
 /** src/renderer/overlay/director/index.ts exports `createAnimationDirector`. */

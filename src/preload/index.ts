@@ -56,6 +56,7 @@ const shell: AdeShellApi = {
   onSettingsChanged: cb => on(SHELL_IPC.settingsChanged, cb),
   replayTask: taskId => ipcRenderer.send(SHELL_IPC.replayTask, taskId),
   onReplayTask: cb => on(SHELL_IPC.replayTask, cb),
+  onResetAnimalSpots: cb => on(SHELL_IPC.resetAnimalSpots, cb),
 };
 
 contextBridge.exposeInMainWorld('ade', api);

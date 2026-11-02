@@ -237,6 +237,23 @@ describe('AnimationDirector event choreography', () => {
     expect(h.events('flyIn')).toHaveLength(1);
   });
 
+  it('drags an idle animal along the ground, keeps the dropped spot as home, and resets it', async () => {
+    const h = harness();
+    expect(h.director.dragTo?.('beaver', 450)).toBe(false);                     // not on screen yet
+    h.director.handle(event('agent.presence', { presence: 'active', reason: 'startup' }, 'beaver')); await settle();
+    expect(h.director.dragTo?.('beaver', 450)).toBe(true);
+    expect(h.events('spawn').at(-1)?.args).toEqual(['beaver', 450]);
+    h.director.dragTo?.('beaver', 5000);                                          // clamped inside the screen
+    expect(h.events('spawn').at(-1)?.args).toEqual(['beaver', 960]);
+    h.director.setUserSpot?.('beaver', 450); await settle();
+    h.director.setLayout(layout); await settle();                               // a layout change keeps the user's spot
+    expect(h.events('moveTo').filter(c => c.args[0] === 'beaver').at(-1)?.args[1]).toBe(450);
+    h.director.setUserSpot?.('beaver', null); await settle();                   // Reset animal spots: back to the default
+    expect(h.events('moveTo').filter(c => c.args[0] === 'beaver').at(-1)?.args[1]).toBe(160);
+    h.director.handle(event('agent.status', { status: 'working', detail: 'Sorting' }, 'beaver')); await settle();
+    expect(h.director.dragTo?.('beaver', 300)).toBe(false);                     // never while working
+  });
+
   it('agent.say uses the current mood and talks only during speech', async () => {
     const h = harness();
     h.director.handle(event('agent.mood', { mood: 'scared', intensity: 1, cause: 'user' })); await settle();

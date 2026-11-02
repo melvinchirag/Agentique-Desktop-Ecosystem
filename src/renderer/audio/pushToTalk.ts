@@ -23,5 +23,10 @@ export const createPushToTalk: CreatePushToTalk = ({ mic, sendVoice, focusChat, 
         } catch (error) { console.warn('Push-to-talk failed.', error); }
       })();
     },
+    cancel() {
+      if (downAt === null) return;
+      downAt = null;
+      void (async () => { try { await startTask; await mic.stop(); } catch { /* nothing was sent */ } })();
+    },
   };
 };
