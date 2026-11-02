@@ -39,12 +39,13 @@ import { BackboardClient } from '../runtime/backboard';
 import { RealClock } from '../runtime/clock';
 import type { InjectionScreen, SpecialistRunner, VoiceService } from '../runtime/types';
 import { assistantIdsFromEnv, readEnvFile, voiceIdsFromEnv, type Env } from '../sponsors/env';
-import { BackboardMemoryApi } from '../sponsors/backboardMemory';
+import { LocalMemoryStore, withLocalMemory } from '../memory/localMemory';
+import { localDbPath, openLocalDb } from '../store/localDb';
+import { LocalEventSink, LocalQueries } from '../store/localEvents';
 import type { CoreAdapter } from '../shell/contracts';
-import { createTigerPool, TigerEventSink, adeDataDir, type Db } from '../store/tiger';
+import { createTigerPool, adeDataDir, type Db } from '../store/tiger';
 import { TigerHistoryStore } from '../store/tigerHistory';
 import { TigerNudgeStore } from '../store/tigerNudges';
-import { TigerQueries } from '../store/tigerQueries';
 import { TigerPlanStore } from '../store/tigerPlans';
 import { TigerResearchStore } from '../store/tigerResearch';
 import { createWardenClassifier } from '../sponsors/wardenClassifier';
@@ -174,7 +175,8 @@ export function createRealCore(options: RealCoreOptions = {}): CoreAdapter {
   const modelPreferencesPath = join(options.dataDir ?? adeDataDir(env), 'model-preferences.json');
   const settingsFile = join(options.dataDir ?? adeDataDir(env), 'settings.json');
   let settings = loadPersistedSettings(settingsFile, defaultSettings(options));
-  settings.historyEnabled = decision.historyEnabled;
+  // History now lives in the local file, so it is always on; Tiger only adds optional cloud stores below.
+  settings.historyEnabled = true;
   settings.models = { ...settings.models, ...loadModelPreferences(modelPreferencesPath) };
   const persistSettings = () => {
     try { savePersistedSettings(settingsFile, settings); }
@@ -183,25 +185,27 @@ export function createRealCore(options: RealCoreOptions = {}): CoreAdapter {
   };
   const clock = new RealClock();
   const assistantIds = assistantIdsFromEnv(env);
-  const llm = new BackboardClient({ apiKey: env.BACKBOARD_API_KEY!, defaultModel: assistantId => {
-    const agentId = assistantId && assistantId === env.BB_ASSISTANT_WARDEN_SCREEN
-      ? 'wolf' : (assistantId ? ids.find(id => assistantIds[id] === assistantId) : undefined) ?? 'chipmunk';
-    return settings.models[agentId];
-  } });
+  const agentFor = (assistantId: string): AgentId | undefined => assistantId === env.BB_ASSISTANT_WARDEN_SCREEN
+    ? 'wolf' : ids.find(id => assistantIds[id] === assistantId);
+  const backboard = new BackboardClient({ apiKey: env.BACKBOARD_API_KEY!, defaultModel: assistantId =>
+    settings.models[(assistantId ? agentFor(assistantId) : undefined) ?? 'chipmunk'] });
+  // ADE's own data on this machine: memories, the event log and audit, in %APPDATA%\ADE\ade.db.
+  const localDb = openLocalDb(localDbPath(options.dataDir ?? adeDataDir(env)));
+  const memory = new LocalMemoryStore(localDb);
+  const llm = withLocalMemory(backboard, memory, { agentFor, onError: (agentId, error) => console.warn(`[memory] ${agentId}: ${(error as Error).message}`) });
+  const queries = new LocalQueries(localDb);
   const db = decision.historyEnabled ? createTigerPool(env, baseDir) : undefined;
   const storeDb = db ?? offlineDb;
   const quiet = () => {};
   const plans = new TigerPlanStore(storeDb, () => clock.now(), db ? undefined : quiet);
   const research = new TigerResearchStore(storeDb, db ? undefined : quiet);
-  const queries = db ? new TigerQueries(db) : undefined;
-  const memory = new BackboardMemoryApi(llm, assistantIds);
   const voiceIds = voiceIdsFromEnv(env);
   const shippedLines = new ShippedLines(join(options.resourcesDir ?? (options.packaged ? process.resourcesPath : join(process.cwd(), 'resources')), 'voice-lines'));
   const voice: VoiceService | undefined = env.ELEVENLABS_API_KEY
     ? new ElevenLabsVoice({ apiKey: env.ELEVENLABS_API_KEY, voiceIds, voiceEnabled: () => settings.voiceEnabled,
       shipped: shippedLines })
     : undefined;
-  const eventSink = db ? new TigerEventSink({ db }) : undefined;
+  const eventSink = new LocalEventSink(localDb);
   let activeScreen: InjectionScreen | undefined;
   const injectionScreen: InjectionScreen = { screen: (text, source) => {
     if (!activeScreen) throw new Error('Warden screen is unavailable');
@@ -329,7 +333,7 @@ export function createRealCore(options: RealCoreOptions = {}): CoreAdapter {
     setSettings: async patch => {
       settings = { ...settings, ...patch, models: { ...settings.models, ...patch.models },
         installed: { ...settings.installed, ...patch.installed },
-        timers: { ...settings.timers, ...patch.timers }, nudges: { ...settings.nudges, ...patch.nudges }, historyEnabled: decision.historyEnabled };
+        timers: { ...settings.timers, ...patch.timers }, nudges: { ...settings.nudges, ...patch.nudges }, historyEnabled: true };
       if (patch.models) saveModelPreferences(modelPreferencesPath, settings.models);
       if (patch.demoMode !== undefined) settings.timers = patch.demoMode
         ? { ...settings.timers, sleepAfterSec: 30, dockAfterSec: 60 }
@@ -342,14 +346,14 @@ export function createRealCore(options: RealCoreOptions = {}): CoreAdapter {
     connectGoogle: async () => { if (!googleAuth) throw new Error('Google OAuth needs GOOGLE_CLIENT_ID and Electron safeStorage.'); const result = await googleAuth.connect(); settings = { ...settings, googleEmail: result.email }; persistSettings(); void learnStyleOnce().catch(error => console.warn('[core] Pixel style learning failed', error)); return result; },
     disconnectGoogle: async () => { await googleAuth?.disconnect(); settings = { ...settings, googleEmail: undefined }; persistSettings(); },
     learnEmailStyle: learnStyleOnce,
-    getTimeline: (from, to) => queries?.timeline(from, to) ?? Promise.resolve([]),
-    getTaskEvents: taskId => queries?.taskEvents(taskId) ?? Promise.resolve([]),
+    getTimeline: (from, to) => queries.timeline(from, to),
+    getTaskEvents: taskId => queries.taskEvents(taskId),
     getMemories: async agentId => (await memory.list(agentId)).map(row => ({ id: row.id, memory: row.content })),
     searchMemories: async (agentId, q) => (await memory.search(agentId, q)).map(row => ({ id: row.id, memory: row.content })),
     updateMemory: (agentId, id, text) => memory.update(agentId, id, text),
     deleteMemory: (agentId, id) => memory.remove(agentId, id),
-    getPulse: () => queries?.pulse() ?? Promise.resolve({}),
-    getWardenAudit: limit => queries?.wardenAudit(limit) ?? Promise.resolve([]),
-    dispose: () => { index.stopWatching(); void core.dispose().then(() => eventSink?.dispose()).then(() => db?.end()); },
+    getPulse: () => queries.pulse(),
+    getWardenAudit: limit => queries.wardenAudit(limit),
+    dispose: () => { index.stopWatching(); void core.dispose().then(() => eventSink.dispose()).then(() => llm.whenIdle()).then(() => { localDb.close(); return db?.end(); }); },
   };
 }
