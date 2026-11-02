@@ -69,8 +69,8 @@ export function missingRealCoreKeys(env: Env): string[] {
   return missing;
 }
 
-function defaultSettings(options: RealCoreOptions): AdeSettings {
-  const model = { llm_provider: 'openai', model_name: 'gpt-4o' };
+export function defaultSettings(options: RealCoreOptions): AdeSettings {
+  const model = { llm_provider: 'google', model_name: 'gemini-2.5-flash' };
   const folders = defaultFolders({ desktop: options.desktopRoot, documents: options.documentsRoot, downloads: options.downloadsRoot });
   return {
     models: Object.fromEntries(ids.map(id => [id, { ...model }])) as AdeSettings['models'],

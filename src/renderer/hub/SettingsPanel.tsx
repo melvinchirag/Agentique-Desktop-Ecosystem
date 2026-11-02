@@ -17,6 +17,7 @@ export const AVAILABLE_MODELS: { label: string; choice: ModelChoice }[] = [
   { label: 'OpenAI GPT-4o-mini', choice: { llm_provider: 'openai', model_name: 'gpt-4o-mini' } },
   { label: 'Anthropic Claude Sonnet 4', choice: { llm_provider: 'anthropic', model_name: 'claude-sonnet-4-20250514' } },
   { label: 'Google Gemini 2.5 Pro', choice: { llm_provider: 'google', model_name: 'gemini-2.5-pro' } },
+  { label: 'Google Gemini 2.5 Flash', choice: { llm_provider: 'google', model_name: 'gemini-2.5-flash' } },
 ];
 
 export const SettingsPanel: React.FC<SettingsPanelProps> = ({
@@ -144,7 +145,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
             const choice = currentModels[id];
             const currentValueKey = choice
               ? `${choice.llm_provider}:${choice.model_name}`
-              : 'openai:gpt-4o';
+              : 'google:gemini-2.5-flash';
 
             return (
               <div

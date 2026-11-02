@@ -34,7 +34,9 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
   api,
   onFinish,
 }) => {
-  const [selectedModelIdx, setSelectedModelIdx] = useState(0);
+  const [selectedModelIdx, setSelectedModelIdx] = useState(() => AVAILABLE_MODELS.findIndex(
+    ({ choice }) => choice.llm_provider === 'google' && choice.model_name === 'gemini-2.5-flash'
+  ));
   const [voiceEnabled, setVoiceEnabled] = useState(true);
   const [googleConnected, setGoogleConnected] = useState<string | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
