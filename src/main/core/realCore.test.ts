@@ -2,10 +2,18 @@ import { describe, expect, it } from 'vitest';
 import { existsSync, mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { createRealCore, decideCore, defaultSettings, disconnectedCalendar, loadPersistedSettings, loadRealCoreEnv, missingRealCoreKeys, savePersistedSettings } from './realCore';
+import { brainKind, usesCliBrain, createRealCore, decideCore, defaultSettings, disconnectedCalendar, loadPersistedSettings, loadRealCoreEnv, missingRealCoreKeys, savePersistedSettings } from './realCore';
 import { makeTestSettings } from '../testing/settings';
 
 describe('real core startup fallback', () => {
+  it('recognizes only supported CLI brains, ignoring whitespace and case', () => {
+    for (const [value, expected] of [[' Claude-CLI ', 'claude-cli'], [' CODEX-cli ', 'codex-cli'], ['', null], ['gemini-cli', null], [undefined, null]] as const) {
+      const env = { ADE_BRAIN: value };
+      expect(brainKind(env)).toBe(expected);
+      expect(usesCliBrain(env)).toBe(expected !== null);
+      if (expected) expect(decideCore(env)).toMatchObject({ core: 'real', reasons: [] });
+    }
+  });
   it('defaults new installs to the verified Gemini Flash model and preserves saved choices', () => {
     const defaults = defaultSettings({});
     for (const choice of Object.values(defaults.models)) {

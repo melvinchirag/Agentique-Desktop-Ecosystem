@@ -40,6 +40,7 @@ import { RealClock } from '../runtime/clock';
 import type { InjectionScreen, SpecialistRunner, VoiceService } from '../runtime/types';
 import { assistantIdsFromEnv, readEnvFile, voiceIdsFromEnv, type Env } from '../sponsors/env';
 import { ClaudeCliClient } from '../brain/claudeCli';
+import { CodexCliClient } from '../brain/codexCli';
 import { SqliteThreadStore } from '../store/localThreads';
 import type { DocumentsApi, LlmClient } from '../runtime/types';
 import { LocalMemoryStore, withLocalMemory } from '../memory/localMemory';
@@ -64,8 +65,12 @@ const silent = () => new ArrayBuffer(0);
  * Only Backboard decides whether Chip starts. Tiger is an optional cloud copy: a missing or malformed
  * TIGER_DATABASE_URL just leaves it off (historyEnabled false); local history in ade.db is always on.
  */
-/** ADE_BRAIN=claude-cli: the installed Claude Code CLI is the brain; no Backboard key or assistant IDs needed. */
-export const usesCliBrain = (env: Env): boolean => env.ADE_BRAIN?.trim().toLowerCase() === 'claude-cli';
+/** Installed CLI brains need no Backboard key or assistant IDs. */
+export function brainKind(env: Env): 'claude-cli' | 'codex-cli' | null {
+  const kind = env.ADE_BRAIN?.trim().toLowerCase();
+  return kind === 'claude-cli' || kind === 'codex-cli' ? kind : null;
+}
+export const usesCliBrain = (env: Env): boolean => brainKind(env) !== null;
 
 export function decideCore(env: Env): { core: 'real' | 'fake'; reasons: string[]; historyEnabled: boolean } {
   const reasons = usesCliBrain(env) ? [] : ['BACKBOARD_API_KEY', 'BB_ASSISTANT_CHIPMUNK'].filter(key => !env[key]?.trim());
@@ -203,11 +208,13 @@ export function createRealCore(options: RealCoreOptions = {}): CoreAdapter {
   // ADE's own data on this machine: memories, the event log, audit and conversation threads, in %APPDATA%\ADE\ade.db.
   const localDb = openLocalDb(localDbPath(options.dataDir ?? adeDataDir(env)));
   const memory = new LocalMemoryStore(localDb);
-  const brain: LlmClient = cliBrain
-    ? new ClaudeCliClient({ threads: new SqliteThreadStore(localDb), cwd: options.dataDir ?? adeDataDir(env), ...(env.ADE_CLAUDE_BIN ? { bin: env.ADE_CLAUDE_BIN } : {}) })
+  const brain: LlmClient = brainKind(env) === 'codex-cli'
+    ? new CodexCliClient({ threads: new SqliteThreadStore(localDb), cwd: options.dataDir ?? adeDataDir(env), bin: env.ADE_CODEX_BIN, model: env.ADE_CODEX_MODEL })
+    : cliBrain ? new ClaudeCliClient({ threads: new SqliteThreadStore(localDb), cwd: options.dataDir ?? adeDataDir(env), ...(env.ADE_CLAUDE_BIN ? { bin: env.ADE_CLAUDE_BIN } : {}) })
     : new BackboardClient({ apiKey: env.BACKBOARD_API_KEY!, defaultModel: assistantId =>
       settings.models[(assistantId ? agentFor(assistantId) : undefined) ?? 'chipmunk'] });
-  if (cliBrain) console.log('[core] Brain: Claude Code CLI on this machine (ADE_BRAIN=claude-cli). Backboard is not used.');
+  if (brainKind(env) === 'codex-cli') console.log('[core] Brain: Codex CLI on this machine (ADE_BRAIN=codex-cli). Backboard is not used.');
+  else if (cliBrain) console.log('[core] Brain: Claude Code CLI on this machine (ADE_BRAIN=claude-cli). Backboard is not used.');
   const llm = withLocalMemory(brain, memory, { agentFor, onError: (agentId, error) => console.warn(`[memory] ${agentId}: ${(error as Error).message}`) });
   const queries = new LocalQueries(localDb);
   const db = decision.historyEnabled ? createTigerPool(env, baseDir) : undefined;

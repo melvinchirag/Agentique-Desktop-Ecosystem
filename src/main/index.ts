@@ -13,8 +13,8 @@ import { createOverlayWindow } from './shell/overlayWindow';
 import { installPermissions } from './shell/permissions';
 import { registerShellIpc } from './shell/shellIpc';
 import { watchSettings } from './shell/settingsWatch';
-import { loadRealCoreEnv, usesCliBrain } from './core/realCore';
-import { detectClaudeCli } from './brain/detect';
+import { brainKind, loadRealCoreEnv, usesCliBrain } from './core/realCore';
+import { detectClaudeCli, detectCodexCli } from './brain/detect';
 import { registerSetup } from './setup/window';
 import { createTray } from './shell/tray';
 import { AccountStore } from './account/store';
@@ -54,7 +54,7 @@ if (!app.requestSingleInstanceLock()) {
     app.once('before-quit', () => { void heartbeat.stop(); });
     // A brain is either the Claude Code on this machine (installed and signed in) or a Backboard key. Neither → Setup.
     const env = loadRealCoreEnv({ exePath: app.getPath('exe'), envPaths }).env;
-    const cliReady = usesCliBrain(env) && await detectClaudeCli(env.ADE_CLAUDE_BIN).then(s => s.installed && s.signedIn);
+    const cliReady = usesCliBrain(env) && await (brainKind(env) === 'codex-cli' ? detectCodexCli(env.ADE_CODEX_BIN) : detectClaudeCli(env.ADE_CLAUDE_BIN)).then(s => s.installed && s.signedIn);
     if (!demoMode && ((accountEnabled() && !signedIn) || (!cliReady && !env.BACKBOARD_API_KEY?.trim()))) {
       openSetup();
       return;

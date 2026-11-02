@@ -107,7 +107,7 @@ export class ClaudeCliClient implements LlmClient {
   }
 }
 
-const TOOL_RULES = `You are the reasoning engine inside a desktop application. In this session you have NO tools of your own: nothing to call or invoke, no files, no shell, no agents. Never attempt to invoke anything.
+export const TOOL_RULES = `You are the reasoning engine inside a desktop application. In this session you have NO tools of your own: nothing to call or invoke, no files, no shell, no agents. Never attempt to invoke anything.
 The application can perform the ACTIONS listed in the message, on your request. Your whole reply is one JSON object:
 - To request actions: "actions", a list of {"action": its name, "input": the input as a JSON object encoded as a string}. Use only listed actions with the listed inputs; several at once is fine. The application performs them and sends each result back as ACTION RESULT.
 - To answer the person: "content", written exactly in the format your instructions ask for.
@@ -122,7 +122,7 @@ function describeAction(t: OpenAiTool): string {
   return `- ${t.function.name}: ${t.function.description}${inputs.length ? `\n    input: ${inputs.join('; ')}` : '\n    input: none'}`;
 }
 
-function renderTranscript(messages: ThreadMessage[], tools: OpenAiTool[], structured: boolean): string {
+export function renderTranscript(messages: ThreadMessage[], tools: OpenAiTool[], structured: boolean): string {
   const parts: string[] = [];
   if (structured) parts.push(`ACTIONS the application can perform for you:\n${tools.map(describeAction).join('\n')}`);
   parts.push('CONVERSATION:');
@@ -145,7 +145,7 @@ function parseResult(raw: string): { is_error: boolean; text: string; structured
   return { is_error: !!j.is_error, text: typeof j.result === 'string' ? j.result : '', structured: j.structured_output, ...(usage[0] ? { model: usage[0] } : {}) };
 }
 
-function decisionFrom(r: { text: string; structured?: unknown }): { tool_calls?: { name: string; arguments: string }[]; content?: string } | null {
+export function decisionFrom(r: { text: string; structured?: unknown }): { tool_calls?: { name: string; arguments: string }[]; content?: string } | null {
   // Safety net: the model sometimes tries a native call anyway; with no tools enabled it leaks as <invoke> text. Read it as the action.
   const leaked = parseInvokeXml(r.text);
   if (leaked.length) return { tool_calls: leaked };
@@ -171,8 +171,8 @@ function parseInvokeXml(text: string): { name: string; arguments: string }[] {
   return out;
 }
 
-const tryJson = (s: string): unknown => { try { return JSON.parse(s.replace(/^```(?:json)?\s*|\s*```$/g, '')); } catch { return undefined; } };
-const normalizeArgs = (s: string): string => { const v = tryJson(s); return v && typeof v === 'object' ? JSON.stringify(v) : '{}'; };
+export const tryJson = (s: string): unknown => { try { return JSON.parse(s.replace(/^```(?:json)?\s*|\s*```$/g, '')); } catch { return undefined; } };
+export const normalizeArgs = (s: string): string => { const v = tryJson(s); return v && typeof v === 'object' ? JSON.stringify(v) : '{}'; };
 
 /** Runs the claude executable directly (no shell) with the prompt on stdin. */
 function spawnClaude(bin: string, args: string[], stdin: string, opts: { cwd?: string; signal: AbortSignal }): Promise<string> {

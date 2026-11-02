@@ -60,3 +60,15 @@ Never paste keys, connection strings or certificate contents into a test report.
 ## Account
 
 When ADE account setup is enabled, first run asks for an email and a six-digit sign-in code before the Backboard step. ADE stores the email, a random device identifier, app version, and first and last use timestamps for install and active-user counts. It does not send files, mail, memories or desktop content to the account service. In Settings > Account, **Sign out** removes the local session and stops the heartbeat.
+
+## Codex CLI brain
+
+Set `ADE_BRAIN=codex-cli` to use the installed Codex CLI signed in with your own
+ChatGPT plan, or choose **Codex (ChatGPT plan)** in Setup. Setup can install Codex,
+open its browser sign-in, check it again, and save the selected brain for restart.
+`ADE_CODEX_BIN` optionally selects the native executable; Windows npm shims are
+resolved to `codex.exe` without a shell. `ADE_CODEX_MODEL` sets the default model;
+an OpenAI model selected in ADE takes priority. Calls use ephemeral, read-only
+processes with user configuration, rules and shell tools disabled. ADE keeps the
+threads in `ade.db` and routes application actions through Warden. Backboard is
+not used for thinking. Gemini CLI is not included (not installed on this machine).
