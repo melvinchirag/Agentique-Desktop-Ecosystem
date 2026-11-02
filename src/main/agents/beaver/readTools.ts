@@ -4,6 +4,7 @@ import type { Clock, DocumentsApi, InjectionScreen } from '../../runtime/types';
 import { RealClock } from '../../runtime/clock';
 import type { FileEntry, FileIndex, FileKind } from '../../connectors/fs/fileIndex';
 import type { FsShell } from '../../connectors/fs/fsShell';
+import { extractPdfText } from '../../connectors/fs/pdfText';
 import { isExcludedPath, isWithin, safePath, type SafePathOptions } from '../../connectors/fs/safePath';
 import { SUPPORTED_EXTENSIONS } from '../../sponsors/backboardDocuments';
 import type { ToolContext } from '../../../shared/tools';
@@ -40,6 +41,7 @@ const SEARCH_MAX_LIMIT = 50;
 const LIVE_SCAN_DEPTH = 3;
 const LIVE_SCAN_CAP = 5000;
 const INDEX_TIMEOUT_MS = 60_000;
+const PDF_CHARS = 24_000;
 
 const PLAIN_TEXT_EXTENSIONS = new Set([
   '.txt', '.md', '.markdown', '.csv', '.tsv', '.json', '.jsonl', '.log', '.xml', '.yaml', '.yml', '.ini', '.toml', '.html', '.css',
@@ -381,6 +383,17 @@ export function createReadToolBindings(deps: ReadToolDeps): BeaverBindings {
     const found = await locate(input);
     if ('error' in found) return found;
     if (!found.stat.isFile()) return { error: 'NOT_A_FILE' } satisfies ToolError;
+    // PDFs are read on this machine (pdf.js): no upload, works with any brain. The text is screened like any file text.
+    if (path.extname(found.abs).toLowerCase() === '.pdf') {
+      if (found.stat.size > MAX_FILE_BYTES) return { error: 'TOO_LARGE', hint: 'over 20 MB' } satisfies ToolError;
+      status(ctx, 'Reading the PDF…');
+      const pdf = await extractPdfText(found.abs, PDF_CHARS);
+      if ('error' in pdf) return pdf;
+      const wrapped = await untrusted(pdf.text, path.basename(found.abs), ctx);
+      if ('error' in wrapped) return wrapped;
+      return { ok: true, name: path.basename(found.abs), path: found.abs, pages: pdf.pages, pages_read: pdf.pagesRead, truncated: pdf.truncated,
+        text: wrapped.text, flagged: wrapped.flagged, hint: 'Answer from this text; it is the document contents.' };
+    }
     if (!documents) return { error: 'NOT_AVAILABLE', hint: 'File Q&A is not set up; try fs_read_text.' } satisfies ToolError;
     if (!ctx.threadId) return { error: 'NO_THREAD', hint: 'No job thread to attach the file to.' } satisfies ToolError;
     if (!SUPPORTED_EXTENSIONS.has(path.extname(found.abs).toLowerCase())) return { error: 'UNSUPPORTED_TYPE', hint: 'Backboard cannot read this file type.' } satisfies ToolError;
