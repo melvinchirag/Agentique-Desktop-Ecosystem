@@ -20,6 +20,7 @@ import { createMoodEngine } from './runtime/mood';
 import { MemoryNudgeStore } from './runtime/nudgeStore';
 import { createNudgeEngine } from './runtime/nudges';
 import { createOrchestrator } from './runtime/orchestrator';
+import { Steering } from './runtime/steering';
 import { createPresenceManager } from './runtime/presence';
 import type {
   Approvals, Bus, CalendarSource, Clock, DocumentsApi, EventSink, FileOpsJournal, HistoryStore, InjectionScreen, JobScheduler,
@@ -180,9 +181,11 @@ export function createChipCore(config: ChipCoreConfig): ChipCore {
   });
 
   const history = config.history ?? new MemoryHistoryStore({ bus, clock });
+  const steering = new Steering();
   const orchestrator = createOrchestrator({
-    bus, clock, llm, jobs, presence, mood, nudges, history, settings, chipAssistantId, timeZone: config.timeZone,
+    bus, clock, llm, jobs, presence, mood, nudges, history, settings, chipAssistantId, timeZone: config.timeZone, steering,
   });
+  steering.onUndelivered = (_agent, text) => orchestrator.submitUserMessage(text);
 
   // Archie: real tools, gate, approvals and the 7-day trash sweep.
   let archie: ChipCore['archie'];
@@ -227,7 +230,7 @@ export function createChipCore(config: ChipCoreConfig): ChipCore {
     archieTools = definition.tools;
     const runtime = createAgentRuntime({
       bus, llm: a.llm, jobs, gate, approvals, settings, agents: [{ definition, assistantId: a.assistantId }],
-      screen,
+      screen, steering,
     });
     archieRuntime = {
       async run(agentId, task, runCtx) {
@@ -285,7 +288,7 @@ export function createChipCore(config: ChipCoreConfig): ChipCore {
     eagleTools = definition.tools;
     const runtime = createAgentRuntime({
       bus, llm: e.llm, jobs, gate, approvals, settings,
-      agents: [{ definition, assistantId: e.assistantId }], screen: e.screen ?? warden!.screen,
+      agents: [{ definition, assistantId: e.assistantId }], screen: e.screen ?? warden!.screen, steering,
     });
     eagleRuntime = {
       async run(agentId, task, runCtx) {
@@ -315,7 +318,7 @@ export function createChipCore(config: ChipCoreConfig): ChipCore {
       bus, llm: a.llm, jobs, gate, approvals, settings,
       agents: [{ definition, assistantId: a.assistantId,
         memory: { normal: 'Auto', help: 'Auto' } }],
-      screen: a.screen ?? warden!.screen,
+      screen: a.screen ?? warden!.screen, steering,
     });
     const antsRuntime: SpecialistRunner = {
       async run(agentId, task, runCtx) {
