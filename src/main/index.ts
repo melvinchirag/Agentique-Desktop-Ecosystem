@@ -15,6 +15,10 @@ import { registerShellIpc } from './shell/shellIpc';
 import { watchSettings } from './shell/settingsWatch';
 import { loadRealCoreEnv } from './core/realCore';
 import { registerSetup } from './setup/window';
+import { AccountStore } from './account/store';
+import { SupabaseAccountClient } from './account/supabase';
+import { AccountHeartbeat } from './account/heartbeat';
+import { accountEnabled } from './account/flags';
 
 const argv = process.argv;
 const devMode = !app.isPackaged || argv.includes('--dev');
@@ -38,8 +42,16 @@ if (!app.requestSingleInstanceLock()) {
     const resourcesDir = app.isPackaged ? process.resourcesPath : join(mainDir, '../../resources');
     const devUrl = process.env.ELECTRON_RENDERER_URL;
     const envPaths = [join(app.getAppPath(), '.env'), join(dirname(process.execPath), '.env')];
-    const openSetup = registerSetup({ preload, rendererDir, devUrl, envPaths });
-    if (!demoMode && !loadRealCoreEnv({ exePath: app.getPath('exe'), envPaths }).env.BACKBOARD_API_KEY?.trim()) {
+    const accountStore = new AccountStore(safeStorage, undefined, devMode);
+    const accountClient = new SupabaseAccountClient();
+    const heartbeat = new AccountHeartbeat(accountStore, accountClient, app.getVersion());
+    const openSetup = registerSetup({ preload, rendererDir, devUrl, envPaths,
+      account: { store: accountStore, client: accountClient, heartbeat } });
+    const signedIn = accountEnabled() && !!await accountStore.load().catch(() => null);
+    if (signedIn) heartbeat.start();
+    app.once('before-quit', () => { void heartbeat.stop(); });
+    if (!demoMode && ((accountEnabled() && !signedIn) ||
+      !loadRealCoreEnv({ exePath: app.getPath('exe'), envPaths }).env.BACKBOARD_API_KEY?.trim())) {
       openSetup();
       return;
     }

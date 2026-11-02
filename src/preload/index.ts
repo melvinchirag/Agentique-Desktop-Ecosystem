@@ -66,6 +66,10 @@ const setup: SetupApi = {
   restart: () => ipcRenderer.send(SETUP_IPC.restart),
   demo: () => ipcRenderer.send(SETUP_IPC.demo),
   open: () => ipcRenderer.send(SETUP_IPC.open),
+  accountStatus: () => ipcRenderer.invoke(SETUP_IPC.accountStatus),
+  sendCode: email => ipcRenderer.invoke(SETUP_IPC.sendCode, email),
+  verifyCode: (email, code) => ipcRenderer.invoke(SETUP_IPC.verifyCode, email, code),
+  signOut: () => ipcRenderer.invoke(SETUP_IPC.signOut),
   onProgress: cb => on(SETUP_IPC.progress, cb),
 };
 contextBridge.exposeInMainWorld('adeSetup', setup);

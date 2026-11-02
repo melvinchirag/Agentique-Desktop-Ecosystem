@@ -4,6 +4,7 @@ import type { AdeShellApi } from '../../main/shell/contracts';
 import type { HubStoreHook } from '../shell/contracts';
 import { AGENTS } from '../../shared/config';
 import type { AgentId, ModelChoice } from '../../shared/agents';
+import type { AccountStatus } from '../../main/setup/contracts';
 
 interface SettingsPanelProps {
   store: HubStoreHook;
@@ -32,7 +33,9 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   const [googleError, setGoogleError] = useState('');
   const [styleStatus, setStyleStatus] = useState('');
   const [keys, setKeys] = useState<{ backboard: string | null; elevenLabs: string | null }>();
+  const [account, setAccount] = useState<AccountStatus>();
   useEffect(() => { void window.adeSetup.status().then(setKeys).catch(() => undefined); }, []);
+  useEffect(() => { void window.adeSetup.accountStatus().then(setAccount).catch(() => undefined); }, []);
 
   const currentModels = settings?.models ?? ({} as Record<AgentId, ModelChoice>);
   const voiceEnabled = settings?.voiceEnabled ?? true;
@@ -184,6 +187,15 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
       </div>
 
       {/* Key status */}
+      {account?.enabled && <div className="hub-setting-group">
+        <div className="hub-setting-label">Account</div>
+        <div style={{ fontSize: 11, color: 'var(--hub-text-secondary)' }}>
+          {account.signedIn ? `Signed in as ${account.email}` : 'Not signed in'}
+        </div>
+        {account.signedIn
+          ? <button type="button" className="hub-tray-btn" onClick={() => void window.adeSetup.signOut().then(() => setAccount({ enabled: true, signedIn: false }))}>Sign out</button>
+          : <button type="button" className="hub-tray-btn" onClick={() => window.adeSetup.open()}>Sign in</button>}
+      </div>}
       <div className="hub-setting-group">
         <div className="hub-setting-label">Keys</div>
         <div style={{ fontSize: 11, color: 'var(--hub-text-secondary)' }}>
