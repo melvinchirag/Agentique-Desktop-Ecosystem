@@ -27,6 +27,7 @@ export const registerShellIpc = (opts: {
   setHubCollapsed(on: boolean): void;
   openAssetLab(): void;
   setAnimalsHidden(on: boolean): void;
+  quitApp?(): void;
 }): (() => void) => {
   const listeners: [string, (event: Sender, ...args: any[]) => void][] = [];
   const on = (channel: string, fn: (event: Sender, ...args: any[]) => void) => {
@@ -60,6 +61,7 @@ export const registerShellIpc = (opts: {
   on(SHELL_IPC.setHubCollapsed, (event, value: unknown) => {
     if (hub(event) && isBoolean(value)) opts.setHubCollapsed(value);
   });
+  on(SHELL_IPC.quitApp, event => { if (hub(event)) opts.quitApp?.(); });
   on(SHELL_IPC.replayTask, (event, taskId: unknown) => {
     if (hub(event) && isTaskId(taskId)) opts.overlay.webContents.send(SHELL_IPC.replayTask, taskId);
   });
