@@ -39,6 +39,9 @@ import { BackboardClient } from '../runtime/backboard';
 import { RealClock } from '../runtime/clock';
 import type { InjectionScreen, SpecialistRunner, VoiceService } from '../runtime/types';
 import { assistantIdsFromEnv, readEnvFile, voiceIdsFromEnv, type Env } from '../sponsors/env';
+import { ClaudeCliClient } from '../brain/claudeCli';
+import { SqliteThreadStore } from '../store/localThreads';
+import type { DocumentsApi, LlmClient } from '../runtime/types';
 import { LocalMemoryStore, withLocalMemory } from '../memory/localMemory';
 import { localDbPath, openLocalDb } from '../store/localDb';
 import { LocalEventSink, LocalQueries } from '../store/localEvents';
@@ -61,8 +64,11 @@ const silent = () => new ArrayBuffer(0);
  * Only Backboard decides whether Chip starts. Tiger is an optional cloud copy: a missing or malformed
  * TIGER_DATABASE_URL just leaves it off (historyEnabled false); local history in ade.db is always on.
  */
+/** ADE_BRAIN=claude-cli: the installed Claude Code CLI is the brain; no Backboard key or assistant IDs needed. */
+export const usesCliBrain = (env: Env): boolean => env.ADE_BRAIN?.trim().toLowerCase() === 'claude-cli';
+
 export function decideCore(env: Env): { core: 'real' | 'fake'; reasons: string[]; historyEnabled: boolean } {
-  const reasons = ['BACKBOARD_API_KEY', 'BB_ASSISTANT_CHIPMUNK'].filter(key => !env[key]?.trim());
+  const reasons = usesCliBrain(env) ? [] : ['BACKBOARD_API_KEY', 'BB_ASSISTANT_CHIPMUNK'].filter(key => !env[key]?.trim());
   let historyEnabled = false;
   if (env.TIGER_DATABASE_URL?.trim()) {
     try {
@@ -188,15 +194,21 @@ export function createRealCore(options: RealCoreOptions = {}): CoreAdapter {
     options.onSettingsChanged?.(settings);
   };
   const clock = new RealClock();
-  const assistantIds = assistantIdsFromEnv(env);
+  const cliBrain = usesCliBrain(env);
+  // With the CLI brain, an "assistant id" is just the animal's name: there is no vendor-side assistant.
+  const assistantIds: Partial<Record<AgentId, string>> = cliBrain
+    ? Object.fromEntries(ids.map(id => [id, assistantIdsFromEnv(env)[id] ?? id])) : assistantIdsFromEnv(env);
   const agentFor = (assistantId: string): AgentId | undefined => assistantId === env.BB_ASSISTANT_WARDEN_SCREEN
     ? 'wolf' : ids.find(id => assistantIds[id] === assistantId);
-  const backboard = new BackboardClient({ apiKey: env.BACKBOARD_API_KEY!, defaultModel: assistantId =>
-    settings.models[(assistantId ? agentFor(assistantId) : undefined) ?? 'chipmunk'] });
-  // ADE's own data on this machine: memories, the event log and audit, in %APPDATA%\ADE\ade.db.
+  // ADE's own data on this machine: memories, the event log, audit and conversation threads, in %APPDATA%\ADE\ade.db.
   const localDb = openLocalDb(localDbPath(options.dataDir ?? adeDataDir(env)));
   const memory = new LocalMemoryStore(localDb);
-  const llm = withLocalMemory(backboard, memory, { agentFor, onError: (agentId, error) => console.warn(`[memory] ${agentId}: ${(error as Error).message}`) });
+  const brain: LlmClient = cliBrain
+    ? new ClaudeCliClient({ threads: new SqliteThreadStore(localDb), cwd: options.dataDir ?? adeDataDir(env), ...(env.ADE_CLAUDE_BIN ? { bin: env.ADE_CLAUDE_BIN } : {}) })
+    : new BackboardClient({ apiKey: env.BACKBOARD_API_KEY!, defaultModel: assistantId =>
+      settings.models[(assistantId ? agentFor(assistantId) : undefined) ?? 'chipmunk'] });
+  if (cliBrain) console.log('[core] Brain: Claude Code CLI on this machine (ADE_BRAIN=claude-cli). Backboard is not used.');
+  const llm = withLocalMemory(brain, memory, { agentFor, onError: (agentId, error) => console.warn(`[memory] ${agentId}: ${(error as Error).message}`) });
   const queries = new LocalQueries(localDb);
   const db = decision.historyEnabled ? createTigerPool(env, baseDir) : undefined;
   const storeDb = db ?? offlineDb;
@@ -221,7 +233,11 @@ export function createRealCore(options: RealCoreOptions = {}): CoreAdapter {
   const documentsRoot = defaultFolders({ desktop: options.desktopRoot, documents: options.documentsRoot, downloads: options.downloadsRoot }).documentsRoot;
   const safe = { allowedRoots: settings.allowedFolders, documentsRoot, watch: true };
   const index = new FileIndex(safe);
-  const documents = new BackboardDocuments({ apiKey: env.BACKBOARD_API_KEY! });
+  // Document indexing (Archie's fs_ask_file, Pixel attachments) still needs Backboard; without a key those tools are off.
+  const documents: DocumentsApi = env.BACKBOARD_API_KEY ? new BackboardDocuments({ apiKey: env.BACKBOARD_API_KEY }) : {
+    uploadToThread: async () => { throw new Error('Reading document contents needs Backboard document indexing, which is not configured. Plain text files still work.'); },
+    waitIndexed: async () => ({ status: 'error' as const, chunks: 0 }),
+  };
   const googleStore = options.safeStorage ? new SafeStorageTokenStore(options.safeStorage) : undefined;
   const googleAuth = env.GOOGLE_CLIENT_ID && googleStore && options.openExternal ? new GoogleAuthService({
     clientId: env.GOOGLE_CLIENT_ID, clientSecret: env.GOOGLE_CLIENT_SECRET, store: googleStore,

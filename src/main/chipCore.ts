@@ -247,8 +247,13 @@ export function createChipCore(config: ChipCoreConfig): ChipCore {
           }
           if (e.type === 'tool.request' && (e.tool === 'fs_apply_plan' || e.tool === 'fs_undo')) applyTried = true;
         });
+        // Archie is told his allowed folders up front, so he does not probe Desktop/Documents/Downloads and collect Warden denials.
+        const roots = a.safe.allowedRoots;
+        const scoped = roots.length
+          ? `${task}\n\n[Allowed folders: ${roots.join(' | ')}. In every path argument use one of these full paths, or exactly that folder's name. Everything else is off limits.]`
+          : task;
         try {
-          let result = await runtime.run(agentId, task, runCtx);
+          let result = await runtime.run(agentId, scoped, runCtx);
           if (planId && !applyTried && !runCtx.signal.aborted) {
             result = await runtime.run(agentId,
               `You made plan ${planId} but did not apply it. Call fs_apply_plan with plan_id "${planId}" now; Warden will ask the user. Then give your FINAL ANSWER saying what actually happened.`,
