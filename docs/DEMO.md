@@ -1,6 +1,6 @@
 # ADE Demo Playbook: Hack Dearborn 5 (Sun Oct 4, 2026, judging 1:30-3:00 PM)
 
-> **v0.2 update (Nov 2, 2026):** this document was written for the Hack Dearborn build (Oct 4). Since v0.2, memories, Timeline, Audit, Pulse, Replay and chat history are stored locally in `%APPDATA%\ADE\ade.db` (no Backboard memory, no Tiger; Tiger is optional and off by default). Backboard still runs the AI (Gemini 2.5 Flash by default) and Archie's document reading. What the code does now: [`docs/RELEASE-0.2.0.md`](RELEASE-0.2.0.md).
+> **v0.2 update (Nov 2, 2026):** this document was written for the Hack Dearborn build (Oct 4). Since v0.2, memories, Timeline, Audit, Pulse, Replay and chat history are stored locally in `%APPDATA%\ADE\ade.db` (no Backboard memory, no Tiger; Tiger is optional and off by default). Backboard still runs the AI (Gemini 2.5 Flash by default) and Archie's document reading, until the CLI brain replaces it (decided Nov 2). What the code does now: [`docs/RELEASE-0.2.0.md`](RELEASE-0.2.0.md).
 
 Everything the four presenters need for the 5-minute science-fair demo and the judges' Q&A: the live script, the recorded backup, the agent cards, the staging checklist, the fallback plan, the Q&A cheat sheet, and the rehearsal plan.
 

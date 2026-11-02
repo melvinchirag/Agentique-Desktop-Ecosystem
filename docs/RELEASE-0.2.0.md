@@ -6,7 +6,7 @@ Main at `d38d0c8` (Nov 2, 2026): PRs #53 to #62. This file describes what the co
 
 | Part | Where | Notes |
 |---|---|---|
-| The AI's thinking (Chip and every animal) | **Backboard** (cloud) | Default model Google Gemini 2.5 Flash per animal; changeable in Settings. Needs internet and a Backboard key. Replacing it with your own Claude Code / Codex / Gemini CLI sign-in is planned, not built. |
+| The AI's thinking (Chip and every animal) | **Backboard** (cloud) | Default model Google Gemini 2.5 Flash per animal; changeable in Settings. Needs internet and a Backboard key. **Temporary**: decided Nov 2, Backboard is replaced by the user's own Claude Code (first), Codex or Gemini CLI; being built, not in 0.2. |
 | Archie reading PDF, Word, slides and sheets (`fs_ask_file`) | **Backboard** document indexing | Plain text files are read locally. |
 | Memories, Timeline, Audit, Pulse, Replay, chat history | **Local**: one SQLite file, `%APPDATA%\ADE\ade.db` | Always on. Backboard memory is off; Tiger is not used. Events are kept 90 days. |
 | Voices and sounds | ElevenLabs (optional key) | Shipped lines play without a key. |

@@ -1,0 +1,14 @@
+{
+  "preflight": {
+    "credits": 16.50282,
+    "requests": 30
+  },
+  "target20min": {
+    "credits": 258.4272604999999,
+    "requests": 264
+  },
+  "overrun": {
+    "credits": 146.3292199999999,
+    "requests": 151
+  }
+}

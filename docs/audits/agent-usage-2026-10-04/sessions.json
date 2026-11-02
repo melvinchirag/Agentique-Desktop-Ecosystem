@@ -1,0 +1,2804 @@
+[
+  {
+    "file": "rollout-2026-10-04T01-11-36-01a10553-1eec-70d3-9fe2-b04ffaae5907.jsonl",
+    "id": "01a10553-1eec-70d3-9fe2-b04ffaae5907",
+    "source": "vscode",
+    "cwd": "C:\\Users\\mkarupat\\Desktop\\ADE",
+    "start": "2026-10-04T05:13:40.247Z",
+    "end": "2026-10-04T11:57:55.288Z",
+    "turns": 65,
+    "models": [
+      "gpt-5.6-luna",
+      "gpt-5.6-terra",
+      "gpt-6-astra",
+      "gpt-6.1-sol",
+      "gpt-6-luna",
+      "gpt-6-sol"
+    ],
+    "efforts": [
+      "medium",
+      "high"
+    ],
+    "total": {
+      "input_tokens": 37690295,
+      "cached_input_tokens": 35422336,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 135855,
+      "reasoning_output_tokens": 52514,
+      "total_tokens": 37826150
+    },
+    "usageEvents": 316,
+    "calls": 253,
+    "metaKeys": [
+      "creator_user_id",
+      "creator_account_id",
+      "session_id",
+      "id",
+      "timestamp",
+      "cwd",
+      "runtime_workspace_roots",
+      "originator",
+      "cli_version",
+      "source",
+      "thread_source",
+      "model_provider",
+      "base_instructions",
+      "history_mode",
+      "context_window",
+      "git"
+    ],
+    "compactions": 3
+  },
+  {
+    "file": "rollout-2026-10-04T03-01-11-01a105b7-6c3c-7a82-862f-fb046ca150f7.jsonl",
+    "id": "01a105b7-6c3c-7a82-862f-fb046ca150f7",
+    "source": "exec",
+    "cwd": "C:\\Users\\mkarupat\\Desktop\\ade-wt-chip-logic-a",
+    "start": "2026-10-04T07:01:13.326Z",
+    "end": "2026-10-04T07:01:31.609Z",
+    "turns": 1,
+    "models": [
+      "gpt-6-sol"
+    ],
+    "efforts": [
+      "high"
+    ],
+    "total": {
+      "input_tokens": 71067,
+      "cached_input_tokens": 63488,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 382,
+      "reasoning_output_tokens": 87,
+      "total_tokens": 71449
+    },
+    "usageEvents": 4,
+    "calls": 4,
+    "metaKeys": [
+      "creator_user_id",
+      "creator_account_id",
+      "session_id",
+      "id",
+      "timestamp",
+      "cwd",
+      "runtime_workspace_roots",
+      "originator",
+      "cli_version",
+      "source",
+      "thread_source",
+      "model_provider",
+      "base_instructions",
+      "history_mode",
+      "context_window",
+      "git"
+    ],
+    "compactions": 0
+  },
+  {
+    "file": "rollout-2026-10-04T03-01-11-01a105b7-6c3c-7ba0-9a18-b4af2871d3b9.jsonl",
+    "id": "01a105b7-6c3c-7ba0-9a18-b4af2871d3b9",
+    "source": "exec",
+    "cwd": "C:\\Users\\mkarupat\\Desktop\\ade-wt-chip-logic-c",
+    "start": "2026-10-04T07:01:13.082Z",
+    "end": "2026-10-04T07:01:23.460Z",
+    "turns": 1,
+    "models": [
+      "gpt-6-luna"
+    ],
+    "efforts": [
+      "medium"
+    ],
+    "total": {
+      "input_tokens": 52318,
+      "cached_input_tokens": 33280,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 298,
+      "reasoning_output_tokens": 44,
+      "total_tokens": 52616
+    },
+    "usageEvents": 3,
+    "calls": 2,
+    "metaKeys": [
+      "creator_user_id",
+      "creator_account_id",
+      "session_id",
+      "id",
+      "timestamp",
+      "cwd",
+      "runtime_workspace_roots",
+      "originator",
+      "cli_version",
+      "source",
+      "thread_source",
+      "model_provider",
+      "base_instructions",
+      "history_mode",
+      "context_window",
+      "git"
+    ],
+    "compactions": 0
+  },
+  {
+    "file": "rollout-2026-10-04T03-01-11-01a105b7-6ed7-7d70-8558-3cb23949d83e.jsonl",
+    "id": "01a105b7-6ed7-7d70-8558-3cb23949d83e",
+    "source": "exec",
+    "cwd": "C:\\Users\\mkarupat\\Desktop\\ade-wt-chip-logic-e",
+    "start": "2026-10-04T07:01:13.248Z",
+    "end": "2026-10-04T07:01:33.203Z",
+    "turns": 1,
+    "models": [
+      "gpt-6-luna"
+    ],
+    "efforts": [
+      "high"
+    ],
+    "total": {
+      "input_tokens": 70290,
+      "cached_input_tokens": 50432,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 516,
+      "reasoning_output_tokens": 200,
+      "total_tokens": 70806
+    },
+    "usageEvents": 4,
+    "calls": 4,
+    "metaKeys": [
+      "creator_user_id",
+      "creator_account_id",
+      "session_id",
+      "id",
+      "timestamp",
+      "cwd",
+      "runtime_workspace_roots",
+      "originator",
+      "cli_version",
+      "source",
+      "thread_source",
+      "model_provider",
+      "base_instructions",
+      "history_mode",
+      "context_window",
+      "git"
+    ],
+    "compactions": 0
+  },
+  {
+    "file": "rollout-2026-10-04T03-01-11-01a105b7-7042-7761-b011-3e2c3326d831.jsonl",
+    "id": "01a105b7-7042-7761-b011-3e2c3326d831",
+    "source": "exec",
+    "cwd": "C:\\Users\\mkarupat\\Desktop\\ade-wt-chip-logic-h",
+    "start": "2026-10-04T07:01:13.375Z",
+    "end": "2026-10-04T07:01:32.907Z",
+    "turns": 1,
+    "models": [
+      "gpt-6-sol"
+    ],
+    "efforts": [
+      "medium"
+    ],
+    "total": {
+      "input_tokens": 70732,
+      "cached_input_tokens": 52352,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 451,
+      "reasoning_output_tokens": 159,
+      "total_tokens": 71183
+    },
+    "usageEvents": 4,
+    "calls": 4,
+    "metaKeys": [
+      "creator_user_id",
+      "creator_account_id",
+      "session_id",
+      "id",
+      "timestamp",
+      "cwd",
+      "runtime_workspace_roots",
+      "originator",
+      "cli_version",
+      "source",
+      "thread_source",
+      "model_provider",
+      "base_instructions",
+      "history_mode",
+      "context_window",
+      "git"
+    ],
+    "compactions": 0
+  },
+  {
+    "file": "rollout-2026-10-04T03-02-11-01a105b8-5ce2-7bf3-8e56-4e13905060fe.jsonl",
+    "id": "01a105b8-5ce2-7bf3-8e56-4e13905060fe",
+    "source": "exec",
+    "cwd": "C:\\Users\\mkarupat\\Desktop\\ade-wt-chip-logic-e",
+    "start": "2026-10-04T07:02:12.777Z",
+    "end": "2026-10-04T07:08:19.003Z",
+    "turns": 1,
+    "models": [
+      "gpt-6-luna"
+    ],
+    "efforts": [
+      "high"
+    ],
+    "total": {
+      "input_tokens": 649493,
+      "cached_input_tokens": 601600,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 14446,
+      "reasoning_output_tokens": 3954,
+      "total_tokens": 663939
+    },
+    "usageEvents": 18,
+    "calls": 17,
+    "metaKeys": [
+      "creator_user_id",
+      "creator_account_id",
+      "session_id",
+      "id",
+      "timestamp",
+      "cwd",
+      "runtime_workspace_roots",
+      "originator",
+      "cli_version",
+      "source",
+      "thread_source",
+      "model_provider",
+      "base_instructions",
+      "history_mode",
+      "context_window",
+      "git"
+    ],
+    "compactions": 0
+  },
+  {
+    "file": "rollout-2026-10-04T03-31-37-01a105d3-4fc4-7c72-a218-ac3d404fed18.jsonl",
+    "id": "01a105d3-4fc4-7c72-a218-ac3d404fed18",
+    "source": "exec",
+    "cwd": "C:\\Users\\mkarupat\\AppData\\Local\\Temp\\claude\\C--Users-mkarupat-Desktop-ADE\\2bfd75c5-90f2-4430-9eb2-ec9d1ca5eed4\\scratchpad",
+    "start": "2026-10-04T07:31:38.398Z",
+    "end": "2026-10-04T07:34:03.565Z",
+    "turns": 1,
+    "models": [
+      "gpt-6-sol"
+    ],
+    "efforts": [
+      "high"
+    ],
+    "total": {
+      "input_tokens": 30380,
+      "cached_input_tokens": 0,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 5073,
+      "reasoning_output_tokens": 4594,
+      "total_tokens": 35453
+    },
+    "usageEvents": 1,
+    "calls": 0,
+    "metaKeys": [
+      "creator_user_id",
+      "creator_account_id",
+      "session_id",
+      "id",
+      "timestamp",
+      "cwd",
+      "runtime_workspace_roots",
+      "originator",
+      "cli_version",
+      "source",
+      "thread_source",
+      "model_provider",
+      "base_instructions",
+      "history_mode",
+      "context_window"
+    ],
+    "compactions": 0
+  },
+  {
+    "file": "rollout-2026-10-04T03-58-35-01a105ec-0132-7d92-95d6-9236595ac75d.jsonl",
+    "id": "01a105ec-0132-7d92-95d6-9236595ac75d",
+    "source": {
+      "subagent": {
+        "other": "guardian"
+      }
+    },
+    "cwd": "C:\\Users\\mkarupat\\Desktop\\ADE",
+    "start": "2026-10-04T07:58:36.785Z",
+    "end": "2026-10-04T08:27:57.031Z",
+    "turns": 20,
+    "models": [
+      "codex-auto-review"
+    ],
+    "efforts": [
+      "low"
+    ],
+    "total": {
+      "input_tokens": 851171,
+      "cached_input_tokens": 774144,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 2861,
+      "reasoning_output_tokens": 1613,
+      "total_tokens": 854032
+    },
+    "usageEvents": 20,
+    "calls": 0,
+    "metaKeys": [
+      "creator_user_id",
+      "creator_account_id",
+      "session_id",
+      "id",
+      "parent_thread_id",
+      "timestamp",
+      "cwd",
+      "runtime_workspace_roots",
+      "originator",
+      "cli_version",
+      "source",
+      "thread_source",
+      "model_provider",
+      "base_instructions",
+      "history_mode",
+      "multi_agent_version",
+      "context_window",
+      "git"
+    ],
+    "parent": "01a10553-1eec-70d3-9fe2-b04ffaae5907",
+    "compactions": 0
+  },
+  {
+    "file": "rollout-2026-10-04T04-31-37-01a1060a-3ca7-7d43-a128-5a66e6b1673c.jsonl",
+    "id": "01a1060a-3ca7-7d43-a128-5a66e6b1673c",
+    "source": {
+      "subagent": {
+        "other": "guardian"
+      }
+    },
+    "cwd": "C:\\Users\\mkarupat\\Desktop\\ADE",
+    "start": "2026-10-04T08:31:37.931Z",
+    "end": "2026-10-04T08:49:38.686Z",
+    "turns": 16,
+    "models": [
+      "codex-auto-review"
+    ],
+    "efforts": [
+      "low"
+    ],
+    "total": {
+      "input_tokens": 511052,
+      "cached_input_tokens": 461824,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 1623,
+      "reasoning_output_tokens": 650,
+      "total_tokens": 512675
+    },
+    "usageEvents": 16,
+    "calls": 0,
+    "metaKeys": [
+      "creator_user_id",
+      "creator_account_id",
+      "session_id",
+      "id",
+      "parent_thread_id",
+      "timestamp",
+      "cwd",
+      "runtime_workspace_roots",
+      "originator",
+      "cli_version",
+      "source",
+      "thread_source",
+      "model_provider",
+      "base_instructions",
+      "history_mode",
+      "subagent_history_start_ordinal",
+      "multi_agent_version",
+      "context_window",
+      "git"
+    ],
+    "parent": "01a10553-1eec-70d3-9fe2-b04ffaae5907",
+    "compactions": 0
+  },
+  {
+    "file": "rollout-2026-10-04T05-02-21-01a10626-5f02-7081-8d30-9e233a9804fa.jsonl",
+    "id": "01a10626-5f02-7081-8d30-9e233a9804fa",
+    "source": {
+      "subagent": {
+        "other": "guardian"
+      }
+    },
+    "cwd": "C:\\Users\\mkarupat\\Desktop\\ADE",
+    "start": "2026-10-04T09:02:21.777Z",
+    "end": "2026-10-04T10:49:13.122Z",
+    "turns": 16,
+    "models": [
+      "codex-auto-review"
+    ],
+    "efforts": [
+      "low"
+    ],
+    "total": {
+      "input_tokens": 752129,
+      "cached_input_tokens": 616448,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 1884,
+      "reasoning_output_tokens": 904,
+      "total_tokens": 754013
+    },
+    "usageEvents": 16,
+    "calls": 0,
+    "metaKeys": [
+      "creator_user_id",
+      "creator_account_id",
+      "session_id",
+      "id",
+      "parent_thread_id",
+      "timestamp",
+      "cwd",
+      "runtime_workspace_roots",
+      "originator",
+      "cli_version",
+      "source",
+      "thread_source",
+      "model_provider",
+      "base_instructions",
+      "history_mode",
+      "subagent_history_start_ordinal",
+      "multi_agent_version",
+      "context_window",
+      "git"
+    ],
+    "parent": "01a10553-1eec-70d3-9fe2-b04ffaae5907",
+    "compactions": 0
+  },
+  {
+    "file": "rollout-2026-10-04T05-25-14-01a1063b-520f-75e1-a858-92a7401f3fd5.jsonl",
+    "id": "01a1063b-520f-75e1-a858-92a7401f3fd5",
+    "source": {
+      "subagent": {
+        "thread_spawn": {
+          "parent_thread_id": "01a10553-1eec-70d3-9fe2-b04ffaae5907",
+          "depth": 1,
+          "agent_path": null,
+          "agent_nickname": "Erdos",
+          "agent_role": null
+        }
+      }
+    },
+    "cwd": "C:\\Users\\mkarupat\\Desktop\\ADE",
+    "start": "2026-10-04T09:25:15.399Z",
+    "end": "2026-10-04T09:29:40.896Z",
+    "turns": 1,
+    "models": [
+      "gpt-6-sol"
+    ],
+    "efforts": [
+      "high"
+    ],
+    "total": {
+      "input_tokens": 727294,
+      "cached_input_tokens": 649984,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 10460,
+      "reasoning_output_tokens": 1363,
+      "total_tokens": 737754
+    },
+    "usageEvents": 14,
+    "calls": 13,
+    "metaKeys": [
+      "creator_user_id",
+      "creator_account_id",
+      "session_id",
+      "id",
+      "parent_thread_id",
+      "timestamp",
+      "cwd",
+      "runtime_workspace_roots",
+      "originator",
+      "cli_version",
+      "source",
+      "thread_source",
+      "agent_nickname",
+      "model_provider",
+      "base_instructions",
+      "history_mode",
+      "multi_agent_version",
+      "context_window",
+      "git"
+    ],
+    "parent": "01a10553-1eec-70d3-9fe2-b04ffaae5907",
+    "compactions": 0
+  },
+  {
+    "file": "rollout-2026-10-04T05-25-15-01a1063b-55cd-7610-84b7-b650b5720bbe.jsonl",
+    "id": "01a1063b-55cd-7610-84b7-b650b5720bbe",
+    "source": {
+      "subagent": {
+        "thread_spawn": {
+          "parent_thread_id": "01a10553-1eec-70d3-9fe2-b04ffaae5907",
+          "depth": 1,
+          "agent_path": null,
+          "agent_nickname": "Faraday",
+          "agent_role": null
+        }
+      }
+    },
+    "cwd": "C:\\Users\\mkarupat\\Desktop\\ADE",
+    "start": "2026-10-04T09:25:16.719Z",
+    "end": "2026-10-04T09:29:49.059Z",
+    "turns": 1,
+    "models": [
+      "gpt-6-sol"
+    ],
+    "efforts": [
+      "medium"
+    ],
+    "total": {
+      "input_tokens": 763570,
+      "cached_input_tokens": 714240,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 9331,
+      "reasoning_output_tokens": 1529,
+      "total_tokens": 772901
+    },
+    "usageEvents": 18,
+    "calls": 17,
+    "metaKeys": [
+      "creator_user_id",
+      "creator_account_id",
+      "session_id",
+      "id",
+      "parent_thread_id",
+      "timestamp",
+      "cwd",
+      "runtime_workspace_roots",
+      "originator",
+      "cli_version",
+      "source",
+      "thread_source",
+      "agent_nickname",
+      "model_provider",
+      "base_instructions",
+      "history_mode",
+      "multi_agent_version",
+      "context_window",
+      "git"
+    ],
+    "parent": "01a10553-1eec-70d3-9fe2-b04ffaae5907",
+    "compactions": 0
+  },
+  {
+    "file": "rollout-2026-10-04T05-25-16-01a1063b-5adf-7590-8235-ea862469475b.jsonl",
+    "id": "01a1063b-5adf-7590-8235-ea862469475b",
+    "source": {
+      "subagent": {
+        "other": "guardian"
+      }
+    },
+    "cwd": "C:\\Users\\mkarupat\\Desktop\\ADE",
+    "start": "2026-10-04T09:28:16.088Z",
+    "end": "2026-10-04T09:29:24.465Z",
+    "turns": 3,
+    "models": [
+      "codex-auto-review"
+    ],
+    "efforts": [
+      "low"
+    ],
+    "total": {
+      "input_tokens": 60642,
+      "cached_input_tokens": 42240,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 270,
+      "reasoning_output_tokens": 114,
+      "total_tokens": 60912
+    },
+    "usageEvents": 3,
+    "calls": 0,
+    "metaKeys": [
+      "creator_user_id",
+      "creator_account_id",
+      "session_id",
+      "id",
+      "parent_thread_id",
+      "timestamp",
+      "cwd",
+      "runtime_workspace_roots",
+      "originator",
+      "cli_version",
+      "source",
+      "thread_source",
+      "model_provider",
+      "base_instructions",
+      "history_mode",
+      "multi_agent_version",
+      "context_window",
+      "git"
+    ],
+    "parent": "01a1063b-55cd-7610-84b7-b650b5720bbe",
+    "compactions": 0
+  },
+  {
+    "file": "rollout-2026-10-04T05-25-16-01a1063b-5af6-78c3-aaae-0eb9cd91e4a9.jsonl",
+    "id": "01a1063b-5af6-78c3-aaae-0eb9cd91e4a9",
+    "source": {
+      "subagent": {
+        "thread_spawn": {
+          "parent_thread_id": "01a10553-1eec-70d3-9fe2-b04ffaae5907",
+          "depth": 1,
+          "agent_path": null,
+          "agent_nickname": "Hegel",
+          "agent_role": null
+        }
+      }
+    },
+    "cwd": "C:\\Users\\mkarupat\\Desktop\\ADE",
+    "start": "2026-10-04T09:25:17.746Z",
+    "end": "2026-10-04T09:29:43.738Z",
+    "turns": 1,
+    "models": [
+      "gpt-6-luna"
+    ],
+    "efforts": [
+      "high"
+    ],
+    "total": {
+      "input_tokens": 567925,
+      "cached_input_tokens": 511744,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 9517,
+      "reasoning_output_tokens": 2353,
+      "total_tokens": 577442
+    },
+    "usageEvents": 14,
+    "calls": 13,
+    "metaKeys": [
+      "creator_user_id",
+      "creator_account_id",
+      "session_id",
+      "id",
+      "parent_thread_id",
+      "timestamp",
+      "cwd",
+      "runtime_workspace_roots",
+      "originator",
+      "cli_version",
+      "source",
+      "thread_source",
+      "agent_nickname",
+      "model_provider",
+      "base_instructions",
+      "history_mode",
+      "multi_agent_version",
+      "context_window",
+      "git"
+    ],
+    "parent": "01a10553-1eec-70d3-9fe2-b04ffaae5907",
+    "compactions": 0
+  },
+  {
+    "file": "rollout-2026-10-04T05-25-17-01a1063b-5fa9-7100-9503-d67cdbafd806.jsonl",
+    "id": "01a1063b-5fa9-7100-9503-d67cdbafd806",
+    "source": {
+      "subagent": {
+        "other": "guardian"
+      }
+    },
+    "cwd": "C:\\Users\\mkarupat\\Desktop\\ADE",
+    "start": "2026-10-04T09:29:21.739Z",
+    "end": "2026-10-04T09:29:41.722Z",
+    "turns": 2,
+    "models": [
+      "codex-auto-review"
+    ],
+    "efforts": [
+      "low"
+    ],
+    "total": {
+      "input_tokens": 17910,
+      "cached_input_tokens": 4864,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 158,
+      "reasoning_output_tokens": 96,
+      "total_tokens": 18068
+    },
+    "usageEvents": 2,
+    "calls": 0,
+    "metaKeys": [
+      "creator_user_id",
+      "creator_account_id",
+      "session_id",
+      "id",
+      "parent_thread_id",
+      "timestamp",
+      "cwd",
+      "runtime_workspace_roots",
+      "originator",
+      "cli_version",
+      "source",
+      "thread_source",
+      "model_provider",
+      "base_instructions",
+      "history_mode",
+      "multi_agent_version",
+      "context_window",
+      "git"
+    ],
+    "parent": "01a1063b-5af6-78c3-aaae-0eb9cd91e4a9",
+    "compactions": 0
+  },
+  {
+    "file": "rollout-2026-10-04T05-25-17-01a1063b-5fbb-7c42-8b0b-90a55bb7e887.jsonl",
+    "id": "01a1063b-5fbb-7c42-8b0b-90a55bb7e887",
+    "source": {
+      "subagent": {
+        "thread_spawn": {
+          "parent_thread_id": "01a10553-1eec-70d3-9fe2-b04ffaae5907",
+          "depth": 1,
+          "agent_path": null,
+          "agent_nickname": "Beauvoir",
+          "agent_role": null
+        }
+      }
+    },
+    "cwd": "C:\\Users\\mkarupat\\Desktop\\ADE",
+    "start": "2026-10-04T09:25:18.829Z",
+    "end": "2026-10-04T09:29:36.628Z",
+    "turns": 1,
+    "models": [
+      "gpt-6.1-sol"
+    ],
+    "efforts": [
+      "medium"
+    ],
+    "total": {
+      "input_tokens": 374847,
+      "cached_input_tokens": 320640,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 6456,
+      "reasoning_output_tokens": 732,
+      "total_tokens": 381303
+    },
+    "usageEvents": 9,
+    "calls": 8,
+    "metaKeys": [
+      "creator_user_id",
+      "creator_account_id",
+      "session_id",
+      "id",
+      "parent_thread_id",
+      "timestamp",
+      "cwd",
+      "runtime_workspace_roots",
+      "originator",
+      "cli_version",
+      "source",
+      "thread_source",
+      "agent_nickname",
+      "model_provider",
+      "base_instructions",
+      "history_mode",
+      "multi_agent_version",
+      "context_window",
+      "git"
+    ],
+    "parent": "01a10553-1eec-70d3-9fe2-b04ffaae5907",
+    "compactions": 0
+  },
+  {
+    "file": "rollout-2026-10-04T05-25-18-01a1063b-640b-7570-9549-3496f3ddb12a.jsonl",
+    "id": "01a1063b-640b-7570-9549-3496f3ddb12a",
+    "source": {
+      "subagent": {
+        "other": "guardian"
+      }
+    },
+    "cwd": "C:\\Users\\mkarupat\\Desktop\\ADE",
+    "start": "2026-10-04T09:27:38.007Z",
+    "end": "2026-10-04T09:27:57.222Z",
+    "turns": 2,
+    "models": [
+      "codex-auto-review"
+    ],
+    "efforts": [
+      "low"
+    ],
+    "total": {
+      "input_tokens": 34459,
+      "cached_input_tokens": 9728,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 333,
+      "reasoning_output_tokens": 185,
+      "total_tokens": 34792
+    },
+    "usageEvents": 2,
+    "calls": 0,
+    "metaKeys": [
+      "creator_user_id",
+      "creator_account_id",
+      "session_id",
+      "id",
+      "parent_thread_id",
+      "timestamp",
+      "cwd",
+      "runtime_workspace_roots",
+      "originator",
+      "cli_version",
+      "source",
+      "thread_source",
+      "model_provider",
+      "base_instructions",
+      "history_mode",
+      "multi_agent_version",
+      "context_window",
+      "git"
+    ],
+    "parent": "01a1063b-5fbb-7c42-8b0b-90a55bb7e887",
+    "compactions": 0
+  },
+  {
+    "file": "rollout-2026-10-04T05-25-18-01a1063b-6446-7e80-beee-8f287a239916.jsonl",
+    "id": "01a1063b-6446-7e80-beee-8f287a239916",
+    "source": {
+      "subagent": {
+        "thread_spawn": {
+          "parent_thread_id": "01a10553-1eec-70d3-9fe2-b04ffaae5907",
+          "depth": 1,
+          "agent_path": null,
+          "agent_nickname": "Galileo",
+          "agent_role": null
+        }
+      }
+    },
+    "cwd": "C:\\Users\\mkarupat\\Desktop\\ADE",
+    "start": "2026-10-04T09:25:19.772Z",
+    "end": "2026-10-04T09:29:13.645Z",
+    "turns": 2,
+    "models": [
+      "gpt-6.1-sol"
+    ],
+    "efforts": [
+      "medium"
+    ],
+    "total": {
+      "input_tokens": 428865,
+      "cached_input_tokens": 369664,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 3574,
+      "reasoning_output_tokens": 549,
+      "total_tokens": 432439
+    },
+    "usageEvents": 8,
+    "calls": 6,
+    "metaKeys": [
+      "creator_user_id",
+      "creator_account_id",
+      "session_id",
+      "id",
+      "parent_thread_id",
+      "timestamp",
+      "cwd",
+      "runtime_workspace_roots",
+      "originator",
+      "cli_version",
+      "source",
+      "thread_source",
+      "agent_nickname",
+      "model_provider",
+      "base_instructions",
+      "history_mode",
+      "multi_agent_version",
+      "context_window",
+      "git"
+    ],
+    "parent": "01a10553-1eec-70d3-9fe2-b04ffaae5907",
+    "compactions": 0
+  },
+  {
+    "file": "rollout-2026-10-04T07-01-45-01a10693-b28d-7803-bc42-4600aeea6298.jsonl",
+    "id": "01a10693-b28d-7803-bc42-4600aeea6298",
+    "source": {
+      "subagent": {
+        "thread_spawn": {
+          "parent_thread_id": "01a10553-1eec-70d3-9fe2-b04ffaae5907",
+          "depth": 1,
+          "agent_path": null,
+          "agent_nickname": "Turing",
+          "agent_role": null
+        }
+      }
+    },
+    "cwd": "C:\\Users\\mkarupat\\Desktop\\ADE",
+    "start": "2026-10-04T11:01:47.226Z",
+    "end": "2026-10-04T11:22:28.823Z",
+    "turns": 4,
+    "models": [
+      "gpt-6-sol"
+    ],
+    "efforts": [
+      "medium"
+    ],
+    "total": {
+      "input_tokens": 7740381,
+      "cached_input_tokens": 7588736,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 36677,
+      "reasoning_output_tokens": 9881,
+      "total_tokens": 7777058
+    },
+    "usageEvents": 77,
+    "calls": 73,
+    "metaKeys": [
+      "creator_user_id",
+      "creator_account_id",
+      "session_id",
+      "id",
+      "parent_thread_id",
+      "timestamp",
+      "cwd",
+      "runtime_workspace_roots",
+      "originator",
+      "cli_version",
+      "source",
+      "thread_source",
+      "agent_nickname",
+      "model_provider",
+      "base_instructions",
+      "history_mode",
+      "multi_agent_version",
+      "context_window",
+      "git"
+    ],
+    "parent": "01a10553-1eec-70d3-9fe2-b04ffaae5907",
+    "compactions": 0
+  },
+  {
+    "file": "rollout-2026-10-04T07-01-47-01a10693-b684-7063-a66d-b852da1ce361.jsonl",
+    "id": "01a10693-b684-7063-a66d-b852da1ce361",
+    "source": {
+      "subagent": {
+        "other": "guardian"
+      }
+    },
+    "cwd": "C:\\Users\\mkarupat\\Desktop\\ADE",
+    "start": "2026-10-04T11:06:25.831Z",
+    "end": "2026-10-04T11:21:04.022Z",
+    "turns": 13,
+    "models": [
+      "codex-auto-review"
+    ],
+    "efforts": [
+      "low"
+    ],
+    "total": {
+      "input_tokens": 504367,
+      "cached_input_tokens": 443136,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 1282,
+      "reasoning_output_tokens": 523,
+      "total_tokens": 505649
+    },
+    "usageEvents": 13,
+    "calls": 0,
+    "metaKeys": [
+      "creator_user_id",
+      "creator_account_id",
+      "session_id",
+      "id",
+      "parent_thread_id",
+      "timestamp",
+      "cwd",
+      "runtime_workspace_roots",
+      "originator",
+      "cli_version",
+      "source",
+      "thread_source",
+      "model_provider",
+      "base_instructions",
+      "history_mode",
+      "multi_agent_version",
+      "context_window",
+      "git"
+    ],
+    "parent": "01a10693-b28d-7803-bc42-4600aeea6298",
+    "compactions": 0
+  },
+  {
+    "file": "rollout-2026-10-04T07-02-04-01a10693-fb23-74d1-82bb-b7ef1272946d.jsonl",
+    "id": "01a10693-fb23-74d1-82bb-b7ef1272946d",
+    "source": {
+      "subagent": {
+        "thread_spawn": {
+          "parent_thread_id": "01a10553-1eec-70d3-9fe2-b04ffaae5907",
+          "depth": 1,
+          "agent_path": null,
+          "agent_nickname": "Noether",
+          "agent_role": null
+        }
+      }
+    },
+    "cwd": "C:\\Users\\mkarupat\\Desktop\\ADE",
+    "start": "2026-10-04T11:02:05.925Z",
+    "end": "2026-10-04T11:13:07.048Z",
+    "turns": 3,
+    "models": [
+      "gpt-6.1-sol"
+    ],
+    "efforts": [
+      "medium"
+    ],
+    "total": {
+      "input_tokens": 1475962,
+      "cached_input_tokens": 1388032,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 11255,
+      "reasoning_output_tokens": 1146,
+      "total_tokens": 1487217
+    },
+    "usageEvents": 25,
+    "calls": 22,
+    "metaKeys": [
+      "creator_user_id",
+      "creator_account_id",
+      "session_id",
+      "id",
+      "parent_thread_id",
+      "timestamp",
+      "cwd",
+      "runtime_workspace_roots",
+      "originator",
+      "cli_version",
+      "source",
+      "thread_source",
+      "agent_nickname",
+      "model_provider",
+      "base_instructions",
+      "history_mode",
+      "multi_agent_version",
+      "context_window",
+      "git"
+    ],
+    "parent": "01a10553-1eec-70d3-9fe2-b04ffaae5907",
+    "compactions": 0
+  },
+  {
+    "file": "rollout-2026-10-04T07-02-05-01a10693-fedb-7621-8151-029089d1430f.jsonl",
+    "id": "01a10693-fedb-7621-8151-029089d1430f",
+    "source": {
+      "subagent": {
+        "other": "guardian"
+      }
+    },
+    "cwd": "C:\\Users\\mkarupat\\Desktop\\ADE",
+    "start": "2026-10-04T11:03:24.637Z",
+    "end": "2026-10-04T11:11:10.007Z",
+    "turns": 5,
+    "models": [
+      "codex-auto-review"
+    ],
+    "efforts": [
+      "low"
+    ],
+    "total": {
+      "input_tokens": 109358,
+      "cached_input_tokens": 80640,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 653,
+      "reasoning_output_tokens": 377,
+      "total_tokens": 110011
+    },
+    "usageEvents": 5,
+    "calls": 0,
+    "metaKeys": [
+      "creator_user_id",
+      "creator_account_id",
+      "session_id",
+      "id",
+      "parent_thread_id",
+      "timestamp",
+      "cwd",
+      "runtime_workspace_roots",
+      "originator",
+      "cli_version",
+      "source",
+      "thread_source",
+      "model_provider",
+      "base_instructions",
+      "history_mode",
+      "multi_agent_version",
+      "context_window",
+      "git"
+    ],
+    "parent": "01a10693-fb23-74d1-82bb-b7ef1272946d",
+    "compactions": 0
+  },
+  {
+    "file": "rollout-2026-10-04T07-02-50-01a10694-af57-7cd3-9f32-b3eff30a57aa.jsonl",
+    "id": "01a10694-af57-7cd3-9f32-b3eff30a57aa",
+    "source": {
+      "subagent": {
+        "other": "guardian"
+      }
+    },
+    "cwd": "C:\\Users\\mkarupat\\Desktop\\ADE",
+    "start": "2026-10-04T11:02:51.036Z",
+    "end": "2026-10-04T11:02:54.868Z",
+    "turns": 1,
+    "models": [
+      "codex-auto-review"
+    ],
+    "efforts": [
+      "low"
+    ],
+    "total": {
+      "input_tokens": 24853,
+      "cached_input_tokens": 4864,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 124,
+      "reasoning_output_tokens": 66,
+      "total_tokens": 24977
+    },
+    "usageEvents": 1,
+    "calls": 0,
+    "metaKeys": [
+      "creator_user_id",
+      "creator_account_id",
+      "session_id",
+      "id",
+      "parent_thread_id",
+      "timestamp",
+      "cwd",
+      "runtime_workspace_roots",
+      "originator",
+      "cli_version",
+      "source",
+      "thread_source",
+      "model_provider",
+      "base_instructions",
+      "history_mode",
+      "subagent_history_start_ordinal",
+      "multi_agent_version",
+      "context_window",
+      "git"
+    ],
+    "parent": "01a10553-1eec-70d3-9fe2-b04ffaae5907",
+    "compactions": 0
+  },
+  {
+    "file": "rollout-2026-10-04T07-10-13-01a1069b-71d4-7e01-bccd-959c8dce260e.jsonl",
+    "id": "01a1069b-71d4-7e01-bccd-959c8dce260e",
+    "source": {
+      "subagent": {
+        "thread_spawn": {
+          "parent_thread_id": "01a10553-1eec-70d3-9fe2-b04ffaae5907",
+          "depth": 1,
+          "agent_path": null,
+          "agent_nickname": "Planck",
+          "agent_role": null
+        }
+      }
+    },
+    "cwd": "C:\\Users\\mkarupat\\Desktop\\ADE",
+    "start": "2026-10-04T11:10:15.110Z",
+    "end": "2026-10-04T11:22:34.891Z",
+    "turns": 3,
+    "models": [
+      "gpt-6-sol"
+    ],
+    "efforts": [
+      "high"
+    ],
+    "total": {
+      "input_tokens": 2132266,
+      "cached_input_tokens": 2042368,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 21742,
+      "reasoning_output_tokens": 8954,
+      "total_tokens": 2154008
+    },
+    "usageEvents": 33,
+    "calls": 29,
+    "metaKeys": [
+      "creator_user_id",
+      "creator_account_id",
+      "session_id",
+      "id",
+      "parent_thread_id",
+      "timestamp",
+      "cwd",
+      "runtime_workspace_roots",
+      "originator",
+      "cli_version",
+      "source",
+      "thread_source",
+      "agent_nickname",
+      "model_provider",
+      "base_instructions",
+      "history_mode",
+      "multi_agent_version",
+      "context_window",
+      "git"
+    ],
+    "parent": "01a10553-1eec-70d3-9fe2-b04ffaae5907",
+    "compactions": 0
+  },
+  {
+    "file": "rollout-2026-10-04T07-10-14-01a1069b-7560-7443-8564-f0646f653b4c.jsonl",
+    "id": "01a1069b-7560-7443-8564-f0646f653b4c",
+    "source": {
+      "subagent": {
+        "other": "guardian"
+      }
+    },
+    "cwd": "C:\\Users\\mkarupat\\Desktop\\ADE",
+    "start": "2026-10-04T11:21:44.442Z",
+    "end": "2026-10-04T11:21:47.848Z",
+    "turns": 1,
+    "models": [
+      "codex-auto-review"
+    ],
+    "efforts": [
+      "low"
+    ],
+    "total": {
+      "input_tokens": 19651,
+      "cached_input_tokens": 4864,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 149,
+      "reasoning_output_tokens": 86,
+      "total_tokens": 19800
+    },
+    "usageEvents": 1,
+    "calls": 0,
+    "metaKeys": [
+      "creator_user_id",
+      "creator_account_id",
+      "session_id",
+      "id",
+      "parent_thread_id",
+      "timestamp",
+      "cwd",
+      "runtime_workspace_roots",
+      "originator",
+      "cli_version",
+      "source",
+      "thread_source",
+      "model_provider",
+      "base_instructions",
+      "history_mode",
+      "multi_agent_version",
+      "context_window",
+      "git"
+    ],
+    "parent": "01a1069b-71d4-7e01-bccd-959c8dce260e",
+    "compactions": 0
+  },
+  {
+    "file": "rollout-2026-10-04T07-13-01-01a1069e-02ff-7390-8a04-4d1dec2981f7.jsonl",
+    "id": "01a1069e-02ff-7390-8a04-4d1dec2981f7",
+    "source": {
+      "subagent": {
+        "thread_spawn": {
+          "parent_thread_id": "01a10553-1eec-70d3-9fe2-b04ffaae5907",
+          "depth": 1,
+          "agent_path": null,
+          "agent_nickname": "Hilbert",
+          "agent_role": null
+        }
+      }
+    },
+    "cwd": "C:\\Users\\mkarupat\\Desktop\\ADE",
+    "start": "2026-10-04T11:13:03.031Z",
+    "end": "2026-10-04T11:22:33.768Z",
+    "turns": 4,
+    "models": [
+      "gpt-6-sol"
+    ],
+    "efforts": [
+      "medium"
+    ],
+    "total": {
+      "input_tokens": 1415696,
+      "cached_input_tokens": 1350528,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 8947,
+      "reasoning_output_tokens": 3629,
+      "total_tokens": 1424643
+    },
+    "usageEvents": 23,
+    "calls": 18,
+    "metaKeys": [
+      "creator_user_id",
+      "creator_account_id",
+      "session_id",
+      "id",
+      "parent_thread_id",
+      "timestamp",
+      "cwd",
+      "runtime_workspace_roots",
+      "originator",
+      "cli_version",
+      "source",
+      "thread_source",
+      "agent_nickname",
+      "model_provider",
+      "base_instructions",
+      "history_mode",
+      "multi_agent_version",
+      "context_window",
+      "git"
+    ],
+    "parent": "01a10553-1eec-70d3-9fe2-b04ffaae5907",
+    "compactions": 0
+  },
+  {
+    "file": "rollout-2026-10-04T07-13-03-01a1069e-0660-77e1-8c79-e18fff4be392.jsonl",
+    "id": "01a1069e-0660-77e1-8c79-e18fff4be392",
+    "source": {
+      "subagent": {
+        "thread_spawn": {
+          "parent_thread_id": "01a10553-1eec-70d3-9fe2-b04ffaae5907",
+          "depth": 1,
+          "agent_path": null,
+          "agent_nickname": "Socrates",
+          "agent_role": null
+        }
+      }
+    },
+    "cwd": "C:\\Users\\mkarupat\\Desktop\\ADE",
+    "start": "2026-10-04T11:13:04.301Z",
+    "end": "2026-10-04T11:23:17.002Z",
+    "turns": 3,
+    "models": [
+      "gpt-6-sol"
+    ],
+    "efforts": [
+      "high"
+    ],
+    "total": {
+      "input_tokens": 2011511,
+      "cached_input_tokens": 1907328,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 16460,
+      "reasoning_output_tokens": 5746,
+      "total_tokens": 2027971
+    },
+    "usageEvents": 30,
+    "calls": 26,
+    "metaKeys": [
+      "creator_user_id",
+      "creator_account_id",
+      "session_id",
+      "id",
+      "parent_thread_id",
+      "timestamp",
+      "cwd",
+      "runtime_workspace_roots",
+      "originator",
+      "cli_version",
+      "source",
+      "thread_source",
+      "agent_nickname",
+      "model_provider",
+      "base_instructions",
+      "history_mode",
+      "multi_agent_version",
+      "context_window",
+      "git"
+    ],
+    "parent": "01a10553-1eec-70d3-9fe2-b04ffaae5907",
+    "compactions": 0
+  },
+  {
+    "file": "rollout-2026-10-04T07-13-04-01a1069e-0ada-7790-99fb-f7de2e2a6120.jsonl",
+    "id": "01a1069e-0ada-7790-99fb-f7de2e2a6120",
+    "source": {
+      "subagent": {
+        "other": "guardian"
+      }
+    },
+    "cwd": "C:\\Users\\mkarupat\\Desktop\\ADE",
+    "start": "2026-10-04T11:16:20.004Z",
+    "end": "2026-10-04T11:17:04.076Z",
+    "turns": 2,
+    "models": [
+      "codex-auto-review"
+    ],
+    "efforts": [
+      "low"
+    ],
+    "total": {
+      "input_tokens": 35084,
+      "cached_input_tokens": 20992,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 201,
+      "reasoning_output_tokens": 85,
+      "total_tokens": 35285
+    },
+    "usageEvents": 2,
+    "calls": 0,
+    "metaKeys": [
+      "creator_user_id",
+      "creator_account_id",
+      "session_id",
+      "id",
+      "parent_thread_id",
+      "timestamp",
+      "cwd",
+      "runtime_workspace_roots",
+      "originator",
+      "cli_version",
+      "source",
+      "thread_source",
+      "model_provider",
+      "base_instructions",
+      "history_mode",
+      "multi_agent_version",
+      "context_window",
+      "git"
+    ],
+    "parent": "01a1069e-0660-77e1-8c79-e18fff4be392",
+    "compactions": 0
+  },
+  {
+    "file": "rollout-2026-10-04T07-13-04-01a1069e-0af0-7880-813f-ad5cfa88343c.jsonl",
+    "id": "01a1069e-0af0-7880-813f-ad5cfa88343c",
+    "source": {
+      "subagent": {
+        "thread_spawn": {
+          "parent_thread_id": "01a10553-1eec-70d3-9fe2-b04ffaae5907",
+          "depth": 1,
+          "agent_path": null,
+          "agent_nickname": "James",
+          "agent_role": null
+        }
+      }
+    },
+    "cwd": "C:\\Users\\mkarupat\\Desktop\\ADE",
+    "start": "2026-10-04T11:13:05.395Z",
+    "end": "2026-10-04T11:22:28.870Z",
+    "turns": 3,
+    "models": [
+      "gpt-6-sol"
+    ],
+    "efforts": [
+      "high"
+    ],
+    "total": {
+      "input_tokens": 2908222,
+      "cached_input_tokens": 2807680,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 15704,
+      "reasoning_output_tokens": 3362,
+      "total_tokens": 2923926
+    },
+    "usageEvents": 36,
+    "calls": 33,
+    "metaKeys": [
+      "creator_user_id",
+      "creator_account_id",
+      "session_id",
+      "id",
+      "parent_thread_id",
+      "timestamp",
+      "cwd",
+      "runtime_workspace_roots",
+      "originator",
+      "cli_version",
+      "source",
+      "thread_source",
+      "agent_nickname",
+      "model_provider",
+      "base_instructions",
+      "history_mode",
+      "multi_agent_version",
+      "context_window",
+      "git"
+    ],
+    "parent": "01a10553-1eec-70d3-9fe2-b04ffaae5907",
+    "compactions": 0
+  },
+  {
+    "file": "rollout-2026-10-04T07-13-05-01a1069e-0fe4-73b3-9431-46557ee9a2b5.jsonl",
+    "id": "01a1069e-0fe4-73b3-9431-46557ee9a2b5",
+    "source": {
+      "subagent": {
+        "other": "guardian"
+      }
+    },
+    "cwd": "C:\\Users\\mkarupat\\Desktop\\ADE",
+    "start": "2026-10-04T11:16:09.532Z",
+    "end": "2026-10-04T11:20:08.702Z",
+    "turns": 2,
+    "models": [
+      "codex-auto-review"
+    ],
+    "efforts": [
+      "low"
+    ],
+    "total": {
+      "input_tokens": 41908,
+      "cached_input_tokens": 20992,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 248,
+      "reasoning_output_tokens": 133,
+      "total_tokens": 42156
+    },
+    "usageEvents": 2,
+    "calls": 0,
+    "metaKeys": [
+      "creator_user_id",
+      "creator_account_id",
+      "session_id",
+      "id",
+      "parent_thread_id",
+      "timestamp",
+      "cwd",
+      "runtime_workspace_roots",
+      "originator",
+      "cli_version",
+      "source",
+      "thread_source",
+      "model_provider",
+      "base_instructions",
+      "history_mode",
+      "multi_agent_version",
+      "context_window",
+      "git"
+    ],
+    "parent": "01a1069e-0af0-7880-813f-ad5cfa88343c",
+    "compactions": 0
+  },
+  {
+    "file": "rollout-2026-10-04T07-13-25-01a1069e-60dc-72c3-80f7-4803495539d5.jsonl",
+    "id": "01a1069e-60dc-72c3-80f7-4803495539d5",
+    "source": {
+      "subagent": {
+        "thread_spawn": {
+          "parent_thread_id": "01a10553-1eec-70d3-9fe2-b04ffaae5907",
+          "depth": 1,
+          "agent_path": null,
+          "agent_nickname": "Herschel",
+          "agent_role": null
+        }
+      }
+    },
+    "cwd": "C:\\Users\\mkarupat\\Desktop\\ADE",
+    "start": "2026-10-04T11:13:27.228Z",
+    "end": "2026-10-04T11:22:44.205Z",
+    "turns": 4,
+    "models": [
+      "gpt-6-sol"
+    ],
+    "efforts": [
+      "high"
+    ],
+    "total": {
+      "input_tokens": 2064456,
+      "cached_input_tokens": 1931392,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 11757,
+      "reasoning_output_tokens": 6510,
+      "total_tokens": 2076213
+    },
+    "usageEvents": 25,
+    "calls": 21,
+    "metaKeys": [
+      "creator_user_id",
+      "creator_account_id",
+      "session_id",
+      "id",
+      "parent_thread_id",
+      "timestamp",
+      "cwd",
+      "runtime_workspace_roots",
+      "originator",
+      "cli_version",
+      "source",
+      "thread_source",
+      "agent_nickname",
+      "model_provider",
+      "base_instructions",
+      "history_mode",
+      "multi_agent_version",
+      "context_window",
+      "git"
+    ],
+    "parent": "01a10553-1eec-70d3-9fe2-b04ffaae5907",
+    "compactions": 0
+  },
+  {
+    "file": "rollout-2026-10-04T07-25-45-01a106a9-aa08-7ba3-9a72-7e8d75349e7d.jsonl",
+    "id": "01a106a9-aa08-7ba3-9a72-7e8d75349e7d",
+    "source": {
+      "subagent": {
+        "other": "guardian"
+      }
+    },
+    "cwd": "C:\\Users\\mkarupat\\Desktop\\ADE",
+    "start": "2026-10-04T11:25:46.087Z",
+    "end": "2026-10-04T11:30:09.547Z",
+    "turns": 6,
+    "models": [
+      "codex-auto-review"
+    ],
+    "efforts": [
+      "low"
+    ],
+    "total": {
+      "input_tokens": 215026,
+      "cached_input_tokens": 176640,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 709,
+      "reasoning_output_tokens": 317,
+      "total_tokens": 215735
+    },
+    "usageEvents": 6,
+    "calls": 0,
+    "metaKeys": [
+      "creator_user_id",
+      "creator_account_id",
+      "session_id",
+      "id",
+      "parent_thread_id",
+      "timestamp",
+      "cwd",
+      "runtime_workspace_roots",
+      "originator",
+      "cli_version",
+      "source",
+      "thread_source",
+      "model_provider",
+      "base_instructions",
+      "history_mode",
+      "subagent_history_start_ordinal",
+      "multi_agent_version",
+      "context_window",
+      "git"
+    ],
+    "parent": "01a10553-1eec-70d3-9fe2-b04ffaae5907",
+    "compactions": 0
+  },
+  {
+    "file": "rollout-2026-10-04T07-32-16-01a106af-a1bb-7152-baa1-79172f27a026.jsonl",
+    "id": "01a106af-a1bb-7152-baa1-79172f27a026",
+    "source": {
+      "subagent": {
+        "other": "guardian"
+      }
+    },
+    "cwd": "C:\\Users\\mkarupat\\Desktop\\ADE",
+    "start": "2026-10-04T11:32:17.200Z",
+    "end": "2026-10-04T11:40:53.487Z",
+    "turns": 12,
+    "models": [
+      "codex-auto-review"
+    ],
+    "efforts": [
+      "low"
+    ],
+    "total": {
+      "input_tokens": 415973,
+      "cached_input_tokens": 374784,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 1178,
+      "reasoning_output_tokens": 478,
+      "total_tokens": 417151
+    },
+    "usageEvents": 12,
+    "calls": 0,
+    "metaKeys": [
+      "creator_user_id",
+      "creator_account_id",
+      "session_id",
+      "id",
+      "parent_thread_id",
+      "timestamp",
+      "cwd",
+      "runtime_workspace_roots",
+      "originator",
+      "cli_version",
+      "source",
+      "thread_source",
+      "model_provider",
+      "base_instructions",
+      "history_mode",
+      "subagent_history_start_ordinal",
+      "multi_agent_version",
+      "context_window",
+      "git"
+    ],
+    "parent": "01a10553-1eec-70d3-9fe2-b04ffaae5907",
+    "compactions": 0
+  },
+  {
+    "file": "rollout-2026-10-04T07-51-08-01a106c0-e7c6-7820-8f9c-4f843ffcf101.jsonl",
+    "id": "01a106c0-e7c6-7820-8f9c-4f843ffcf101",
+    "source": {
+      "subagent": {
+        "other": "guardian"
+      }
+    },
+    "cwd": "C:\\Users\\mkarupat\\Desktop\\ADE",
+    "start": "2026-10-04T11:51:09.077Z",
+    "end": "2026-10-04T11:51:13.031Z",
+    "turns": 1,
+    "models": [
+      "codex-auto-review"
+    ],
+    "efforts": [
+      "low"
+    ],
+    "total": {
+      "input_tokens": 22839,
+      "cached_input_tokens": 4864,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 137,
+      "reasoning_output_tokens": 73,
+      "total_tokens": 22976
+    },
+    "usageEvents": 1,
+    "calls": 0,
+    "metaKeys": [
+      "creator_user_id",
+      "creator_account_id",
+      "session_id",
+      "id",
+      "parent_thread_id",
+      "timestamp",
+      "cwd",
+      "runtime_workspace_roots",
+      "originator",
+      "cli_version",
+      "source",
+      "thread_source",
+      "model_provider",
+      "base_instructions",
+      "history_mode",
+      "subagent_history_start_ordinal",
+      "multi_agent_version",
+      "context_window",
+      "git"
+    ],
+    "parent": "01a10553-1eec-70d3-9fe2-b04ffaae5907",
+    "compactions": 0
+  },
+  {
+    "file": "rollout-2026-10-04T07-58-47-01a106c7-e863-7421-98cc-d9f9d44f0165.jsonl",
+    "id": "01a106c7-e863-7421-98cc-d9f9d44f0165",
+    "source": "vscode",
+    "cwd": "C:\\Users\\mkarupat\\Desktop\\ADE",
+    "start": "2026-10-04T11:59:03.723Z",
+    "end": "2026-10-04T12:58:48.792Z",
+    "turns": 14,
+    "models": [
+      "gpt-6.1-sol",
+      "gpt-6-luna"
+    ],
+    "efforts": [
+      "high",
+      "xhigh",
+      "medium"
+    ],
+    "total": {
+      "input_tokens": 15856890,
+      "cached_input_tokens": 15203456,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 36893,
+      "reasoning_output_tokens": 9959,
+      "total_tokens": 15893783
+    },
+    "usageEvents": 149,
+    "calls": 117,
+    "metaKeys": [
+      "creator_user_id",
+      "creator_account_id",
+      "session_id",
+      "id",
+      "timestamp",
+      "cwd",
+      "runtime_workspace_roots",
+      "originator",
+      "cli_version",
+      "source",
+      "thread_source",
+      "model_provider",
+      "base_instructions",
+      "history_mode",
+      "context_window",
+      "git"
+    ],
+    "compactions": 1
+  },
+  {
+    "file": "rollout-2026-10-04T08-13-59-01a106d5-d449-73b2-9bb1-c6d5076144da.jsonl",
+    "id": "01a106d5-d449-73b2-9bb1-c6d5076144da",
+    "source": {
+      "subagent": {
+        "thread_spawn": {
+          "parent_thread_id": "01a106c7-e863-7421-98cc-d9f9d44f0165",
+          "depth": 1,
+          "agent_path": "/root/warden_j",
+          "agent_nickname": "Leibniz",
+          "agent_role": null
+        }
+      }
+    },
+    "cwd": "C:\\Users\\mkarupat\\Desktop\\ADE",
+    "start": "2026-10-04T12:14:00.545Z",
+    "end": "2026-10-04T12:25:24.262Z",
+    "turns": 2,
+    "models": [
+      "gpt-6-sol"
+    ],
+    "efforts": [
+      "high"
+    ],
+    "total": {
+      "input_tokens": 2638735,
+      "cached_input_tokens": 2554240,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 14614,
+      "reasoning_output_tokens": 3803,
+      "total_tokens": 2653349
+    },
+    "usageEvents": 44,
+    "calls": 41,
+    "metaKeys": [
+      "creator_user_id",
+      "creator_account_id",
+      "session_id",
+      "id",
+      "parent_thread_id",
+      "timestamp",
+      "cwd",
+      "runtime_workspace_roots",
+      "originator",
+      "cli_version",
+      "source",
+      "thread_source",
+      "agent_nickname",
+      "agent_path",
+      "model_provider",
+      "base_instructions",
+      "history_mode",
+      "multi_agent_version",
+      "context_window",
+      "git"
+    ],
+    "parent": "01a106c7-e863-7421-98cc-d9f9d44f0165",
+    "compactions": 0
+  },
+  {
+    "file": "rollout-2026-10-04T08-14-12-01a106d6-0722-7560-bb52-426e19f88646.jsonl",
+    "id": "01a106d6-0722-7560-bb52-426e19f88646",
+    "source": {
+      "subagent": {
+        "thread_spawn": {
+          "parent_thread_id": "01a106c7-e863-7421-98cc-d9f9d44f0165",
+          "depth": 1,
+          "agent_path": "/root/warden_a",
+          "agent_nickname": "Laplace",
+          "agent_role": null
+        }
+      }
+    },
+    "cwd": "C:\\Users\\mkarupat\\Desktop\\ADE",
+    "start": "2026-10-04T12:14:13.672Z",
+    "end": "2026-10-04T12:15:54.093Z",
+    "turns": 1,
+    "models": [
+      "gpt-6-sol"
+    ],
+    "efforts": [
+      "high"
+    ],
+    "total": {
+      "input_tokens": 401310,
+      "cached_input_tokens": 374016,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 2695,
+      "reasoning_output_tokens": 689,
+      "total_tokens": 404005
+    },
+    "usageEvents": 9,
+    "calls": 8,
+    "metaKeys": [
+      "creator_user_id",
+      "creator_account_id",
+      "session_id",
+      "id",
+      "parent_thread_id",
+      "timestamp",
+      "cwd",
+      "runtime_workspace_roots",
+      "originator",
+      "cli_version",
+      "source",
+      "thread_source",
+      "agent_nickname",
+      "agent_path",
+      "model_provider",
+      "base_instructions",
+      "history_mode",
+      "multi_agent_version",
+      "context_window",
+      "git"
+    ],
+    "parent": "01a106c7-e863-7421-98cc-d9f9d44f0165",
+    "compactions": 0
+  },
+  {
+    "file": "rollout-2026-10-04T08-14-35-01a106d6-608f-76f0-9313-01d761bc34c8.jsonl",
+    "id": "01a106d6-608f-76f0-9313-01d761bc34c8",
+    "source": {
+      "subagent": {
+        "thread_spawn": {
+          "parent_thread_id": "01a106c7-e863-7421-98cc-d9f9d44f0165",
+          "depth": 1,
+          "agent_path": "/root/warden_g",
+          "agent_nickname": "Peirce",
+          "agent_role": null
+        }
+      }
+    },
+    "cwd": "C:\\Users\\mkarupat\\Desktop\\ADE",
+    "start": "2026-10-04T12:14:36.873Z",
+    "end": "2026-10-04T12:25:25.198Z",
+    "turns": 2,
+    "models": [
+      "gpt-6-sol"
+    ],
+    "efforts": [
+      "high"
+    ],
+    "total": {
+      "input_tokens": 3760790,
+      "cached_input_tokens": 3681536,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 19847,
+      "reasoning_output_tokens": 4350,
+      "total_tokens": 3780637
+    },
+    "usageEvents": 49,
+    "calls": 46,
+    "metaKeys": [
+      "creator_user_id",
+      "creator_account_id",
+      "session_id",
+      "id",
+      "parent_thread_id",
+      "timestamp",
+      "cwd",
+      "runtime_workspace_roots",
+      "originator",
+      "cli_version",
+      "source",
+      "thread_source",
+      "agent_nickname",
+      "agent_path",
+      "model_provider",
+      "base_instructions",
+      "history_mode",
+      "multi_agent_version",
+      "context_window",
+      "git"
+    ],
+    "parent": "01a106c7-e863-7421-98cc-d9f9d44f0165",
+    "compactions": 0
+  },
+  {
+    "file": "rollout-2026-10-04T08-14-55-01a106d6-af7d-7692-b093-1ee794f91d2f.jsonl",
+    "id": "01a106d6-af7d-7692-b093-1ee794f91d2f",
+    "source": {
+      "subagent": {
+        "other": "guardian"
+      }
+    },
+    "cwd": "C:\\Users\\mkarupat\\Desktop\\ADE",
+    "start": "2026-10-04T12:14:56.286Z",
+    "end": "2026-10-04T12:25:09.385Z",
+    "turns": 12,
+    "models": [
+      "codex-auto-review"
+    ],
+    "efforts": [
+      "low"
+    ],
+    "total": {
+      "input_tokens": 512731,
+      "cached_input_tokens": 455680,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 1090,
+      "reasoning_output_tokens": 364,
+      "total_tokens": 513821
+    },
+    "usageEvents": 12,
+    "calls": 0,
+    "metaKeys": [
+      "creator_user_id",
+      "creator_account_id",
+      "session_id",
+      "id",
+      "parent_thread_id",
+      "timestamp",
+      "cwd",
+      "runtime_workspace_roots",
+      "originator",
+      "cli_version",
+      "source",
+      "thread_source",
+      "model_provider",
+      "base_instructions",
+      "history_mode",
+      "multi_agent_version",
+      "context_window",
+      "git"
+    ],
+    "parent": "01a106c7-e863-7421-98cc-d9f9d44f0165",
+    "compactions": 0
+  },
+  {
+    "file": "rollout-2026-10-04T08-16-17-01a106d7-ed9d-7d60-bf21-9e5de35f0bc4.jsonl",
+    "id": "01a106d7-ed9d-7d60-bf21-9e5de35f0bc4",
+    "source": {
+      "subagent": {
+        "thread_spawn": {
+          "parent_thread_id": "01a106c7-e863-7421-98cc-d9f9d44f0165",
+          "depth": 1,
+          "agent_path": "/root/warden_review",
+          "agent_nickname": "Nash",
+          "agent_role": null
+        }
+      }
+    },
+    "cwd": "C:\\Users\\mkarupat\\Desktop\\ADE",
+    "start": "2026-10-04T12:16:18.367Z",
+    "end": "2026-10-04T12:35:28.573Z",
+    "turns": 2,
+    "models": [
+      "gpt-6-astra"
+    ],
+    "efforts": [
+      "high"
+    ],
+    "total": {
+      "input_tokens": 4166117,
+      "cached_input_tokens": 4037760,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 6879,
+      "reasoning_output_tokens": 2369,
+      "total_tokens": 4172996
+    },
+    "usageEvents": 46,
+    "calls": 43,
+    "metaKeys": [
+      "creator_user_id",
+      "creator_account_id",
+      "session_id",
+      "id",
+      "parent_thread_id",
+      "timestamp",
+      "cwd",
+      "runtime_workspace_roots",
+      "originator",
+      "cli_version",
+      "source",
+      "thread_source",
+      "agent_nickname",
+      "agent_path",
+      "model_provider",
+      "base_instructions",
+      "history_mode",
+      "multi_agent_version",
+      "context_window",
+      "git"
+    ],
+    "parent": "01a106c7-e863-7421-98cc-d9f9d44f0165",
+    "compactions": 0
+  },
+  {
+    "file": "rollout-2026-10-04T08-19-16-01a106da-aa97-7ba3-9b98-6fcf348915c0.jsonl",
+    "id": "01a106da-aa97-7ba3-9b98-6fcf348915c0",
+    "source": {
+      "subagent": {
+        "other": "guardian"
+      }
+    },
+    "cwd": "C:\\Users\\mkarupat\\Desktop\\ADE",
+    "start": "2026-10-04T12:19:17.173Z",
+    "end": "2026-10-04T12:20:02.646Z",
+    "turns": 2,
+    "models": [
+      "codex-auto-review"
+    ],
+    "efforts": [
+      "low"
+    ],
+    "total": {
+      "input_tokens": 45257,
+      "cached_input_tokens": 25088,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 235,
+      "reasoning_output_tokens": 125,
+      "total_tokens": 45492
+    },
+    "usageEvents": 2,
+    "calls": 0,
+    "metaKeys": [
+      "creator_user_id",
+      "creator_account_id",
+      "session_id",
+      "id",
+      "parent_thread_id",
+      "timestamp",
+      "cwd",
+      "runtime_workspace_roots",
+      "originator",
+      "cli_version",
+      "source",
+      "thread_source",
+      "model_provider",
+      "base_instructions",
+      "history_mode",
+      "multi_agent_version",
+      "context_window",
+      "git"
+    ],
+    "parent": "01a106d5-d449-73b2-9bb1-c6d5076144da",
+    "compactions": 0
+  },
+  {
+    "file": "rollout-2026-10-04T08-22-18-01a106dd-709e-7ae0-aaa1-7c966ba6b62e.jsonl",
+    "id": "01a106dd-709e-7ae0-aaa1-7c966ba6b62e",
+    "source": {
+      "subagent": {
+        "other": "guardian"
+      }
+    },
+    "cwd": "C:\\Users\\mkarupat\\Desktop\\ADE",
+    "start": "2026-10-04T12:22:18.832Z",
+    "end": "2026-10-04T12:25:16.903Z",
+    "turns": 4,
+    "models": [
+      "codex-auto-review"
+    ],
+    "efforts": [
+      "low"
+    ],
+    "total": {
+      "input_tokens": 93356,
+      "cached_input_tokens": 66560,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 328,
+      "reasoning_output_tokens": 113,
+      "total_tokens": 93684
+    },
+    "usageEvents": 4,
+    "calls": 0,
+    "metaKeys": [
+      "creator_user_id",
+      "creator_account_id",
+      "session_id",
+      "id",
+      "parent_thread_id",
+      "timestamp",
+      "cwd",
+      "runtime_workspace_roots",
+      "originator",
+      "cli_version",
+      "source",
+      "thread_source",
+      "model_provider",
+      "base_instructions",
+      "history_mode",
+      "multi_agent_version",
+      "context_window",
+      "git"
+    ],
+    "parent": "01a106d6-608f-76f0-9313-01d761bc34c8",
+    "compactions": 0
+  },
+  {
+    "file": "rollout-2026-10-04T08-26-21-01a106e1-25b1-7c21-b657-79e41afb53c3.jsonl",
+    "id": "01a106e1-25b1-7c21-b657-79e41afb53c3",
+    "source": {
+      "subagent": {
+        "other": "guardian"
+      }
+    },
+    "cwd": "C:\\Users\\mkarupat\\Desktop\\ADE",
+    "start": "2026-10-04T12:26:21.774Z",
+    "end": "2026-10-04T12:26:44.927Z",
+    "turns": 3,
+    "models": [
+      "codex-auto-review"
+    ],
+    "efforts": [
+      "low"
+    ],
+    "total": {
+      "input_tokens": 54065,
+      "cached_input_tokens": 38144,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 433,
+      "reasoning_output_tokens": 240,
+      "total_tokens": 54498
+    },
+    "usageEvents": 3,
+    "calls": 0,
+    "metaKeys": [
+      "creator_user_id",
+      "creator_account_id",
+      "session_id",
+      "id",
+      "parent_thread_id",
+      "timestamp",
+      "cwd",
+      "runtime_workspace_roots",
+      "originator",
+      "cli_version",
+      "source",
+      "thread_source",
+      "model_provider",
+      "base_instructions",
+      "history_mode",
+      "multi_agent_version",
+      "context_window",
+      "git"
+    ],
+    "parent": "01a106c7-e863-7421-98cc-d9f9d44f0165",
+    "compactions": 0
+  },
+  {
+    "file": "rollout-2026-10-04T08-28-18-01a106e2-f023-7661-849a-2dead0d2cb67.jsonl",
+    "id": "01a106e2-f023-7661-849a-2dead0d2cb67",
+    "source": {
+      "subagent": {
+        "thread_spawn": {
+          "parent_thread_id": "01a106c7-e863-7421-98cc-d9f9d44f0165",
+          "depth": 1,
+          "agent_path": "/root/warden_i_core",
+          "agent_nickname": "Arendt",
+          "agent_role": null
+        }
+      }
+    },
+    "cwd": "C:\\Users\\mkarupat\\Desktop\\ADE",
+    "start": "2026-10-04T12:28:19.446Z",
+    "end": "2026-10-04T12:42:57.805Z",
+    "turns": 2,
+    "models": [
+      "gpt-6-astra"
+    ],
+    "efforts": [
+      "high"
+    ],
+    "total": {
+      "input_tokens": 2198914,
+      "cached_input_tokens": 2132096,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 8803,
+      "reasoning_output_tokens": 878,
+      "total_tokens": 2207717
+    },
+    "usageEvents": 38,
+    "calls": 35,
+    "metaKeys": [
+      "creator_user_id",
+      "creator_account_id",
+      "session_id",
+      "id",
+      "parent_thread_id",
+      "timestamp",
+      "cwd",
+      "runtime_workspace_roots",
+      "originator",
+      "cli_version",
+      "source",
+      "thread_source",
+      "agent_nickname",
+      "agent_path",
+      "model_provider",
+      "base_instructions",
+      "history_mode",
+      "multi_agent_version",
+      "context_window",
+      "git"
+    ],
+    "parent": "01a106c7-e863-7421-98cc-d9f9d44f0165",
+    "compactions": 0
+  },
+  {
+    "file": "rollout-2026-10-04T08-28-19-01a106e2-f228-78b1-848f-c95f8243b9a0.jsonl",
+    "id": "01a106e2-f228-78b1-848f-c95f8243b9a0",
+    "source": {
+      "subagent": {
+        "other": "guardian"
+      }
+    },
+    "cwd": "C:\\Users\\mkarupat\\Desktop\\ADE",
+    "start": "2026-10-04T12:30:07.716Z",
+    "end": "2026-10-04T12:30:12.315Z",
+    "turns": 1,
+    "models": [
+      "codex-auto-review"
+    ],
+    "efforts": [
+      "low"
+    ],
+    "total": {
+      "input_tokens": 20065,
+      "cached_input_tokens": 4864,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 149,
+      "reasoning_output_tokens": 85,
+      "total_tokens": 20214
+    },
+    "usageEvents": 1,
+    "calls": 0,
+    "metaKeys": [
+      "creator_user_id",
+      "creator_account_id",
+      "session_id",
+      "id",
+      "parent_thread_id",
+      "timestamp",
+      "cwd",
+      "runtime_workspace_roots",
+      "originator",
+      "cli_version",
+      "source",
+      "thread_source",
+      "model_provider",
+      "base_instructions",
+      "history_mode",
+      "multi_agent_version",
+      "context_window",
+      "git"
+    ],
+    "parent": "01a106e2-f023-7661-849a-2dead0d2cb67",
+    "compactions": 0
+  },
+  {
+    "file": "rollout-2026-10-04T08-28-40-01a106e3-4654-7f53-b943-9efaa5a9d736.jsonl",
+    "id": "01a106e3-4654-7f53-b943-9efaa5a9d736",
+    "source": {
+      "subagent": {
+        "thread_spawn": {
+          "parent_thread_id": "01a106c7-e863-7421-98cc-d9f9d44f0165",
+          "depth": 1,
+          "agent_path": "/root/warden_i_hooks",
+          "agent_nickname": "Popper",
+          "agent_role": null
+        }
+      }
+    },
+    "cwd": "C:\\Users\\mkarupat\\Desktop\\ADE",
+    "start": "2026-10-04T12:28:41.473Z",
+    "end": "2026-10-04T12:43:34.744Z",
+    "turns": 2,
+    "models": [
+      "gpt-6-sol"
+    ],
+    "efforts": [
+      "high"
+    ],
+    "total": {
+      "input_tokens": 5121562,
+      "cached_input_tokens": 5032704,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 17162,
+      "reasoning_output_tokens": 4011,
+      "total_tokens": 5138724
+    },
+    "usageEvents": 77,
+    "calls": 69,
+    "metaKeys": [
+      "creator_user_id",
+      "creator_account_id",
+      "session_id",
+      "id",
+      "parent_thread_id",
+      "timestamp",
+      "cwd",
+      "runtime_workspace_roots",
+      "originator",
+      "cli_version",
+      "source",
+      "thread_source",
+      "agent_nickname",
+      "agent_path",
+      "model_provider",
+      "base_instructions",
+      "history_mode",
+      "multi_agent_version",
+      "context_window",
+      "git"
+    ],
+    "parent": "01a106c7-e863-7421-98cc-d9f9d44f0165",
+    "compactions": 0
+  },
+  {
+    "file": "rollout-2026-10-04T08-29-00-01a106e3-91b1-7f93-8d1b-c0038cf1ac00.jsonl",
+    "id": "01a106e3-91b1-7f93-8d1b-c0038cf1ac00",
+    "source": {
+      "subagent": {
+        "thread_spawn": {
+          "parent_thread_id": "01a106c7-e863-7421-98cc-d9f9d44f0165",
+          "depth": 1,
+          "agent_path": "/root/warden_i_scenarios",
+          "agent_nickname": "Schrodinger",
+          "agent_role": null
+        }
+      }
+    },
+    "cwd": "C:\\Users\\mkarupat\\Desktop\\ADE",
+    "start": "2026-10-04T12:29:00.768Z",
+    "end": "2026-10-04T12:43:43.916Z",
+    "turns": 1,
+    "models": [
+      "gpt-6-sol"
+    ],
+    "efforts": [
+      "high"
+    ],
+    "total": {
+      "input_tokens": 7438858,
+      "cached_input_tokens": 7322240,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 21634,
+      "reasoning_output_tokens": 5961,
+      "total_tokens": 7460492
+    },
+    "usageEvents": 82,
+    "calls": 76,
+    "metaKeys": [
+      "creator_user_id",
+      "creator_account_id",
+      "session_id",
+      "id",
+      "parent_thread_id",
+      "timestamp",
+      "cwd",
+      "runtime_workspace_roots",
+      "originator",
+      "cli_version",
+      "source",
+      "thread_source",
+      "agent_nickname",
+      "agent_path",
+      "model_provider",
+      "base_instructions",
+      "history_mode",
+      "multi_agent_version",
+      "context_window",
+      "git"
+    ],
+    "parent": "01a106c7-e863-7421-98cc-d9f9d44f0165",
+    "compactions": 0
+  },
+  {
+    "file": "rollout-2026-10-04T08-29-00-01a106e3-939d-7013-9949-cda305baf772.jsonl",
+    "id": "01a106e3-939d-7013-9949-cda305baf772",
+    "source": {
+      "subagent": {
+        "other": "guardian"
+      }
+    },
+    "cwd": "C:\\Users\\mkarupat\\Desktop\\ADE",
+    "start": "2026-10-04T12:30:58.887Z",
+    "end": "2026-10-04T12:42:28.639Z",
+    "turns": 10,
+    "models": [
+      "codex-auto-review"
+    ],
+    "efforts": [
+      "low"
+    ],
+    "total": {
+      "input_tokens": 418643,
+      "cached_input_tokens": 353792,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 856,
+      "reasoning_output_tokens": 273,
+      "total_tokens": 419499
+    },
+    "usageEvents": 10,
+    "calls": 0,
+    "metaKeys": [
+      "creator_user_id",
+      "creator_account_id",
+      "session_id",
+      "id",
+      "parent_thread_id",
+      "timestamp",
+      "cwd",
+      "runtime_workspace_roots",
+      "originator",
+      "cli_version",
+      "source",
+      "thread_source",
+      "model_provider",
+      "base_instructions",
+      "history_mode",
+      "multi_agent_version",
+      "context_window",
+      "git"
+    ],
+    "parent": "01a106e3-91b1-7f93-8d1b-c0038cf1ac00",
+    "compactions": 0
+  },
+  {
+    "file": "rollout-2026-10-04T08-31-45-01a106e6-1699-7693-ac63-604bc95ae79b.jsonl",
+    "id": "01a106e6-1699-7693-ac63-604bc95ae79b",
+    "source": {
+      "subagent": {
+        "other": "guardian"
+      }
+    },
+    "cwd": "C:\\Users\\mkarupat\\Desktop\\ADE",
+    "start": "2026-10-04T12:31:45.701Z",
+    "end": "2026-10-04T12:31:56.115Z",
+    "turns": 1,
+    "models": [
+      "codex-auto-review"
+    ],
+    "efforts": [
+      "low"
+    ],
+    "total": {
+      "input_tokens": 42971,
+      "cached_input_tokens": 25088,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 422,
+      "reasoning_output_tokens": 280,
+      "total_tokens": 43393
+    },
+    "usageEvents": 2,
+    "calls": 1,
+    "metaKeys": [
+      "creator_user_id",
+      "creator_account_id",
+      "session_id",
+      "id",
+      "parent_thread_id",
+      "timestamp",
+      "cwd",
+      "runtime_workspace_roots",
+      "originator",
+      "cli_version",
+      "source",
+      "thread_source",
+      "model_provider",
+      "base_instructions",
+      "history_mode",
+      "multi_agent_version",
+      "context_window",
+      "git"
+    ],
+    "parent": "01a106c7-e863-7421-98cc-d9f9d44f0165",
+    "compactions": 0
+  },
+  {
+    "file": "rollout-2026-10-04T08-34-46-01a106e8-d9ef-7d52-b6c0-4d150f28e621.jsonl",
+    "id": "01a106e8-d9ef-7d52-b6c0-4d150f28e621",
+    "source": {
+      "subagent": {
+        "other": "guardian"
+      }
+    },
+    "cwd": "C:\\Users\\mkarupat\\Desktop\\ADE",
+    "start": "2026-10-04T12:41:18.911Z",
+    "end": "2026-10-04T12:41:23.358Z",
+    "turns": 1,
+    "models": [
+      "codex-auto-review"
+    ],
+    "efforts": [
+      "low"
+    ],
+    "total": {
+      "input_tokens": 20421,
+      "cached_input_tokens": 4864,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 147,
+      "reasoning_output_tokens": 99,
+      "total_tokens": 20568
+    },
+    "usageEvents": 1,
+    "calls": 0,
+    "metaKeys": [
+      "creator_user_id",
+      "creator_account_id",
+      "session_id",
+      "id",
+      "parent_thread_id",
+      "timestamp",
+      "cwd",
+      "runtime_workspace_roots",
+      "originator",
+      "cli_version",
+      "source",
+      "thread_source",
+      "model_provider",
+      "base_instructions",
+      "history_mode",
+      "multi_agent_version",
+      "context_window",
+      "git"
+    ],
+    "parent": "01a106e2-f023-7661-849a-2dead0d2cb67",
+    "compactions": 0
+  },
+  {
+    "file": "rollout-2026-10-04T08-36-40-01a106ea-97bd-74c2-ba78-78e03a64de8e.jsonl",
+    "id": "01a106ea-97bd-74c2-ba78-78e03a64de8e",
+    "source": {
+      "subagent": {
+        "other": "guardian"
+      }
+    },
+    "cwd": "C:\\Users\\mkarupat\\Desktop\\ADE",
+    "start": "2026-10-04T12:38:31.127Z",
+    "end": "2026-10-04T12:42:22.938Z",
+    "turns": 4,
+    "models": [
+      "codex-auto-review"
+    ],
+    "efforts": [
+      "low"
+    ],
+    "total": {
+      "input_tokens": 86425,
+      "cached_input_tokens": 63488,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 349,
+      "reasoning_output_tokens": 120,
+      "total_tokens": 86774
+    },
+    "usageEvents": 4,
+    "calls": 0,
+    "metaKeys": [
+      "creator_user_id",
+      "creator_account_id",
+      "session_id",
+      "id",
+      "parent_thread_id",
+      "timestamp",
+      "cwd",
+      "runtime_workspace_roots",
+      "originator",
+      "cli_version",
+      "source",
+      "thread_source",
+      "model_provider",
+      "base_instructions",
+      "history_mode",
+      "multi_agent_version",
+      "context_window",
+      "git"
+    ],
+    "parent": "01a106e3-4654-7f53-b943-9efaa5a9d736",
+    "compactions": 0
+  },
+  {
+    "file": "rollout-2026-10-04T08-38-59-01a106ec-b58c-7622-a362-eb9aa59928c2.jsonl",
+    "id": "01a106ec-b58c-7622-a362-eb9aa59928c2",
+    "source": {
+      "subagent": {
+        "other": "guardian"
+      }
+    },
+    "cwd": "C:\\Users\\mkarupat\\Desktop\\ADE",
+    "start": "2026-10-04T12:38:59.799Z",
+    "end": "2026-10-04T12:45:58.785Z",
+    "turns": 7,
+    "models": [
+      "codex-auto-review"
+    ],
+    "efforts": [
+      "low"
+    ],
+    "total": {
+      "input_tokens": 264413,
+      "cached_input_tokens": 221440,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 823,
+      "reasoning_output_tokens": 370,
+      "total_tokens": 265236
+    },
+    "usageEvents": 7,
+    "calls": 0,
+    "metaKeys": [
+      "creator_user_id",
+      "creator_account_id",
+      "session_id",
+      "id",
+      "parent_thread_id",
+      "timestamp",
+      "cwd",
+      "runtime_workspace_roots",
+      "originator",
+      "cli_version",
+      "source",
+      "thread_source",
+      "model_provider",
+      "base_instructions",
+      "history_mode",
+      "subagent_history_start_ordinal",
+      "multi_agent_version",
+      "context_window",
+      "git"
+    ],
+    "parent": "01a106c7-e863-7421-98cc-d9f9d44f0165",
+    "compactions": 0
+  },
+  {
+    "file": "rollout-2026-10-04T08-43-23-01a106f0-bef3-7b70-adbc-4b94a2b65121.jsonl",
+    "id": "01a106f0-bef3-7b70-adbc-4b94a2b65121",
+    "source": {
+      "subagent": {
+        "other": "guardian"
+      }
+    },
+    "cwd": "C:\\Users\\mkarupat\\Desktop\\ADE",
+    "start": "2026-10-04T12:43:24.046Z",
+    "end": "2026-10-04T12:43:27.926Z",
+    "turns": 1,
+    "models": [
+      "codex-auto-review"
+    ],
+    "efforts": [
+      "low"
+    ],
+    "total": {
+      "input_tokens": 19998,
+      "cached_input_tokens": 4864,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 155,
+      "reasoning_output_tokens": 93,
+      "total_tokens": 20153
+    },
+    "usageEvents": 1,
+    "calls": 0,
+    "metaKeys": [
+      "creator_user_id",
+      "creator_account_id",
+      "session_id",
+      "id",
+      "parent_thread_id",
+      "timestamp",
+      "cwd",
+      "runtime_workspace_roots",
+      "originator",
+      "cli_version",
+      "source",
+      "thread_source",
+      "model_provider",
+      "base_instructions",
+      "history_mode",
+      "multi_agent_version",
+      "context_window",
+      "git"
+    ],
+    "parent": "01a106e3-91b1-7f93-8d1b-c0038cf1ac00",
+    "compactions": 0
+  }
+]
