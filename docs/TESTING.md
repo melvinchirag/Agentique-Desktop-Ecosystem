@@ -22,7 +22,7 @@ Every result is either **passed**, **failed**, or **blocked**. A test is never d
 
 - Use only ignored local `.env` files. Confirm with `git check-ignore -v .env` before adding values.
 - Backboard assistant IDs and ElevenLabs voice IDs must belong to the same accounts as their API keys.
-- Tiger needs both `TIGER_DATABASE_URL` and a readable `TIGER_CA_FILE`; do not disable TLS verification.
+- Tiger is optional since v0.2 (history is local in `ade.db`). If you test it, it needs both `TIGER_DATABASE_URL` and a readable `TIGER_CA_FILE`; do not disable TLS verification.
 - If any credential, model selection, certificate, or external service is unavailable, mark the live test **blocked** and name the missing prerequisite. Do not infer a pass from offline tests.
 
 ## Chip live acceptance: C1–C3

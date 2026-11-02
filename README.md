@@ -16,6 +16,18 @@ Tracks: **Ideation Matrix**, **VentureWell Innovation**. MLH: **Backboard**, **E
 | 🐜 **Swarm** | Planning |
 | 🦋 **Iris** · 🐦 **Celene** | Social post drafts · mood music (extras) |
 
+## Status: v0.2 (Nov 2, 2026)
+| Part | Where it runs |
+|---|---|
+| The AI's thinking | **Backboard** (cloud), Gemini 2.5 Flash by default. Your own Claude Code / Codex / Gemini sign-in is planned, not built |
+| Memories, Timeline, Audit, chat history | **On your computer**, one SQLite file (`%APPDATA%\ADE\ade.db`). No Backboard memory, no Tiger |
+| Voices | ElevenLabs (optional) |
+| Gmail / Calendar (Pixel) | Google sign-in (needs the Google client keys) |
+
+New in v0.2: talk to an animal while it works ("Archie, skip the PDFs"), drag animals along the taskbar, easy quit (Hub ✕, tray, Ctrl+Shift+Q), a Setup screen for your own Backboard key. Full list and limits: [`docs/RELEASE-0.2.0.md`](docs/RELEASE-0.2.0.md). The docs below were written at the hackathon (Oct 4); where they say Tiger or Backboard memory stores history, v0.2 stores it locally.
+
+Run it: `npm install`, then `npm run dev` (or `scripts\start-ade.cmd`). Build the installer: `npm run build:win`.
+
 ## Read first
 | Doc | What |
 |---|---|
