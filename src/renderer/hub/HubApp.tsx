@@ -21,6 +21,7 @@ export const HubApp: HubAppComponent = ({ store, api, shell }) => {
   const [collapsed, setCollapsed] = useState(false);
   const [selectedMemoryAgent, setSelectedMemoryAgent] = useState<AgentId>('chipmunk');
   const [showOnboarding, setShowOnboarding] = useState(() => !isOnboarded());
+  const historyEnabled = store((state) => state.settings?.historyEnabled);
 
   const chatInputRef = useRef<HTMLInputElement>(null);
 
@@ -160,9 +161,12 @@ export const HubApp: HubAppComponent = ({ store, api, shell }) => {
                 onSelectAgent={setSelectedMemoryAgent}
               />
             )}
-            {activeTab === 'pulse' && <PulseTab api={api} />}
-            {activeTab === 'timeline' && <TimelineTab api={api} shell={shell} />}
-            {activeTab === 'audit' && <AuditTab api={api} shell={shell} />}
+            {(['pulse', 'timeline', 'audit'] as HubTab[]).includes(activeTab) && historyEnabled === false ? (
+              <p className="hub-history-off" role="status">History is off. ADE is running without a Tiger Data connection; actions still run and Warden still checks them. Add TIGER_DATABASE_URL to turn on audit, replay and pulse.</p>
+            ) : null}
+            {activeTab === 'pulse' && historyEnabled !== false && <PulseTab api={api} />}
+            {activeTab === 'timeline' && historyEnabled !== false && <TimelineTab api={api} shell={shell} />}
+            {activeTab === 'audit' && historyEnabled !== false && <AuditTab api={api} shell={shell} />}
 
             {/* Overlays / Full panels */}
             {activeTab === 'settings' && (

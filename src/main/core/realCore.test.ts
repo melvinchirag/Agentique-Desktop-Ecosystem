@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { createRealCore, defaultSettings, disconnectedCalendar, loadPersistedSettings, loadRealCoreEnv, missingRealCoreKeys, savePersistedSettings } from './realCore';
+import { createRealCore, decideCore, defaultSettings, disconnectedCalendar, loadPersistedSettings, loadRealCoreEnv, missingRealCoreKeys, savePersistedSettings } from './realCore';
 import { makeTestSettings } from '../testing/settings';
 
 describe('real core startup fallback', () => {
@@ -52,10 +52,14 @@ describe('real core startup fallback', () => {
       expect(loaded.models.chipmunk).toEqual(saved.models.chipmunk);
     } finally { rmSync(root, { recursive: true, force: true }); }
   });
-  it('requires the Chip and Tiger credentials but treats voice as optional', () => {
-    expect(missingRealCoreKeys({})).toEqual(['BACKBOARD_API_KEY', 'BB_ASSISTANT_CHIPMUNK', 'TIGER_DATABASE_URL']);
+  it('requires only the Backboard pair and reports Tiger history separately', () => {
+    expect(missingRealCoreKeys({})).toEqual(['BACKBOARD_API_KEY', 'BB_ASSISTANT_CHIPMUNK']);
     expect(missingRealCoreKeys({ BACKBOARD_API_KEY: 'bb', BB_ASSISTANT_CHIPMUNK: 'chip', TIGER_DATABASE_URL: 'postgres://user:pass@example/db' })).toEqual([]);
-    expect(missingRealCoreKeys({ BACKBOARD_API_KEY: 'bb', BB_ASSISTANT_CHIPMUNK: 'chip', TIGER_DATABASE_URL: 'postgres://user@example/db' })).toEqual(['TIGER_DATABASE_URL credentials']);
+    expect(decideCore({})).toEqual({ core: 'fake', reasons: ['BACKBOARD_API_KEY', 'BB_ASSISTANT_CHIPMUNK'], historyEnabled: false });
+    expect(decideCore({ BACKBOARD_API_KEY: 'bb', BB_ASSISTANT_CHIPMUNK: 'chip' })).toEqual({ core: 'real', reasons: [], historyEnabled: false });
+    expect(decideCore({ BACKBOARD_API_KEY: 'bb', BB_ASSISTANT_CHIPMUNK: 'chip', TIGER_DATABASE_URL: ' ' }).historyEnabled).toBe(false);
+    expect(decideCore({ BACKBOARD_API_KEY: 'bb', BB_ASSISTANT_CHIPMUNK: 'chip', TIGER_DATABASE_URL: 'postgres://user:pass@example/db' }).historyEnabled).toBe(true);
+    expect(decideCore({ BACKBOARD_API_KEY: 'bb', BB_ASSISTANT_CHIPMUNK: 'chip', TIGER_DATABASE_URL: 'postgres://user@example/db' }).reasons).toEqual(['TIGER_DATABASE_URL credentials']);
   });
 
   it('keeps --demo on FakeCore and warns in the Hub when normal startup lacks keys', async () => {
@@ -76,5 +80,23 @@ describe('real core startup fallback', () => {
     expect(await fallback.getMemories('chipmunk')).toEqual([]);
     expect(await fallback.searchMemories('chipmunk', 'sample')).toEqual([]);
     fallback.dispose?.();
+  });
+
+  it('starts real core with Backboard alone and leaves history queries empty', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'ade-no-tiger-'));
+    try {
+      const core = createRealCore({ env: { BACKBOARD_API_KEY: 'test', BB_ASSISTANT_CHIPMUNK: 'test' }, dataDir: root,
+        desktopRoot: root, documentsRoot: root, downloadsRoot: root });
+      const alerts: string[] = [];
+      core.subscribe(event => { if (event.type === 'wolf.alert') alerts.push(event.reason); });
+      core.start?.();
+      expect((await core.getSettings()).historyEnabled).toBe(false);
+      expect((await core.getSettings()).demoMode).toBe(false);
+      expect(alerts).not.toContain('Running demo core: missing keys');
+      expect(await core.getTimeline(0, Date.now())).toEqual([]);
+      expect(await core.getWardenAudit(50)).toEqual([]);
+      expect(await core.getPulse()).toEqual({});
+      core.dispose?.();
+    } finally { rmSync(root, { recursive: true, force: true }); }
   });
 });
