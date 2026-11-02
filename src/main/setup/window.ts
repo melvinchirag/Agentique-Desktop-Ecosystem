@@ -1,6 +1,6 @@
 import { app, BrowserWindow, ipcMain, shell } from 'electron';
 import { join } from 'node:path';
-import { adeDataDir } from '../store/tiger';
+import { adeDataDir } from '../paths';
 import { loadRealCoreEnv, usesCliBrain } from '../core/realCore';
 import { readEnvFile } from '../sponsors/env';
 import { detectClaudeCli, installClaudeCli, signInClaudeCli } from '../brain/detect';

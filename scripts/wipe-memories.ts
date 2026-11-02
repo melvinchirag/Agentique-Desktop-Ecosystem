@@ -4,7 +4,7 @@
 import { join } from 'node:path';
 import { BackboardClient } from '../src/main/runtime/backboard';
 import { readEnvFile } from '../src/main/sponsors/env';
-import { adeDataDir } from '../src/main/store/tiger';
+import { adeDataDir } from '../src/main/paths';
 
 async function main(): Promise<void> {
   const args = process.argv.slice(2);

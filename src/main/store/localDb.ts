@@ -1,7 +1,7 @@
 /**
  * ADE's own data, in one SQLite file on the user's machine: %APPDATA%\ADE\ade.db.
  * Built-in `node:sqlite` (Electron 44 ships Node 24 with SQLite 3.53), so there is nothing to install.
- * Replaces Tiger Cloud (events, audit, replay, pulse) and Backboard (memories, conversation threads).
+ * Holds events, audit, replay, pulse, memories, conversation threads, nudges, plans and research. No cloud database.
  */
 import { mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -31,6 +31,24 @@ CREATE TABLE IF NOT EXISTS thread_messages (
   tool_calls TEXT, tool_call_id TEXT, ts INTEGER NOT NULL, tokens INTEGER NOT NULL
 );
 CREATE INDEX IF NOT EXISTS ix_thread ON thread_messages (thread_id, rowid);
+
+CREATE TABLE IF NOT EXISTS nudges (
+  id TEXT PRIMARY KEY, kind TEXT NOT NULL, about TEXT NOT NULL, question TEXT NOT NULL, ask_at INTEGER NOT NULL,
+  state TEXT NOT NULL, source TEXT NOT NULL, event_id TEXT
+);
+CREATE INDEX IF NOT EXISTS ix_nudges_due ON nudges (state, ask_at);
+CREATE INDEX IF NOT EXISTS ix_nudges_event ON nudges (event_id, kind);
+
+CREATE TABLE IF NOT EXISTS plan_items (
+  id TEXT PRIMARY KEY, plan_id TEXT NOT NULL, goal TEXT NOT NULL, step_no INTEGER NOT NULL, plan_date TEXT NOT NULL,
+  title TEXT NOT NULL, start_at INTEGER, end_at INTEGER, status TEXT NOT NULL, created_at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS ix_plan_day ON plan_items (plan_date, created_at, step_no);
+
+CREATE TABLE IF NOT EXISTS research_log (
+  id TEXT PRIMARY KEY, ts INTEGER NOT NULL, title TEXT NOT NULL, sources TEXT NOT NULL, brief_path TEXT
+);
+CREATE INDEX IF NOT EXISTS ix_research_ts ON research_log (ts);
 `;
 
 /** Opens (or creates) the database. `file` = ':memory:' for tests. Purges events older than 90 days. */

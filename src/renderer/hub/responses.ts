@@ -1,5 +1,5 @@
 import type { AgentId } from '../../shared/agents';
-import type { WardenCounts } from '../../main/store/tigerWarden';
+import type { WardenCounts } from '../../main/store/wardenAudit';
 
 /** The response consumed by the Hub and returned by both live and demo cores. */
 export interface PulseResponse {

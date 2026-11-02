@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
-import { adeDataDir } from '../store/tiger';
+import { adeDataDir } from '../paths';
 import type { SafeStorageLike } from '../connectors/google/tokenStore';
 import type { Session } from './supabase';
 
