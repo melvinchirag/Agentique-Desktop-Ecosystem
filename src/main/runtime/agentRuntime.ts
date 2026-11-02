@@ -98,12 +98,15 @@ export class AgentRuntime implements SpecialistRunner {
     try {
       if (ctx.signal.aborted) throw new Error('Aborted');
       // No threadId on this send: each job gets a new Backboard thread.
-      let response = await this.retry(() => this.deps.llm.send({
-        assistantId, content: task, systemPrompt: definition.systemPrompt, tools,
+      const sendTurn = (content: string, threadId?: string) => this.retry(() => this.deps.llm.send({
+        assistantId, ...(threadId ? { threadId } : {}), content, systemPrompt: definition.systemPrompt, tools,
         model: this.deps.settings().models[agentId], memory,
         webSearch: definition.webSearch ? 'Auto' : 'off', signal: ctx.signal,
       }), ctx.signal);
+      let response = await sendTurn(task);
       let rounds = 0;
+      let askedForAnswer = false;
+      for (;;) {
       while (response.status === 'REQUIRES_ACTION') {
         if (rounds++ >= maxRounds) return this.failure('Tool round limit reached.', artifacts);
         if (!response.thread_id || !response.tool_calls?.length) return this.failure('Backboard returned no tool calls or thread.', artifacts);
@@ -118,6 +121,14 @@ export class AgentRuntime implements SpecialistRunner {
         response = await this.retry(() => this.deps.llm.submitToolOutputs(threadId, outputs, ctx.signal, this.deps.settings().models[agentId]), ctx.signal);
       }
       if (response.status !== 'COMPLETED') return this.failure(`Backboard ${response.status ?? 'did not complete'}.`, artifacts);
+      // Gemini sometimes completes a tool round with empty text (live runs, Nov 2). Ask once, on the same thread, before failing.
+      if (!askedForAnswer && !response.content?.trim() && response.thread_id && !ctx.signal.aborted) {
+        askedForAnswer = true;
+        response = await sendTurn('Continue the job: take the next step it needs, or give your FINAL ANSWER in the required format.', response.thread_id);
+        continue;
+      }
+      break;
+      }
       const parsed = parseSpecialistOutput(response.content, AGENTS[agentId].displayName);
       if (!parsed.summary) return this.failure('Backboard completed without an answer.', artifacts);
       if (this.deps.screen) {
