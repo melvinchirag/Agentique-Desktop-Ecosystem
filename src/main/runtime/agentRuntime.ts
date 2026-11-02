@@ -6,6 +6,7 @@ import type {
   OpenAiTool, SpecialistId, SpecialistRunner, SpecialistRunContext, WardenGate,
 } from './types';
 import { parseSpecialistOutput } from './specialistOutput';
+import type { Steering } from './steering';
 
 export const SPECIALIST_TOOL_OUTPUT_MAX_CHARS = 12_000;
 const DEFAULT_MAX_TOOL_ROUNDS = 8;
@@ -26,6 +27,8 @@ export interface AgentRuntimeDeps {
   agents: RegisteredSpecialist[];
   /** Warden's result screen, when wired, checks results before Chip or a teammate receives them. */
   screen?: InjectionScreen;
+  /** Notes the user sends to this animal while its job runs; read at each tool round. */
+  steering?: Steering;
 }
 
 function isSpecialist(id: string): id is SpecialistId {
@@ -91,6 +94,7 @@ export class AgentRuntime implements SpecialistRunner {
     const memory = entry.memory?.[ctx.kind] ?? (ctx.kind === 'help' ? 'Readonly' : 'Auto');
     const maxRounds = definition.maxToolRounds > 0 ? definition.maxToolRounds : DEFAULT_MAX_TOOL_ROUNDS;
 
+    this.deps.steering?.begin(agentId);
     try {
       if (ctx.signal.aborted) throw new Error('Aborted');
       // No threadId on this send: each job gets a new Backboard thread.
@@ -108,6 +112,9 @@ export class AgentRuntime implements SpecialistRunner {
           tool_call_id: call.id,
           output: await this.execute(agentId, definition, call, ctx, threadId, artifacts),
         })));
+        // The user spoke to this animal mid-job: hand the note over with this round's results.
+        const notes = this.deps.steering?.take(agentId) ?? [];
+        if (notes.length) outputs[0]!.output = JSON.stringify({ note_from_user_while_you_work: notes.join(' '), tool_result: JSON.parse(outputs[0]!.output) });
         response = await this.retry(() => this.deps.llm.submitToolOutputs(threadId, outputs, ctx.signal, this.deps.settings().models[agentId]), ctx.signal);
       }
       if (response.status !== 'COMPLETED') return this.failure(`Backboard ${response.status ?? 'did not complete'}.`, artifacts);
@@ -130,6 +137,8 @@ export class AgentRuntime implements SpecialistRunner {
       return this.deps.screen
         ? { ok: false, say: 'Done, but Warden flagged something in it.', bubble: 'Review needed', summary: 'Result could not be screened.', artifacts }
         : this.failure(errorText(error), artifacts);
+    } finally {
+      this.deps.steering?.end(agentId);
     }
   }
 
