@@ -6,7 +6,7 @@ const moodLine = (e: { agentId: string; mood: string; cause: string }): string =
 
 describe('C14 shouting', () => {
   it('Chip is scared at once, the active animals catch it one by one, and everyone is neutral after 20 s', async () => {
-    const t = makeRig({ script: [tools(mood('angry', 0.9, 'all caps, frustrated')), say('Easy', "I hear you. Let me look into it right now.")] });
+    const t = makeRig({ script: [tools(mood('angry', 0.9, 'all caps, frustrated')), say('Easy', "I hear you. We can take this one step at a time.")] });
     await t.user(SHOUT);
 
     const userMood = t.ofType('user.mood')[0]!;

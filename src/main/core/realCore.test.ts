@@ -2,10 +2,25 @@ import { describe, expect, it } from 'vitest';
 import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { createRealCore, disconnectedCalendar, loadPersistedSettings, loadRealCoreEnv, missingRealCoreKeys, savePersistedSettings } from './realCore';
+import { createRealCore, defaultSettings, disconnectedCalendar, loadPersistedSettings, loadRealCoreEnv, missingRealCoreKeys, savePersistedSettings } from './realCore';
 import { makeTestSettings } from '../testing/settings';
 
 describe('real core startup fallback', () => {
+  it('defaults new installs to the verified Gemini Flash model and preserves saved choices', () => {
+    const defaults = defaultSettings({});
+    for (const choice of Object.values(defaults.models)) {
+      expect(choice).toEqual({ llm_provider: 'google', model_name: 'gemini-2.5-flash' });
+    }
+    const root = mkdtempSync(join(tmpdir(), 'ade-model-default-'));
+    try {
+      const file = join(root, 'settings.json');
+      const saved = makeTestSettings();
+      saved.models.chipmunk = { llm_provider: 'openai', model_name: 'gpt-4o' };
+      savePersistedSettings(file, saved);
+      const loaded = loadPersistedSettings(file, defaults);
+      expect(loaded.models.chipmunk).toEqual(saved.models.chipmunk);
+    } finally { rmSync(root, { recursive: true, force: true }); }
+  });
   it('uses an empty calendar while Google is disconnected', async () => {
     expect(await disconnectedCalendar().listEvents()).toEqual([]);
   });
