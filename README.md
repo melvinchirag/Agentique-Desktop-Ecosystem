@@ -19,10 +19,11 @@ Tracks: **Ideation Matrix**, **VentureWell Innovation**. MLH: **Backboard**, **E
 ## Status: v0.2 (Nov 2, 2026)
 | Part | Where it runs |
 |---|---|
-| The AI's thinking | **Two brains.** Set `ADE_BRAIN=claude-cli` in `.env` and ADE runs the **Claude Code** already installed and signed in on your machine: no Backboard key, no vendor assistants, conversation kept in `ade.db`. Without that line, **Backboard** (cloud, Gemini 2.5 Flash) is the default until the first-run screen that installs Claude Code exists. Codex and Gemini follow |
-| Memories, Timeline, Audit, chat history | **On your computer**, one SQLite file (`%APPDATA%\ADE\ade.db`). No Backboard memory, no Tiger |
+| The AI's thinking | **The AI you already have.** Set `ADE_BRAIN` to `claude-cli` (Claude Code), `codex-cli` (OpenAI Codex) or `gemini-cli` and ADE runs that installed, signed-in command-line tool: no Backboard key, no vendor assistants, conversation kept in `ade.db`. The Setup screen finds, installs and signs in each one. Without the switch, **Backboard** (cloud, Gemini 2.5 Flash) is the fallback. Vendor terms: see the planning repo's `research/cli-terms.md` |
+| Memories, timeline, audit, chat history, follow-ups, plans, research | **On your computer**, one SQLite file (`%APPDATA%\ADE\ade.db`). No cloud database: the Tiger code is deleted |
 | Voices | ElevenLabs (optional) |
 | Gmail / Calendar (Pixel) | Google sign-in (needs the Google client keys) |
+| Network | An egress allow list: every connection ADE itself makes goes to a named host (Backboard, ElevenLabs, Google, the ADE account service) or is refused and written to the audit log. The CLI brains connect to their own vendor as separate programs under your sign-in |
 
 New in v0.2: talk to an animal while it works ("Archie, skip the PDFs"), drag animals along the taskbar, easy quit (Hub ✕, tray, Ctrl+Shift+Q), a Setup screen for your own Backboard key. Full list and limits: [`docs/RELEASE-0.2.0.md`](docs/RELEASE-0.2.0.md). The docs below were written at the hackathon (Oct 4); where they say Tiger or Backboard memory stores history, v0.2 stores it locally.
 
