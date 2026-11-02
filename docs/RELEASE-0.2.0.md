@@ -6,7 +6,7 @@ Main at `d38d0c8` (Nov 2, 2026): PRs #53 to #62. This file describes what the co
 
 | Part | Where | Notes |
 |---|---|---|
-| The AI's thinking (Chip and every animal) | **Backboard** (cloud) | Default model Google Gemini 2.5 Flash per animal; changeable in Settings. Needs internet and a Backboard key. **Temporary**: decided Nov 2, Backboard is replaced by the user's own Claude Code (first), Codex or Gemini CLI; being built, not in 0.2. |
+| The AI's thinking (Chip and every animal) | **Claude Code CLI** on this machine when `ADE_BRAIN=claude-cli` (PR #65); otherwise **Backboard** (cloud) | With the switch: the installed, signed-in `claude` runs every model call; no Backboard key; threads in `ade.db`; full demo path passed 2 of 2 live. Default stays Backboard (Gemini 2.5 Flash) until Setup can install Claude Code and open its sign-in page. Codex and Gemini follow the same contract. |
 | Archie reading PDF, Word, slides and sheets (`fs_ask_file`) | **Backboard** document indexing | Plain text files are read locally. |
 | Memories, Timeline, Audit, Pulse, Replay, chat history | **Local**: one SQLite file, `%APPDATA%\ADE\ade.db` | Always on. Backboard memory is off; Tiger is not used. Events are kept 90 days. |
 | Voices and sounds | ElevenLabs (optional key) | Shipped lines play without a key. |
@@ -14,6 +14,8 @@ Main at `d38d0c8` (Nov 2, 2026): PRs #53 to #62. This file describes what the co
 | Tiger Data | Optional, off by default | A missing or incomplete `TIGER_DATABASE_URL` no longer stops the real core. |
 
 ## What changed
+
+- **Claude Code as the brain** (#65): `ADE_BRAIN=claude-cli` runs the Claude Code CLI installed on the machine instead of Backboard. Tools are offered as plain-English actions and come back as a structured decision. Archie is told his allowed folders up front.
 
 - **Setup screen** (#55): a fresh install with no Backboard key opens ADE Setup. Paste your own key, verify it, choose **Save and create assistants**, restart. Or try the offline demo.
 - **Local core** (#57, wired in #61): memories, events, audit and chat threads live in `ade.db`. Relevant memories go into each turn; new facts are learned with each animal's own rules; Warden never learns.

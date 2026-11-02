@@ -19,7 +19,7 @@ Tracks: **Ideation Matrix**, **VentureWell Innovation**. MLH: **Backboard**, **E
 ## Status: v0.2 (Nov 2, 2026)
 | Part | Where it runs |
 |---|---|
-| The AI's thinking | **Backboard** (cloud), Gemini 2.5 Flash by default, **for now**. Decided Nov 2: Backboard is replaced by the AI you already have (Claude Code first, then Codex, then Gemini) through its CLI. Being built; not in v0.2 |
+| The AI's thinking | **Two brains.** Set `ADE_BRAIN=claude-cli` in `.env` and ADE runs the **Claude Code** already installed and signed in on your machine: no Backboard key, no vendor assistants, conversation kept in `ade.db`. Without that line, **Backboard** (cloud, Gemini 2.5 Flash) is the default until the first-run screen that installs Claude Code exists. Codex and Gemini follow |
 | Memories, Timeline, Audit, chat history | **On your computer**, one SQLite file (`%APPDATA%\ADE\ade.db`). No Backboard memory, no Tiger |
 | Voices | ElevenLabs (optional) |
 | Gmail / Calendar (Pixel) | Google sign-in (needs the Google client keys) |
