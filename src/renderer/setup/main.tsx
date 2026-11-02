@@ -1,8 +1,45 @@
 import React, { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import type { AccountStatus } from '../../main/setup/contracts';
+import type { AccountStatus, BrainStatus } from '../../main/setup/contracts';
+
+/** "Use the AI you already have": find, install and sign in Claude Code, then make it the brain. */
+function ClaudeBrain({ busy, setBusy, onDone }: { busy: boolean; setBusy: (on: boolean) => void; onDone: () => void }) {
+  const [brain, setBrain] = useState<BrainStatus>();
+  const [message, setMessage] = useState('');
+  const [done, setDone] = useState(false);
+  const refresh = async () => { try { setBrain(await window.adeSetup.brainStatus()); } catch { setBrain({ installed: false, signedIn: false, active: false }); } };
+  useEffect(() => { void refresh(); }, []);
+  const install = async () => {
+    setBusy(true); setMessage('Installing Claude Code. This takes a minute.');
+    try { const r = await window.adeSetup.brainInstall(); setMessage(r.ok ? 'Installed. Now sign in.' : 'The installer did not finish. Try again, or install from claude.ai/download.'); }
+    finally { setBusy(false); await refresh(); }
+  };
+  const signIn = async () => {
+    setBusy(true); setMessage('A window opened for the Anthropic sign-in. Finish it there, then press Check again.');
+    try { const r = await window.adeSetup.brainSignIn(); if (!r.ok) setMessage('Could not start the sign-in. Is Claude Code installed?'); }
+    finally { setBusy(false); }
+  };
+  const use = async () => {
+    setBusy(true); setMessage('');
+    try { const r = await window.adeSetup.brainUse(); if (r.ok) { setDone(true); setMessage('Done. Restart ADE and Chip thinks with your Claude Code.'); onDone(); } else setMessage(r.error); }
+    finally { setBusy(false); }
+  };
+  if (!brain) return <p className="status">Looking for Claude Code on this computer...</p>;
+  const state = !brain.installed ? 'Not installed' : !brain.signedIn ? `Installed (${brain.version ?? ''}), not signed in` : `Signed in${brain.email ? ` as ${brain.email}` : ''}${brain.active ? '. ADE uses it now' : ''}`;
+  return <>
+    <p>ADE thinks with the Claude Code you already have. Your plan, your sign-in; ADE stores nothing with anyone else.</p>
+    <p className="present">Claude Code: {state}</p>
+    {!brain.installed && <button disabled={busy} onClick={install}>Install Claude Code</button>}
+    {brain.installed && !brain.signedIn && <button disabled={busy} onClick={signIn}>Sign in</button>}
+    {brain.installed && <button className="secondary" disabled={busy} onClick={refresh}>Check again</button>}
+    {brain.installed && brain.signedIn && !brain.active && !done && <button disabled={busy} onClick={use}>Use Claude Code</button>}
+    {(brain.active || done) && <button onClick={() => window.adeSetup.restart()}>{done ? 'Restart ADE to finish' : 'Continue to ADE'}</button>}
+    <p role="status" className="status">{message}</p>
+  </>;
+}
 
 function Setup() {
+  const [showBackboard, setShowBackboard] = useState(false);
   const [backboard, setBackboard] = useState('');
   const [elevenLabs, setElevenLabs] = useState('');
   const [existing, setExisting] = useState<{ backboard: string | null; elevenLabs: string | null }>();
@@ -75,9 +112,14 @@ function Setup() {
       <p>On our side we keep your email and when you use ADE, nothing else. Your files, mail and memories stay on this computer.</p>
     </section>}
     {account && (!account.enabled || account.signedIn) && <section>
-    {account?.enabled && <h2>Step 2 of 2 · Backboard</h2>}
-    {account?.enabled && existing?.backboard && <button onClick={() => window.adeSetup.restart()}>Continue to ADE</button>}
-    <p>ADE needs a Backboard account to think. <a href="https://app.backboard.io/" target="_blank" rel="noreferrer">Create one</a> ($5 free credit for 30 days), copy an API key, and paste it here.</p>
+    <h2>{account?.enabled ? 'Step 2 of 2 · ' : ''}Your AI</h2>
+    <ClaudeBrain busy={busy} setBusy={setBusy} onDone={() => setShowBackboard(false)} />
+    {!showBackboard && <button className="secondary" disabled={busy} onClick={() => setShowBackboard(true)}>Use Backboard instead</button>}
+    </section>}
+    {account && (!account.enabled || account.signedIn) && showBackboard && <section>
+    <h2>Backboard</h2>
+    {existing?.backboard && <button onClick={() => window.adeSetup.restart()}>Continue to ADE</button>}
+    <p>Backboard is a cloud AI service. <a href="https://app.backboard.io/" target="_blank" rel="noreferrer">Create an account</a> ($5 free credit for 30 days), copy an API key, and paste it here.</p>
     {existing?.backboard && <p className="present">Current Backboard key: {existing.backboard}</p>}
     <label htmlFor="backboard">Backboard API key</label>
     <input id="backboard" type="password" autoComplete="off" value={backboard} onChange={event => { setBackboard(event.target.value); setVerified(false); setVerification(''); }} placeholder="Paste your key" />
