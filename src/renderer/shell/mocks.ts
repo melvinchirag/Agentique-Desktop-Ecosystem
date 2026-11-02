@@ -91,7 +91,7 @@ export function createMockShellApi(overrides: Partial<AdeShellApi> = {}): AdeShe
     hubFocusChat: send('hubFocusChat'), openHubTab: send('openHubTab'), inspectAgent: send('inspectAgent'),
     openAssetLab: send('openAssetLab'), hideAnimals: send('hideAnimals'),
     onDemoHotkey: cb => listen('onDemoHotkey', listeners.hotkey, cb),
-    blurHub: send('blurHub'), setHubCollapsed: send('setHubCollapsed'),
+    blurHub: send('blurHub'), setHubCollapsed: send('setHubCollapsed'), quitApp: send('quitApp'),
     onFocusChat: cb => listen('onFocusChat', listeners.focus, cb),
     onOpenHubTab: cb => listen('onOpenHubTab', listeners.tab, cb),
     onInspectAgent: cb => listen('onInspectAgent', listeners.inspect, cb),

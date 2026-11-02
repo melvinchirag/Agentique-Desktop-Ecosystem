@@ -102,6 +102,7 @@ if (!app.requestSingleInstanceLock()) {
       setHubCollapsed: hub.setCollapsed,
       openAssetLab: () => { assetLab.open(); },
       setAnimalsHidden,
+      quitApp: () => app.quit(),
     });
     const disposeDisplay = watchDisplay({
       overlay, hub: hub.window, isCollapsed: () => hub.collapsed, layout, targets,

@@ -49,6 +49,7 @@ const shell: AdeShellApi = {
   onDemoHotkey: cb => on(SHELL_IPC.demoHotkey, cb),
   blurHub: () => ipcRenderer.send(SHELL_IPC.blurHub),
   setHubCollapsed: collapsed => ipcRenderer.send(SHELL_IPC.setHubCollapsed, collapsed),
+  quitApp: () => ipcRenderer.send(SHELL_IPC.quitApp),
   onFocusChat: cb => on(SHELL_IPC.hubFocusChat, cb),
   onOpenHubTab: cb => on(SHELL_IPC.openHubTab, cb),
   onInspectAgent: cb => on(SHELL_IPC.inspectAgent, cb),

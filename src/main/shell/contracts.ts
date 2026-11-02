@@ -71,6 +71,8 @@ export interface AdeShellApi {
   blurHub(): void;
   /** 360×560 ↔ 360×56. */
   setHubCollapsed(collapsed: boolean): void;
+  /** Hub ⏻ button: close every ADE window and stop the app. */
+  quitApp(): void;
 
   // main → hub
   onFocusChat(cb: () => void): () => void;
@@ -99,6 +101,7 @@ export const SHELL_IPC = {
   demoHotkey: 'shell:demo:hotkey',               // push → every window (DemoHotkey)
   blurHub: 'shell:hub:blur',                     // send (hub only)
   setHubCollapsed: 'shell:hub:collapse',         // send (hub only)
+  quitApp: 'shell:app:quit',                     // send (hub only)
   settingsChanged: 'shell:settings:changed',     // push → every window (AdeSettings)
   replayTask: 'shell:overlay:replay',            // send (taskId); then push → overlay
 } as const;
