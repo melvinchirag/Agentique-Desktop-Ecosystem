@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import type { AdeApi } from '../../shared/ipc';
 import type { AdeShellApi } from '../../main/shell/contracts';
 import type { HubStoreHook } from '../shell/contracts';
@@ -30,6 +30,8 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   const [connectingGoogle, setConnectingGoogle] = useState(false);
   const [googleError, setGoogleError] = useState('');
   const [styleStatus, setStyleStatus] = useState('');
+  const [keys, setKeys] = useState<{ backboard: string | null; elevenLabs: string | null }>();
+  useEffect(() => { void window.adeSetup.status().then(setKeys).catch(() => undefined); }, []);
 
   const currentModels = settings?.models ?? ({} as Record<AgentId, ModelChoice>);
   const voiceEnabled = settings?.voiceEnabled ?? true;
@@ -178,6 +180,15 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
             );
           })}
         </div>
+      </div>
+
+      {/* Key status */}
+      <div className="hub-setting-group">
+        <div className="hub-setting-label">Keys</div>
+        <div style={{ fontSize: 11, color: 'var(--hub-text-secondary)' }}>
+          Backboard: {keys?.backboard ?? 'Not set'} · ElevenLabs: {keys?.elevenLabs ?? 'Not set'}
+        </div>
+        <button type="button" className="hub-tray-btn" onClick={() => window.adeSetup.open()}>Change keys</button>
       </div>
 
       {/* Voice Toggle */}

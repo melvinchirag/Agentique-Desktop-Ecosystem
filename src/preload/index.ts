@@ -3,6 +3,7 @@ import { IPC } from '../shared/ipc';
 import { SHELL_IPC } from '../main/shell/contracts';
 import type { AdeApi } from '../shared/ipc';
 import type { AdeShellApi } from '../main/shell/contracts';
+import { SETUP_IPC, type SetupApi } from '../main/setup/contracts';
 
 const on = <T extends unknown[]>(channel: string, cb: (...args: T) => void): (() => void) => {
   const listener = (_event: Electron.IpcRendererEvent, ...args: unknown[]) => cb(...args as T);
@@ -58,3 +59,13 @@ const shell: AdeShellApi = {
 
 contextBridge.exposeInMainWorld('ade', api);
 contextBridge.exposeInMainWorld('adeShell', shell);
+const setup: SetupApi = {
+  status: () => ipcRenderer.invoke(SETUP_IPC.status),
+  verify: key => ipcRenderer.invoke(SETUP_IPC.verify, key),
+  save: (key, voice) => ipcRenderer.invoke(SETUP_IPC.save, key, voice),
+  restart: () => ipcRenderer.send(SETUP_IPC.restart),
+  demo: () => ipcRenderer.send(SETUP_IPC.demo),
+  open: () => ipcRenderer.send(SETUP_IPC.open),
+  onProgress: cb => on(SETUP_IPC.progress, cb),
+};
+contextBridge.exposeInMainWorld('adeSetup', setup);

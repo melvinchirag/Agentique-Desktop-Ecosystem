@@ -58,6 +58,7 @@ const silent = () => new ArrayBuffer(0);
 
 /** Only Backboard and Tiger are required for the live Chip path. Voice is optional. */
 export function missingRealCoreKeys(env: Env): string[] {
+  // TODO(L1): Tiger must become optional before a Backboard-only Setup can start RealCore.
   const missing = ['BACKBOARD_API_KEY', 'BB_ASSISTANT_CHIPMUNK', 'TIGER_DATABASE_URL']
     .filter(key => !env[key]?.trim());
   if (env.TIGER_DATABASE_URL?.trim()) {
