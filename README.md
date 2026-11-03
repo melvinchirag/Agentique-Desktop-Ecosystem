@@ -4,13 +4,17 @@
 
 You talk to Chip, a chipmunk. He hands the job to the right animal: Pixel for Gmail and Calendar, Archie for your files, Scout for web research, Swarm for planning. Warden, a wolf, stands between every agent and every action: reads pass, drafts pass, writes and moves ask you first, and sending is refused in code. You watch the hand-offs happen on your real desktop, hear each animal speak, and can replay any task from a local log.
 
+**[Download the Windows installer](https://github.com/melvinchirag/Agentique-Desktop-Ecosystem/releases/download/v0.2.0/ADE.Setup.0.2.0.exe)** and try it in two minutes: the offline demo needs no account, and the real thing runs on the AI you already have.
+
 ADE thinks with the AI you already pay for. Point it at the Claude Code, Codex or Gemini command-line tool on your machine and it runs on your own sign-in. Memories, history and the audit trail stay in one SQLite file on your computer.
 
 ## Download
 
-**[ADE Setup 0.2.0.exe](https://github.com/melvinchirag/Agentique-Desktop-Ecosystem/releases/tag/v0.2.0)** for Windows 10 and 11 (146 MB, x64). Release notes and SHA-256 are on the release page.
+### [⬇ Download ADE for Windows (ADE Setup 0.2.0.exe, 146 MB)](https://github.com/melvinchirag/Agentique-Desktop-Ecosystem/releases/download/v0.2.0/ADE.Setup.0.2.0.exe)
 
-1. Run the installer. It is not code signed yet, so Windows SmartScreen shows an unknown-publisher warning: choose **More info**, then **Run anyway**.
+One click starts the download. Windows 10 or 11, x64. All versions, release notes and the SHA-256 checksum: [Releases](https://github.com/melvinchirag/Agentique-Desktop-Ecosystem/releases).
+
+1. Run the downloaded installer. It is not code signed yet, so Windows SmartScreen shows an unknown-publisher warning: choose **More info**, then **Run anyway**.
 2. On first launch **ADE Setup** opens. Pick the AI you already use: ADE finds, installs and signs in **Claude Code**, **Codex** or **Gemini CLI**. Or paste your own Backboard key. Or choose **Try the offline demo** to see the animals with no account at all.
 3. The animals appear on a click-through overlay above your apps. The Hub window (chat, Memories, Timeline, Audit, Settings) sits top-right. Quit from the Hub ✕, the tray icon, or Ctrl+Shift+Q.
 
