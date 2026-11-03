@@ -147,7 +147,16 @@ export function loadRealCoreEnv(options: Pick<RealCoreOptions, 'exePath' | 'data
     Object.assign(env, values);
     if (values.TIGER_CA_FILE) baseDir = dirname(path);
   }
-  return { env: { ...env, ...process.env }, baseDir };
+  // Setup writes the user's brain choice to the data directory. In development the
+  // repo .env is also loaded, but it must not silently undo that explicit choice.
+  const setup = readEnvFile(join(options.dataDir ?? adeDataDir(), '.env'));
+  const selected = Object.hasOwn(setup, 'ADE_BRAIN') ? {
+    ADE_BRAIN: setup.ADE_BRAIN,
+    ...(setup.ADE_CLAUDE_BIN ? { ADE_CLAUDE_BIN: setup.ADE_CLAUDE_BIN } : {}),
+    ...(setup.ADE_CODEX_BIN ? { ADE_CODEX_BIN: setup.ADE_CODEX_BIN } : {}),
+    ...(setup.ADE_GEMINI_BIN ? { ADE_GEMINI_BIN: setup.ADE_GEMINI_BIN } : {}),
+  } : {};
+  return { env: { ...env, ...process.env, ...selected }, baseDir };
 }
 
 export function disconnectedCalendar() { return { listEvents: async () => [] }; }

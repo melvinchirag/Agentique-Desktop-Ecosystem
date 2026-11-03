@@ -1,4 +1,5 @@
 import { app, BrowserWindow, ipcMain, shell } from 'electron';
+import { spawn } from 'node:child_process';
 import { join } from 'node:path';
 import { adeDataDir } from '../paths';
 import { loadRealCoreEnv } from '../core/realCore';
@@ -139,7 +140,18 @@ export function registerSetup(opts: { preload: string; rendererDir: string; devU
     } finally { saving = false; }
   });
   ipcMain.on(SETUP_IPC.restart, event => { if (own(event)) {
-    app.relaunch({ args: process.argv.slice(1).filter(arg => arg !== '--demo') }); app.exit(0);
+    if (app.isPackaged) {
+      app.relaunch({ args: process.argv.slice(1).filter(arg => arg !== '--demo') });
+    } else {
+      // electron-vite owns the development Electron process. Relaunching that
+      // child directly loses its dev server, so restart through the desktop launcher.
+      const restart = join(app.getAppPath(), 'scripts', 'restart-ade.cmd');
+      const child = spawn(process.env.ComSpec ?? 'cmd.exe', ['/d', '/c', restart], {
+        cwd: app.getAppPath(), detached: true, stdio: 'ignore', windowsHide: true,
+      });
+      child.unref();
+    }
+    app.quit();
   } });
   ipcMain.on(SETUP_IPC.demo, event => { if (own(event)) {
     app.relaunch({ args: [...process.argv.slice(1).filter(arg => arg !== '--demo'), '--demo'] }); app.exit(0);
