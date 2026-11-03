@@ -1,22 +1,25 @@
 # Agentique Desktop Ecosystem (ADE)
 
-**A team of AI animal agents that lives on your Windows desktop and does real work for you, out in the open.**
-
-You talk to Chip, a chipmunk. He hands the job to the right animal: Pixel for Gmail and Calendar, Archie for your files, Scout for web research, Swarm for planning. Warden, a wolf, stands between every agent and every action: reads pass, drafts pass, writes and moves ask you first, and sending is refused in code. You watch the hand-offs happen on your real desktop, hear each animal speak, and can replay any task from a local log.
-
-**[Download the Windows installer](https://github.com/melvinchirag/Agentique-Desktop-Ecosystem/releases/download/v0.2.0/ADE.Setup.0.2.0.exe)** and try it in two minutes: the offline demo needs no account, and the real thing runs on the AI you already have.
-
-ADE thinks with the AI you already pay for. Point it at the Claude Code, Codex or Gemini command-line tool on your machine and it runs on your own sign-in. Memories, history and the audit trail stay in one SQLite file on your computer.
-
-## Download
+**An operating interface for AI agents on your own Windows desktop, built for people who do not code.**
 
 ### [⬇ Download ADE for Windows (ADE Setup 0.2.0.exe, 146 MB)](https://github.com/melvinchirag/Agentique-Desktop-Ecosystem/releases/download/v0.2.0/ADE.Setup.0.2.0.exe)
 
-One click starts the download. Windows 10 or 11, x64. All versions, release notes and the SHA-256 checksum: [Releases](https://github.com/melvinchirag/Agentique-Desktop-Ecosystem/releases).
+Free. No account. Runs on the AI subscription you already have. The offline demo works with nothing at all.
 
-1. Run the downloaded installer. It is not code signed yet, so Windows SmartScreen shows an unknown-publisher warning: choose **More info**, then **Run anyway**.
-2. On first launch **ADE Setup** opens. Pick the AI you already use: ADE finds, installs and signs in **Claude Code**, **Codex** or **Gemini CLI**. Or paste your own Backboard key. Or choose **Try the offline demo** to see the animals with no account at all.
-3. The animals appear on a click-through overlay above your apps. The Hub window (chat, Memories, Timeline, Audit, Settings) sits top-right. Quit from the Hub ✕, the tray icon, or Ctrl+Shift+Q.
+## Why ADE exists
+
+AI agents today live in terminals, browser tabs and developer tools. A normal person cannot see what an agent is doing, cannot stop it, and has to trust it with their email and files on faith.
+
+ADE puts the agents on the desktop as a team of animal characters you can watch. You talk to Chip, a chipmunk. He hands each job to the right animal: Pixel for Gmail and Calendar, Archie for your files, Scout for web research, Swarm for planning. Warden, a wolf, stands between every agent and every action: reads pass, drafts pass, writes and moves ask you first, and sending anything is refused in code. You see every hand-off, hear every animal, and can look up every memory and every action in a log that never leaves your computer.
+
+Nothing runs on our servers. ADE thinks with the Claude Code, Codex or Gemini tool already signed in on your machine, so there is no ADE account, no shared key and no middleman.
+
+## Download and install
+
+1. **[Download ADE Setup 0.2.0.exe](https://github.com/melvinchirag/Agentique-Desktop-Ecosystem/releases/download/v0.2.0/ADE.Setup.0.2.0.exe)** (Windows 10 or 11, x64). All versions, release notes and the SHA-256 checksum are on the [Releases](https://github.com/melvinchirag/Agentique-Desktop-Ecosystem/releases) page.
+2. Run the installer. It is not code signed yet, so Windows SmartScreen shows an unknown-publisher warning: choose **More info**, then **Run anyway**.
+3. On first launch **ADE Setup** opens. Pick the AI you already use: ADE finds, installs and signs in **Claude Code**, **Codex** or **Gemini CLI**. Or paste your own Backboard key. Or choose **Try the offline demo** to see the animals with no account at all.
+4. The animals appear on a click-through overlay above your apps. The Hub window (chat, Memories, Timeline, Audit, Settings) sits top-right. Quit from the Hub ✕, the tray icon, or Ctrl+Shift+Q.
 
 ## The animals
 
@@ -78,11 +81,14 @@ npm run build:win      # NSIS installer into release\
 
 Add `--demo` to run the offline scripted demo with no keys, and `--devtools` to open DevTools.
 
-## History
+## Timeline
 
-Built in 24 hours at **Hack Dearborn 5: Conjure Reality** (Oct 3 to 4, 2026): 303 commits and 51 merged pull requests in about 13 hours of commit history, with AI pair-programming disclosed in the commit trailers. Won the **Ideation Matrix** track (the main track) and **MLH Best Use of ElevenLabs** out of 50 submissions. Devpost: [agentique-desktop-ecosystem](https://devpost.com/software/agentique-desktop-ecosystem).
-
-v0.2.0 (Nov 2, 2026) replaced the hackathon's cloud pieces: your own AI instead of a shared Backboard key, one local SQLite file instead of Tiger Cloud, a Setup screen, local PDF reading, an egress allow list, talking to animals mid-job, and dragging the animals.
+| When | What |
+|---|---|
+| **Oct 3 to 4, 2026** | Built in 24 hours at **Hack Dearborn 5: Conjure Reality**: 303 commits, 51 merged pull requests, about 13 hours of commit history. **Three wins**: the **Ideation Matrix** track (the main track) and **MLH Best Use of ElevenLabs**, out of 50 submissions, plus **first place in the Hack Dearborn CTF** (a separate contest the same four of us entered). Devpost: [agentique-desktop-ecosystem](https://devpost.com/software/agentique-desktop-ecosystem). |
+| **Oct 5 to 31** | The hackathon build needed our team's cloud keys to run, so nobody outside the team could use it. We planned the rebuild: local storage, your own AI, a real first run. |
+| **Nov 1 to 2, 2026** | All four of us rebuilt ADE into a product a stranger can install. v0.2.0: ADE runs on the Claude Code, Codex or Gemini you already have instead of a shared cloud key; memories, history and the audit log moved into one SQLite file on your computer and the cloud database was deleted; a Setup screen for first run; PDFs read locally; an egress allow list; talking to an animal mid-job; dragging the animals. The installer above is that build, and it works. |
+| **Next** | Code signing once a company exists, Gemini tested live, the first users outside the team. |
 
 ## Team
 
