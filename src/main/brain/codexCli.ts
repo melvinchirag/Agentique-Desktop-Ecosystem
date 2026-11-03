@@ -28,7 +28,7 @@ export interface CodexCliOptions {
   threads: ThreadStore;
   /** Native executable; Windows npm shims are resolved without a shell. */
   bin?: string;
-  /** Working directory for the process; a neutral folder, never the user's project. */
+  /** Kept for parity with Claude's options; Codex always runs in a fresh empty temp folder, never next to the .env. */
   cwd?: string;
   model?: string;
   timeoutMs?: number;
@@ -71,7 +71,7 @@ export class CodexCliClient implements LlmClient {
     const model = p.model?.llm_provider === 'openai' && p.model.model_name ? p.model.model_name : this.o.model;
     try {
       const output = join(dir, 'last-message.txt');
-      const args = ['exec', '-', '-C', this.o.cwd ?? dir, '--skip-git-repo-check', '--ephemeral',
+      const args = ['exec', '-', '-C', dir, '--skip-git-repo-check', '--ephemeral',
         '--ignore-user-config', '--ignore-rules', '-s', 'read-only', '--disable', 'shell_tool',
         '--disable', 'unified_exec', '-c', 'model_reasoning_effort=low', '-c',
         `web_search=${p.webSearch === 'Auto' ? 'live' : 'disabled'}`, '--json', '-o', output];
@@ -88,7 +88,7 @@ export class CodexCliClient implements LlmClient {
       p.signal?.addEventListener('abort', onAbort, { once: true });
       if (p.signal?.aborted) controller.abort();
       let raw: string;
-      try { raw = await this.run(args, `INSTRUCTIONS:\n${instructions}\n\n${prompt}`, { cwd: this.o.cwd ?? dir, signal: controller.signal }); }
+      try { raw = await this.run(args, `INSTRUCTIONS:\n${instructions}\n\n${prompt}`, { cwd: dir, signal: controller.signal }); }
       finally { clearTimeout(timeout); p.signal?.removeEventListener('abort', onAbort); }
       const fallback = parseCodexOutput(raw);
       text = (await readFile(output, 'utf8').catch((error: NodeJS.ErrnoException) => {
