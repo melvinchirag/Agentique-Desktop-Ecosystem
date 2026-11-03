@@ -39,6 +39,21 @@ describe('real core startup fallback', () => {
       expect(loaded.baseDir).toBe(exeDir);
     } finally { rmSync(root, { recursive: true, force: true }); }
   });
+  it('honors the brain selected in Setup over the development env', () => {
+    const root = mkdtempSync(join(tmpdir(), 'ade-brain-choice-'));
+    const appDir = join(root, 'app');
+    const dataDir = join(root, 'data');
+    mkdirSync(appDir); mkdirSync(dataDir);
+    try {
+      writeFileSync(join(appDir, '.env'), 'ADE_BRAIN=claude-cli\n');
+      writeFileSync(join(dataDir, '.env'), 'ADE_BRAIN=codex-cli\nADE_CODEX_BIN=C:/Codex/codex.exe\n');
+      const env = loadRealCoreEnv({ exePath: join(root, 'electron.exe'), envPaths: [join(appDir, '.env')], dataDir }).env;
+      expect(env.ADE_BRAIN).toBe('codex-cli');
+      expect(env.ADE_CODEX_BIN).toBe('C:/Codex/codex.exe');
+      writeFileSync(join(dataDir, '.env'), 'ADE_BRAIN=backboard\n');
+      expect(loadRealCoreEnv({ exePath: join(root, 'electron.exe'), envPaths: [join(appDir, '.env')], dataDir }).env.ADE_BRAIN).toBe('backboard');
+    } finally { rmSync(root, { recursive: true, force: true }); }
+  });
 
   it('restores model, voice, folders and demo preferences after relaunch', () => {
     const root = mkdtempSync(join(tmpdir(), 'ade-settings-'));
