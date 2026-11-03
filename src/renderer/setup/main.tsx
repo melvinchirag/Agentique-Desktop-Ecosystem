@@ -20,8 +20,8 @@ function CliBrains({ busy, setBusy, onDone }: { busy: boolean; setBusy: (on: boo
     finally { setBusy(false); }
   };
   const use = async (b: BrainStatus) => {
-    setBusy(true); setMessage('');
-    try { const r = await window.adeSetup.brainUse(b.id); if (r.ok) { setDone(b.id); setMessage(`Done. Restart ADE and Chip thinks with your ${b.name}.`); onDone(); } else setMessage(r.error); }
+    setBusy(true); setMessage(`Asking ${b.name} to answer once, the way ADE will. This can take up to a minute.`);
+    try { const r = await window.adeSetup.brainUse(b.id); if (r.ok) { setDone(b.id); setMessage(`${b.name} answered. Restart ADE and Chip thinks with your ${b.name}.`); onDone(); } else setMessage(r.error); }
     finally { setBusy(false); }
   };
   if (!brains) return <p className="status">Looking for Claude Code, Codex and Gemini CLI on this computer...</p>;
@@ -46,7 +46,7 @@ function Setup() {
   const [showBackboard, setShowBackboard] = useState(false);
   const [backboard, setBackboard] = useState('');
   const [elevenLabs, setElevenLabs] = useState('');
-  const [existing, setExisting] = useState<{ backboard: string | null; elevenLabs: string | null }>();
+  const [existing, setExisting] = useState<{ backboard: string | null; elevenLabs: string | null; reason: string | null }>();
   const [verification, setVerification] = useState('');
   const [verified, setVerified] = useState(false);
   const [progress, setProgress] = useState<string[]>([]);
@@ -100,6 +100,7 @@ function Setup() {
   };
   return <main>
     <h1>ADE Setup</h1>
+    {existing?.reason && <p role="alert" className="why">{existing.reason}</p>}
     {account?.enabled && !account.signedIn && <section>
       <h2>Step 1 of 2 · Sign in to ADE</h2>
       <label htmlFor="account-email">Email</label>
@@ -141,6 +142,6 @@ function Setup() {
 }
 
 const style = document.createElement('style');
-style.textContent = `*{box-sizing:border-box}body{margin:0;background:#141923;color:#eef2f7;font:14px system-ui,sans-serif}main{max-width:460px;margin:0 auto;padding:24px 28px}h1{font-size:25px;margin:0 0 12px}h2{font-size:17px;margin:18px 0 8px}p{line-height:1.45;color:#c8d1df}a{color:#91c7ff}label{display:block;margin:17px 0 7px;font-weight:600}input{width:100%;padding:11px;border:1px solid #68758a;border-radius:6px;background:#202939;color:white;font:inherit}button{display:block;margin:12px 0;padding:10px 14px;border:0;border-radius:6px;background:#7eb8ee;color:#111827;font:inherit;font-weight:600;cursor:pointer}button:disabled{opacity:.45;cursor:default}.secondary{background:transparent;color:#bbd9f6;border:1px solid #657991}.status{min-height:20px}.present{font-size:12px;color:#aab9ca}.progress{max-height:150px;overflow:auto;border:1px solid #3d4a5e;border-radius:6px;padding:8px 10px;color:#c8d1df;font-size:12px}`;
+style.textContent = `*{box-sizing:border-box}body{margin:0;background:#141923;color:#eef2f7;font:14px system-ui,sans-serif}main{max-width:460px;margin:0 auto;padding:24px 28px}h1{font-size:25px;margin:0 0 12px}h2{font-size:17px;margin:18px 0 8px}p{line-height:1.45;color:#c8d1df}a{color:#91c7ff}label{display:block;margin:17px 0 7px;font-weight:600}input{width:100%;padding:11px;border:1px solid #68758a;border-radius:6px;background:#202939;color:white;font:inherit}button{display:block;margin:12px 0;padding:10px 14px;border:0;border-radius:6px;background:#7eb8ee;color:#111827;font:inherit;font-weight:600;cursor:pointer}button:disabled{opacity:.45;cursor:default}.secondary{background:transparent;color:#bbd9f6;border:1px solid #657991}.status{min-height:20px}.present{font-size:12px;color:#aab9ca}.progress{max-height:150px;overflow:auto;border:1px solid #3d4a5e;border-radius:6px;padding:8px 10px;color:#c8d1df;font-size:12px}.why{background:#3a2a1a;border:1px solid #b9823e;border-radius:6px;padding:10px 12px;color:#ffd9a8}`;
 document.head.appendChild(style);
 createRoot(document.getElementById('root')!).render(<Setup />);

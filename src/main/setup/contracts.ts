@@ -14,7 +14,8 @@ export interface BrainStatus {
 }
 
 export interface SetupApi {
-  status(): Promise<{ backboard: string | null; elevenLabs: string | null }>;
+  /** `reason` is set when ADE opened Setup by itself (a dead key, a signed-out CLI) and says why. */
+  status(): Promise<{ backboard: string | null; elevenLabs: string | null; reason: string | null }>;
   /** All three brains, in the order to show them. */
   brainStatus(): Promise<BrainStatus[]>;
   /** Runs that vendor's official installer; progress lines arrive on onProgress. */

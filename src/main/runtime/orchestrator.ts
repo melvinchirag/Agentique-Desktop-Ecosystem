@@ -5,6 +5,7 @@ import { pickAck } from '../agents/chipmunk/acks';
 import { SPECIALIST_IDS, nameOf, specialistFromWord } from '../agents/chipmunk/names';
 import { parseChipOutput } from '../agents/chipmunk/parse';
 import { pseudoMoodArgs } from './sanitizeLlmText';
+import { explainBrainFailure, FOGGY_LINE } from './brainFailure';
 import {
   buildNudgeTurn, buildResultTurn, buildUserTurn, chipSystemPrompt, type ChipContextState, type ResultItem,
 } from '../agents/chipmunk/prompt';
@@ -30,7 +31,7 @@ export interface OrchestratorOptions {
 export const RESULT_BATCH_MS = 1500;
 export const MAX_TOOL_ROUNDS = 6;
 export const TOOL_OUTPUT_MAX_CHARS = 12_000;
-export const FOGGY_LINE = "My brain's a bit foggy. Say that again?";
+export { FOGGY_LINE };
 export const PARTWAY_LINE = 'I got partway. Want me to keep going?';
 
 const DEFAULT_LLM_TIMEOUT_MS = 25_000;
@@ -284,10 +285,14 @@ export function createOrchestrator(deps: OrchestratorDeps, opts: OrchestratorOpt
       if (err instanceof LlmFailure) {
         foggyMood(turn.taskId);
         status(turn.taskId, 'error');                            // the renderer plays Dizzy
+        // The user hears why (dead key, signed-out CLI, old CLI, timeout); the raw message goes to the log file.
+        const why = explainBrainFailure(err.message);
+        console.error(`[orchestrator] brain failed (${why.kind}): ${err.message}`);
+        say(turn.taskId, why.speech, why.bubble, 'chip');
       } else {
         console.error('[orchestrator] turn failed', err);
+        say(turn.taskId, FOGGY_LINE, 'Foggy 😵', 'chip');
       }
-      say(turn.taskId, FOGGY_LINE, 'Foggy 😵', 'chip');
     } finally {
       if (busy) presence.setBusy('chipmunk', false);
       status(turn.taskId, 'idle');
