@@ -23,6 +23,10 @@ import { AccountStore } from './account/store';
 import { SupabaseAccountClient } from './account/supabase';
 import { AccountHeartbeat } from './account/heartbeat';
 import { accountEnabled } from './account/flags';
+import { installFileLog } from './log';
+import { adeDataDir } from './paths';
+import { decideStartup } from './startupGate';
+import { verifyBackboardKey } from './setup/setupService';
 
 const argv = process.argv;
 const devMode = !app.isPackaged || argv.includes('--dev');
@@ -40,6 +44,9 @@ if (!app.requestSingleInstanceLock()) {
 } else {
   app.on('second-instance', () => focusExistingHub?.());
   app.whenReady().then(async () => {
+    // Everything the main process prints also lands in %APPDATA%\ADE\logs\ade.log, so "it doesn't work" can be sent to us.
+    const logFile = installFileLog(join(adeDataDir(), 'logs'));
+    console.log(`[shell] ADE ${app.getVersion()} starting${app.isPackaged ? '' : ' (dev)'}${demoMode ? ' --demo' : ''}; log: ${logFile ?? 'none'}`);
     // Every connection ADE itself makes goes to a host on the egress list, or is refused and logged (src/main/egress.ts).
     const egress = installEgressGuard();
     egress.onDeny = (host) => console.warn(`[egress] refused a connection to ${host}`);
@@ -57,13 +64,20 @@ if (!app.requestSingleInstanceLock()) {
     const signedIn = accountEnabled() && !!await accountStore.load().catch(() => null);
     if (signedIn) heartbeat.start();
     app.once('before-quit', () => { void heartbeat.stop(); });
-    // A brain is either a CLI on this machine (Claude Code, Codex or Gemini; installed and signed in) or a Backboard key. Neither → Setup.
+    // A brain is either a CLI on this machine (Claude Code, Codex or Gemini; installed and signed in) or a Backboard key
+    // that Backboard still accepts. Anything else opens Setup, which shows the reason (src/main/startupGate.ts).
     const env = loadRealCoreEnv({ exePath: app.getPath('exe'), envPaths }).env;
     const vendor = vendorFromEnv(env);
-    const cliReady = !!vendor && await detectCli(vendor, env[binEnvKey(vendor)]).then(s => s.installed && s.signedIn);
-    if (!demoMode && ((accountEnabled() && !signedIn) || (!cliReady && !env.BACKBOARD_API_KEY?.trim()))) {
-      openSetup();
-      return;
+    const cli = vendor ? await detectCli(vendor, env[binEnvKey(vendor)]) : undefined;
+    if (!demoMode && accountEnabled() && !signedIn) { openSetup(); return; }
+    if (!demoMode) {
+      const gate = await decideStartup({ vendor, cli, backboardKey: env.BACKBOARD_API_KEY, verifyKey: verifyBackboardKey });
+      if (gate.open === 'setup') {
+        console.warn(`[startup] opening Setup${gate.reason ? `: ${gate.reason}` : ' (no brain configured)'}`);
+        openSetup(gate.reason);
+        return;
+      }
+      console.log(`[startup] brain ready: ${vendor ? `${vendor.name} ${cli?.version ?? ''}`.trim() : 'Backboard'}`);
     }
     const display = readDisplay();
     const pointerMode = option('--pointer') === 'poll' || process.env.ADE_POINTER === 'poll' ? 'poll' : 'forward';

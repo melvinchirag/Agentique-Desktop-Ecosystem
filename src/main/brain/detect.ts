@@ -3,8 +3,9 @@
  * known executable with an argument list.
  */
 import { spawn } from 'node:child_process';
-import { existsSync } from 'node:fs';
-import { CLAUDE, VENDORS, type BrainVendor, type BrainVendorId } from './vendors';
+import { existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { CLAUDE, DECISION_SCHEMA, VENDORS, type BrainVendor, type BrainVendorId } from './vendors';
 
 export interface BrainStatus {
   installed: boolean;
@@ -58,6 +59,41 @@ export async function detectCli(vendor: BrainVendor, preferred?: string): Promis
 
 /** Kept for the first cut's callers. */
 export const detectClaudeCli = (preferred?: string) => detectCli(CLAUDE, preferred);
+
+/**
+ * One real call through the vendor's CLI with the exact flags ADE uses at runtime. Setup runs it before saying
+ * "Done", so a signed-in but too-old or broken CLI is caught here, not on the user's first message.
+ */
+export async function probeCli(vendor: BrainVendor, bin: string | undefined, dataDir: string, timeoutMs = 60_000): Promise<{ ok: true } | { ok: false; error: string }> {
+  const workDir = join(dataDir, 'brain', 'probe');
+  mkdirSync(workDir, { recursive: true });
+  const schemaFile = join(workDir, 'decision-schema.json');
+  writeFileSync(schemaFile, JSON.stringify(DECISION_SCHEMA));
+  const resultFile = join(workDir, `probe-${Date.now()}.txt`);
+  const { args, stdin } = vendor.invoke({ system: 'Reply with exactly the word OK and nothing else.', prompt: 'OK?', structured: false, webSearch: false, workDir, schemaFile, resultFile });
+  const r = await runSplit(bin ?? vendor.bin, args, stdin, timeoutMs);
+  const parsed = vendor.parse(r.stdout, r.code, existsSync(resultFile) ? resultFile : undefined);
+  try { rmSync(resultFile, { force: true }); } catch { /* best effort */ }
+  if (r.timedOut) return { ok: false, error: `${vendor.name}: did not answer in time` };
+  if (parsed.is_error) return { ok: false, error: `${vendor.name}: ${parsed.text || r.stderr.trim().slice(0, 300) || `exited ${r.code}`}` };
+  return { ok: true };
+}
+
+function runSplit(bin: string, args: string[], stdin: string, timeoutMs: number): Promise<{ code: number | null; stdout: string; stderr: string; timedOut: boolean }> {
+  return new Promise((resolve) => {
+    let stdout = '', stderr = '', timedOut = false;
+    let child: ReturnType<typeof spawn>;
+    try { child = spawn(bin, args, { windowsHide: true, stdio: ['pipe', 'pipe', 'pipe'] }); }
+    catch (error) { resolve({ code: null, stdout: '', stderr: (error as Error).message, timedOut: false }); return; }
+    const timer = setTimeout(() => { timedOut = true; child.kill(); }, timeoutMs);
+    child.stdout?.on('data', (d) => { stdout += d; });
+    child.stderr?.on('data', (d) => { stderr += d; });
+    child.on('error', (error) => { clearTimeout(timer); resolve({ code: null, stdout, stderr: stderr || error.message, timedOut }); });
+    child.on('close', (code) => { clearTimeout(timer); resolve({ code, stdout, stderr, timedOut }); });
+    child.stdin?.on('error', () => {});
+    child.stdin?.end(stdin);
+  });
+}
 
 /** The vendor's official installer. Streams its output as progress lines. */
 export function installCli(vendor: BrainVendor, progress: (line: string) => void): Promise<boolean> {

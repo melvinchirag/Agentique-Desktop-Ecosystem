@@ -4,7 +4,8 @@ import { join } from 'node:path';
 import { adeDataDir } from '../paths';
 import { loadRealCoreEnv } from '../core/realCore';
 import { readEnvFile } from '../sponsors/env';
-import { binEnvKey, detectCli, installCli, signInCli, vendorById } from '../brain/detect';
+import { binEnvKey, detectCli, installCli, probeCli, signInCli, vendorById } from '../brain/detect';
+import { explainBrainFailure } from '../runtime/brainFailure';
 import { BRAIN_VENDOR_IDS, VENDORS, vendorFromEnv } from '../brain/vendors';
 import { SETUP_IPC } from './contracts';
 import { writeSetupEnv } from './envFile';
@@ -18,13 +19,16 @@ import { accountEnabled } from '../account/flags';
 const mask = (value?: string) => value ? `${value.slice(0, 4)}••••` : null;
 
 export function registerSetup(opts: { preload: string; rendererDir: string; devUrl?: string; envPaths: string[];
-  account: { store: AccountStore; client: SupabaseAccountClient; heartbeat: AccountHeartbeat } }): () => void {
+  account: { store: AccountStore; client: SupabaseAccountClient; heartbeat: AccountHeartbeat } }): (reason?: string) => void {
   let window: BrowserWindow | undefined;
   let saving = false;
+  /** Why Setup opened on its own (a dead key, a signed-out CLI); shown at the top of the screen. */
+  let reason: string | undefined;
   const file = join(adeDataDir(), '.env');
   const own = (event: Electron.IpcMainInvokeEvent | Electron.IpcMainEvent) => window && !window.isDestroyed() && event.sender === window.webContents;
   const signedIn = async () => !accountEnabled() || !!await opts.account.store.load().catch(() => null);
-  const open = () => {
+  const open = (why?: string) => {
+    if (why !== undefined) reason = why;
     if (window && !window.isDestroyed()) { window.show(); window.focus(); return; }
     window = new BrowserWindow({ width: 520, height: 590, minWidth: 480, minHeight: 540,
       title: 'ADE Setup', backgroundColor: '#141923', autoHideMenuBar: true,
@@ -40,7 +44,7 @@ export function registerSetup(opts: { preload: string; rendererDir: string; devU
   };
   ipcMain.handle(SETUP_IPC.status, () => {
     const env = loadRealCoreEnv({ exePath: app.getPath('exe'), envPaths: opts.envPaths }).env;
-    return { backboard: mask(env.BACKBOARD_API_KEY), elevenLabs: mask(env.ELEVENLABS_API_KEY) };
+    return { backboard: mask(env.BACKBOARD_API_KEY), elevenLabs: mask(env.ELEVENLABS_API_KEY), reason: reason ?? null };
   });
   // "Use the AI you already have": Claude Code, Codex or Gemini CLI on this machine.
   const currentEnv = () => loadRealCoreEnv({ exePath: app.getPath('exe'), envPaths: opts.envPaths }).env;
@@ -75,6 +79,12 @@ export function registerSetup(opts: { preload: string; rendererDir: string; devU
     const found = await detectCli(vendor, currentEnv()[binEnvKey(vendor)]);
     if (!found.installed) return { ok: false, error: `${vendor.name} is not installed yet` };
     if (!found.signedIn) return { ok: false, error: `${vendor.name} is not signed in yet` };
+    // Signed in is not enough: make one real call with ADE's own flags, so an old or broken CLI is caught here.
+    const probe = await probeCli(vendor, found.path, adeDataDir());
+    if (!probe.ok) {
+      console.warn(`[setup] ${vendor.name} probe failed: ${probe.error}`);
+      return { ok: false, error: `${explainBrainFailure(probe.error).speech} (${probe.error.slice(0, 160)})` };
+    }
     const key = binEnvKey(vendor);
     writeSetupEnv(file, { ADE_BRAIN: vendor.id, ...(found.path ? { [key]: found.path } : {}) }, found.path ? [] : [key]);
     return { ok: true };
