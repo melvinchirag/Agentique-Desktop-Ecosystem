@@ -1,9 +1,9 @@
 import { app, BrowserWindow, ipcMain, shell } from 'electron';
 import { join } from 'node:path';
 import { adeDataDir } from '../store/tiger';
-import { loadRealCoreEnv, usesCliBrain } from '../core/realCore';
+import { brainKind, loadRealCoreEnv } from '../core/realCore';
 import { readEnvFile } from '../sponsors/env';
-import { detectClaudeCli, installClaudeCli, signInClaudeCli } from '../brain/detect';
+import { detectClaudeCli, installClaudeCli, signInClaudeCli, detectCodexCli, installCodexCli, signInCodexCli } from '../brain/detect';
 import { SETUP_IPC } from './contracts';
 import { writeSetupEnv } from './envFile';
 import { completeSetup, verifyBackboardKey } from './setupService';
@@ -40,34 +40,37 @@ export function registerSetup(opts: { preload: string; rendererDir: string; devU
     const env = loadRealCoreEnv({ exePath: app.getPath('exe'), envPaths: opts.envPaths }).env;
     return { backboard: mask(env.BACKBOARD_API_KEY), elevenLabs: mask(env.ELEVENLABS_API_KEY) };
   });
-  // "Use the AI you already have": Claude Code on this machine.
-  let brainPath: string | undefined;
+  // "Use the AI you already have": installed CLIs on this machine.
   const currentEnv = () => loadRealCoreEnv({ exePath: app.getPath('exe'), envPaths: opts.envPaths }).env;
-  ipcMain.handle(SETUP_IPC.brainStatus, async () => {
-    const env = currentEnv();
-    const found = await detectClaudeCli(env.ADE_CLAUDE_BIN);
-    brainPath = found.path;
-    return { installed: found.installed, version: found.version, signedIn: found.signedIn, email: found.email, active: usesCliBrain(env) };
+  const validBrain = (which: unknown): which is 'claude' | 'codex' => which === 'claude' || which === 'codex';
+  const detectBrain = (which: 'claude' | 'codex') => which === 'codex'
+    ? detectCodexCli(currentEnv().ADE_CODEX_BIN) : detectClaudeCli(currentEnv().ADE_CLAUDE_BIN);
+  ipcMain.handle(SETUP_IPC.brainStatus, async (event, which: unknown = 'claude') => {
+    if (!own(event) || !validBrain(which)) return { installed: false, signedIn: false, active: false };
+    const found = await detectBrain(which);
+    return { installed: found.installed, version: found.version, signedIn: found.signedIn, email: found.email, active: brainKind(currentEnv()) === `${which}-cli` };
   });
-  ipcMain.handle(SETUP_IPC.brainInstall, async (event) => {
-    if (!own(event)) return { ok: false };
-    const ok = await installClaudeCli(message => { if (window && !window.isDestroyed()) window.webContents.send(SETUP_IPC.progress, message); });
+  ipcMain.handle(SETUP_IPC.brainInstall, async (event, which: unknown = 'claude') => {
+    if (!own(event) || !validBrain(which)) return { ok: false };
+    const install = which === 'codex' ? installCodexCli : installClaudeCli;
+    const ok = await install(message => { if (window && !window.isDestroyed()) window.webContents.send(SETUP_IPC.progress, message); });
     return { ok };
   });
-  ipcMain.handle(SETUP_IPC.brainSignIn, async (event) => {
-    if (!own(event)) return { ok: false };
-    const found = await detectClaudeCli(currentEnv().ADE_CLAUDE_BIN);
+  ipcMain.handle(SETUP_IPC.brainSignIn, async (event, which: unknown = 'claude') => {
+    if (!own(event) || !validBrain(which)) return { ok: false };
+    const found = await detectBrain(which);
     if (!found.installed) return { ok: false };
-    return { ok: signInClaudeCli(found.path ?? 'claude') };
+    return { ok: which === 'codex' ? signInCodexCli(found.path!) : signInClaudeCli(found.path ?? 'claude') };
   });
-  ipcMain.handle(SETUP_IPC.brainUse, async (event) => {
-    if (!own(event)) return { ok: false, error: 'Not allowed' };
+  ipcMain.handle(SETUP_IPC.brainUse, async (event, which: unknown = 'claude') => {
+    if (!own(event) || !validBrain(which)) return { ok: false, error: 'Not allowed' };
     if (!await signedIn()) return { ok: false, error: 'Sign in to ADE first' };
-    const found = await detectClaudeCli(currentEnv().ADE_CLAUDE_BIN);
-    if (!found.installed) return { ok: false, error: 'Claude Code is not installed yet' };
-    if (!found.signedIn) return { ok: false, error: 'Claude Code is not signed in yet' };
-    writeSetupEnv(file, { ADE_BRAIN: 'claude-cli', ...(found.path ? { ADE_CLAUDE_BIN: found.path } : {}) }, found.path ? [] : ['ADE_CLAUDE_BIN']);
-    brainPath = found.path;
+    const found = await detectBrain(which);
+    const name = which === 'codex' ? 'Codex' : 'Claude Code';
+    if (!found.installed) return { ok: false, error: `${name} is not installed yet` };
+    if (!found.signedIn) return { ok: false, error: `${name} is not signed in yet` };
+    const binKey = which === 'codex' ? 'ADE_CODEX_BIN' : 'ADE_CLAUDE_BIN';
+    writeSetupEnv(file, { ADE_BRAIN: `${which}-cli`, ...(found.path ? { [binKey]: found.path } : {}) }, found.path ? [] : [binKey]);
     return { ok: true };
   });
   ipcMain.handle(SETUP_IPC.accountStatus, async () => {

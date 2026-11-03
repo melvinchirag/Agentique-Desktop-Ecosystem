@@ -7,18 +7,19 @@ export const SETUP_IPC = {
 } as const;
 
 export interface AccountStatus { enabled: boolean; signedIn: boolean; email?: string }
-/** The Claude Code CLI on this machine, for "use the AI you already have". */
+export type BrainChoice = 'claude' | 'codex';
+/** The selected CLI on this machine, for "use the AI you already have". */
 export interface BrainStatus { installed: boolean; version?: string; signedIn: boolean; email?: string; active: boolean }
 
 export interface SetupApi {
   status(): Promise<{ backboard: string | null; elevenLabs: string | null }>;
-  brainStatus(): Promise<BrainStatus>;
-  /** Runs the official Claude Code installer; progress lines arrive on onProgress. */
-  brainInstall(): Promise<{ ok: boolean }>;
-  /** Opens Claude Code's own sign-in (browser). Check brainStatus() again afterwards. */
-  brainSignIn(): Promise<{ ok: boolean }>;
-  /** Makes the installed Claude Code the brain (ADE_BRAIN=claude-cli). Restart ADE to finish. */
-  brainUse(): Promise<{ ok: true } | { ok: false; error: string }>;
+  brainStatus(which?: BrainChoice): Promise<BrainStatus>;
+  /** Runs the selected CLI installer; progress lines arrive on onProgress. */
+  brainInstall(which?: BrainChoice): Promise<{ ok: boolean }>;
+  /** Opens the selected CLI's own sign-in (browser). Check brainStatus() again afterwards. */
+  brainSignIn(which?: BrainChoice): Promise<{ ok: boolean }>;
+  /** Makes the installed CLI the brain (ADE_BRAIN). Restart ADE to finish. */
+  brainUse(which?: BrainChoice): Promise<{ ok: true } | { ok: false; error: string }>;
   verify(key: string): Promise<{ status: 'connected'; balance: number } | { status: 'rejected' | 'unreachable' }>;
   save(backboardKey: string, elevenLabsKey?: string): Promise<{ ok: true } | { ok: false; error: string }>;
   restart(): void;

@@ -38,6 +38,43 @@ function ClaudeBrain({ busy, setBusy, onDone }: { busy: boolean; setBusy: (on: b
   </>;
 }
 
+/** "Use the AI you already have": find, install and sign in Codex, then make it the brain. */
+function CodexBrain({ busy, setBusy, onDone }: { busy: boolean; setBusy: (on: boolean) => void; onDone: () => void }) {
+  const [brain, setBrain] = useState<BrainStatus>();
+  const [message, setMessage] = useState('');
+  const [done, setDone] = useState(false);
+  const refresh = async () => { try { setBrain(await window.adeSetup.brainStatus('codex')); } catch { setBrain({ installed: false, signedIn: false, active: false }); } };
+  useEffect(() => { void refresh(); }, []);
+  const install = async () => {
+    setBusy(true); setMessage('Installing Codex. This takes a minute.');
+    try { const r = await window.adeSetup.brainInstall('codex'); setMessage(r.ok ? 'Installed. Now sign in.' : 'The installer did not finish. Try again, or install from developers.openai.com/codex/cli.'); }
+    finally { setBusy(false); await refresh(); }
+  };
+  const signIn = async () => {
+    setBusy(true); setMessage('A window opened for the OpenAI sign-in. Finish it there, then press Check again.');
+    try { const r = await window.adeSetup.brainSignIn('codex'); if (!r.ok) setMessage('Could not start the sign-in. Is Codex installed?'); }
+    finally { setBusy(false); }
+  };
+  const use = async () => {
+    setBusy(true); setMessage('');
+    try { const r = await window.adeSetup.brainUse('codex'); if (r.ok) { setDone(true); setMessage('Done. Restart ADE and Chip thinks with your Codex.'); onDone(); } else setMessage(r.error); }
+    finally { setBusy(false); }
+  };
+  if (!brain) return <p className="status">Looking for Codex on this computer...</p>;
+  const state = !brain.installed ? 'Not installed' : !brain.signedIn ? `Installed (${brain.version ?? ''}), not signed in` : `Signed in${brain.email ? ` as ${brain.email}` : ''}${brain.active ? '. ADE uses it now' : ''}`;
+  return <>
+    <h3>Codex (ChatGPT plan)</h3>
+    <p>ADE thinks with the Codex you already have. Your plan, your sign-in; ADE stores nothing with anyone else.</p>
+    <p className="present">Codex: {state}</p>
+    {!brain.installed && <button disabled={busy} onClick={install}>Install Codex</button>}
+    {brain.installed && !brain.signedIn && <button disabled={busy} onClick={signIn}>Sign in</button>}
+    {brain.installed && <button className="secondary" disabled={busy} onClick={refresh}>Check again</button>}
+    {brain.installed && brain.signedIn && !brain.active && !done && <button disabled={busy} onClick={use}>Use Codex</button>}
+    {(brain.active || done) && <button onClick={() => window.adeSetup.restart()}>{done ? 'Restart ADE to finish' : 'Continue to ADE'}</button>}
+    <p role="status" className="status">{message}</p>
+  </>;
+}
+
 function Setup() {
   const [showBackboard, setShowBackboard] = useState(false);
   const [backboard, setBackboard] = useState('');
@@ -114,6 +151,7 @@ function Setup() {
     {account && (!account.enabled || account.signedIn) && <section>
     <h2>{account?.enabled ? 'Step 2 of 2 · ' : ''}Your AI</h2>
     <ClaudeBrain busy={busy} setBusy={setBusy} onDone={() => setShowBackboard(false)} />
+    <CodexBrain busy={busy} setBusy={setBusy} onDone={() => setShowBackboard(false)} />
     {!showBackboard && <button className="secondary" disabled={busy} onClick={() => setShowBackboard(true)}>Use Backboard instead</button>}
     </section>}
     {account && (!account.enabled || account.signedIn) && showBackboard && <section>
