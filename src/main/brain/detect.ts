@@ -35,7 +35,7 @@ function run(bin: string, args: string[], stdin = '', timeoutMs = 20_000): Promi
 }
 
 export async function detectCli(vendor: BrainVendor, preferred?: string): Promise<BrainStatus> {
-  const candidates = [preferred, vendor.bin, vendor.defaultPath()].filter((c): c is string => !!c);
+  const candidates = [preferred, vendor.bin, vendor.defaultPath(), ...(vendor.extraPaths?.() ?? [])].filter((c): c is string => !!c);
   for (const bin of candidates) {
     if (bin !== vendor.bin && !existsSync(bin)) continue;
     const version = await run(bin, vendor.versionArgs);
