@@ -5,7 +5,7 @@
  */
 import { readFileSync } from 'node:fs';
 import { homedir } from 'node:os';
-import { join } from 'node:path';
+import { delimiter, join } from 'node:path';
 
 export type BrainVendorId = 'claude-cli' | 'codex-cli' | 'gemini-cli';
 export const BRAIN_VENDOR_IDS: BrainVendorId[] = ['claude-cli', 'codex-cli', 'gemini-cli'];
@@ -54,6 +54,8 @@ export interface BrainVendor {
   bin: string;
   /** Where the official installer puts it; may not be on the PATH of a running process. */
   defaultPath(): string;
+  /** More places to look, after PATH and defaultPath (e.g. the native exe behind an npm .cmd shim). */
+  extraPaths?(): string[];
   /** Which Settings provider id maps to this vendor's --model flag. */
   provider: 'anthropic' | 'openai' | 'google';
   /** Process arguments; the stdin text is returned too. */
@@ -70,6 +72,21 @@ export interface BrainVendor {
   installer: { win32: [string, string[]]; posix: [string, string[]] };
   /** Honest note for the Setup screen. */
   note?: string;
+}
+
+
+/**
+ * Where an npm global install keeps the native codex.exe: <npm dir>
+ode_modules\@openai\codex
+ode_modules * @openai\codex-win32-<arch>endor\<triple>in\codex.exe (or the platform package hoisted one level up).
+ * The npm dirs are the PATH entries holding codex.cmd plus %APPDATA%
+pm.
+ */
+export function npmNativeCodexPaths(env: NodeJS.ProcessEnv = process.env, arch: string = process.arch): string[] {
+  const [pkg, triple] = arch === 'arm64' ? ['codex-win32-arm64', 'aarch64-pc-windows-msvc'] : ['codex-win32-x64', 'x86_64-pc-windows-msvc'];
+  const tail = ['@openai', pkg, 'vendor', triple, 'bin', 'codex.exe'];
+  const dirs = [...(env.PATH ?? env.Path ?? '').split(delimiter).filter(Boolean), ...(env.APPDATA ? [join(env.APPDATA, 'npm')] : [])];
+  return [...new Set(dirs)].flatMap((d) => [join(d, 'node_modules', '@openai', 'codex', 'node_modules', ...tail), join(d, 'node_modules', ...tail)]);
 }
 
 const lastJsonLine = (raw: string): Record<string, unknown> | undefined => {
@@ -110,8 +127,14 @@ export const CODEX: BrainVendor = {
   id: 'codex-cli', name: 'Codex', company: 'OpenAI', bin: 'codex', provider: 'openai',
   defaultPath: () => process.platform === 'win32' ? join(homedir(), 'AppData', 'Local', 'Programs', 'OpenAI', 'Codex', 'bin', 'codex.exe') : '/usr/local/bin/codex',
   invoke: (c) => {
-    // codex exec has no system-prompt flag: the instructions lead the stdin text. Read-only sandbox, nothing persisted.
-    const args = ['exec', '--skip-git-repo-check', '--ephemeral', '--ignore-user-config', '-s', 'read-only', '-C', c.workDir, '-o', c.resultFile];
+    // codex exec has no system-prompt flag: the instructions lead the stdin text. Nothing persisted.
+    // Shell off: under -s read-only Codex's shell can still READ any file (the .env, the user's documents),
+    // which would go around Warden. With shell_tool and unified_exec disabled it has no way to touch files
+    // (probed on codex-cli 0.164: asked to run `dir C:\`, it answered that it has no shell). User rules and
+    // config stay out; web search only when the turn asks for it.
+    const args = ['exec', '--skip-git-repo-check', '--ephemeral', '--ignore-user-config', '--ignore-rules', '-s', 'read-only',
+      '--disable', 'shell_tool', '--disable', 'unified_exec', '-c', `web_search=${c.webSearch ? 'live' : 'disabled'}`,
+      '-C', c.workDir, '-o', c.resultFile];
     if (c.structured) args.push('--output-schema', c.schemaFile);
     if (c.model) args.push('-m', c.model);
     args.push('-');
@@ -135,7 +158,10 @@ export const CODEX: BrainVendor = {
   authStatusArgs: ['login', 'status'],
   parseAuthStatus: (out, exitCode) => ({ signedIn: exitCode === 0 && /logged in/i.test(out) && !/not logged in/i.test(out) }),
   loginArgs: ['login'],
-  installer: { win32: ['npm.cmd', ['install', '-g', '@openai/codex']], posix: ['npm', ['install', '-g', '@openai/codex']] },
+  // Node cannot spawn a .cmd (npm.cmd) without a shell (EINVAL), so Windows runs npm through PowerShell, like Claude's installer.
+  installer: { win32: ['powershell.exe', ['-NoProfile', '-Command', 'npm install -g @openai/codex']], posix: ['npm', ['install', '-g', '@openai/codex']] },
+  // npm installs put only a codex.cmd shim on PATH; the native codex.exe sits inside the package.
+  extraPaths: () => process.platform === 'win32' ? npmNativeCodexPaths() : [],
   note: 'Tested on this machine with codex-cli 0.166.',
 };
 
@@ -159,7 +185,7 @@ export const GEMINI: BrainVendor = {
   },
   versionArgs: ['--version'],
   loginArgs: [],
-  installer: { win32: ['npm.cmd', ['install', '-g', '@google/gemini-cli']], posix: ['npm', ['install', '-g', '@google/gemini-cli']] },
+  installer: { win32: ['powershell.exe', ['-NoProfile', '-Command', 'npm install -g @google/gemini-cli']], posix: ['npm', ['install', '-g', '@google/gemini-cli']] },
   note: 'Built on the documented interface, not tested here. Google moved personal (free, AI Pro, AI Ultra) accounts from Gemini CLI to Antigravity CLI on June 18, 2026; this adapter works with a Gemini API key or a Workspace/Enterprise sign-in until an Antigravity adapter exists.',
 };
 
