@@ -39,18 +39,18 @@ import { BackboardClient } from '../runtime/backboard';
 import { RealClock } from '../runtime/clock';
 import type { InjectionScreen, SpecialistRunner, VoiceService } from '../runtime/types';
 import { assistantIdsFromEnv, readEnvFile, voiceIdsFromEnv, type Env } from '../sponsors/env';
-import { ClaudeCliClient } from '../brain/claudeCli';
+import { CliBrainClient } from '../brain/cliBrain';
+import { binEnvKey } from '../brain/detect';
+import { vendorFromEnv } from '../brain/vendors';
+import { onEgressDenied } from '../egress';
 import { SqliteThreadStore } from '../store/localThreads';
 import type { DocumentsApi, LlmClient } from '../runtime/types';
 import { LocalMemoryStore, withLocalMemory } from '../memory/localMemory';
 import { localDbPath, openLocalDb } from '../store/localDb';
 import { LocalEventSink, LocalQueries } from '../store/localEvents';
 import type { CoreAdapter } from '../shell/contracts';
-import { createTigerPool, adeDataDir, type Db } from '../store/tiger';
-import { TigerHistoryStore } from '../store/tigerHistory';
-import { TigerNudgeStore } from '../store/tigerNudges';
-import { TigerPlanStore } from '../store/tigerPlans';
-import { TigerResearchStore } from '../store/tigerResearch';
+import { adeDataDir } from '../paths';
+import { LocalHistoryStore, LocalNudgeStore, LocalPlanStore, LocalResearchStore } from '../store/localStores';
 import { createWardenClassifier } from '../sponsors/wardenClassifier';
 import { handleStandInSendPost, StandInSpecialists } from './standInSpecialists';
 import { ElevenLabsVoice } from '../voice/elevenlabs';
@@ -60,30 +60,19 @@ import { defaultFolders } from './defaultFolders';
 const ids = Object.keys(AGENTS) as AgentId[];
 const silent = () => new ArrayBuffer(0);
 
-/**
- * Only Backboard decides whether Chip starts. Tiger is an optional cloud copy: a missing or malformed
- * TIGER_DATABASE_URL just leaves it off (historyEnabled false); local history in ade.db is always on.
- */
-/** ADE_BRAIN=claude-cli: the installed Claude Code CLI is the brain; no Backboard key or assistant IDs needed. */
-export const usesCliBrain = (env: Env): boolean => env.ADE_BRAIN?.trim().toLowerCase() === 'claude-cli';
+/** ADE_BRAIN names a CLI brain (claude-cli, codex-cli, gemini-cli): the AI installed on this machine thinks; no Backboard key or assistant IDs needed. */
+export const usesCliBrain = (env: Env): boolean => !!vendorFromEnv(env);
 
-export function decideCore(env: Env): { core: 'real' | 'fake'; reasons: string[]; historyEnabled: boolean } {
+/**
+ * A brain decides whether Chip starts: a CLI brain, or the Backboard pair. History (events, audit, nudges,
+ * plans, research) is always on, in ade.db on this machine; there is no cloud database any more.
+ */
+export function decideCore(env: Env): { core: 'real' | 'fake'; reasons: string[]; historyEnabled: true } {
   const reasons = usesCliBrain(env) ? [] : ['BACKBOARD_API_KEY', 'BB_ASSISTANT_CHIPMUNK'].filter(key => !env[key]?.trim());
-  let historyEnabled = false;
-  if (env.TIGER_DATABASE_URL?.trim()) {
-    try {
-      const url = new URL(env.TIGER_DATABASE_URL);
-      historyEnabled = !!url.username && !!url.password;
-      if (!historyEnabled) console.warn('[core] TIGER_DATABASE_URL has no username or password; Tiger stays off.');
-    } catch { console.warn('[core] TIGER_DATABASE_URL is not a valid URL; Tiger stays off.'); }
-  }
-  return { core: reasons.length ? 'fake' : 'real', reasons, historyEnabled };
+  return { core: reasons.length ? 'fake' : 'real', reasons, historyEnabled: true };
 }
 
 export function missingRealCoreKeys(env: Env): string[] { return decideCore(env).reasons; }
-
-/** Local fallback stores use their in-memory copies without attempting a connection. */
-const offlineDb: Db = { query: async () => { throw new Error('History is off'); } };
 
 export function defaultSettings(options: RealCoreOptions): AdeSettings {
   const model = { llm_provider: 'google', model_name: 'gemini-2.5-flash' };
@@ -194,7 +183,8 @@ export function createRealCore(options: RealCoreOptions = {}): CoreAdapter {
     options.onSettingsChanged?.(settings);
   };
   const clock = new RealClock();
-  const cliBrain = usesCliBrain(env);
+  const cliVendor = vendorFromEnv(env);
+  const cliBrain = !!cliVendor;
   // With the CLI brain, an "assistant id" is just the animal's name: there is no vendor-side assistant.
   const assistantIds: Partial<Record<AgentId, string>> = cliBrain
     ? Object.fromEntries(ids.map(id => [id, assistantIdsFromEnv(env)[id] ?? id])) : assistantIdsFromEnv(env);
@@ -203,18 +193,16 @@ export function createRealCore(options: RealCoreOptions = {}): CoreAdapter {
   // ADE's own data on this machine: memories, the event log, audit and conversation threads, in %APPDATA%\ADE\ade.db.
   const localDb = openLocalDb(localDbPath(options.dataDir ?? adeDataDir(env)));
   const memory = new LocalMemoryStore(localDb);
-  const brain: LlmClient = cliBrain
-    ? new ClaudeCliClient({ threads: new SqliteThreadStore(localDb), cwd: options.dataDir ?? adeDataDir(env), ...(env.ADE_CLAUDE_BIN ? { bin: env.ADE_CLAUDE_BIN } : {}) })
+  const brain: LlmClient = cliVendor
+    ? new CliBrainClient(cliVendor, { threads: new SqliteThreadStore(localDb), workDir: options.dataDir ?? adeDataDir(env),
+      ...(env[binEnvKey(cliVendor)] ? { bin: env[binEnvKey(cliVendor)]! } : {}) })
     : new BackboardClient({ apiKey: env.BACKBOARD_API_KEY!, defaultModel: assistantId =>
       settings.models[(assistantId ? agentFor(assistantId) : undefined) ?? 'chipmunk'] });
-  if (cliBrain) console.log('[core] Brain: Claude Code CLI on this machine (ADE_BRAIN=claude-cli). Backboard is not used.');
+  if (cliVendor) console.log(`[core] Brain: ${cliVendor.name} on this machine (ADE_BRAIN=${cliVendor.id}). Backboard is not used.`);
   const llm = withLocalMemory(brain, memory, { agentFor, onError: (agentId, error) => console.warn(`[memory] ${agentId}: ${(error as Error).message}`) });
   const queries = new LocalQueries(localDb);
-  const db = decision.historyEnabled ? createTigerPool(env, baseDir) : undefined;
-  const storeDb = db ?? offlineDb;
-  const quiet = () => {};
-  const plans = new TigerPlanStore(storeDb, () => clock.now(), db ? undefined : quiet);
-  const research = new TigerResearchStore(storeDb, db ? undefined : quiet);
+  const plans = new LocalPlanStore(localDb, () => clock.now());
+  const research = new LocalResearchStore(localDb);
   const voiceIds = voiceIdsFromEnv(env);
   const shippedLines = new ShippedLines(join(options.resourcesDir ?? (options.packaged ? process.resourcesPath : join(process.cwd(), 'resources')), 'voice-lines'));
   const voice: VoiceService | undefined = env.ELEVENLABS_API_KEY
@@ -267,8 +255,8 @@ export function createRealCore(options: RealCoreOptions = {}): CoreAdapter {
   const core = createChipCore({
     llm, runner, calendar: { listEvents: (from, to) => settings.googleEmail ? liveCalendar.listEvents(from, to) : disconnectedCalendar().listEvents() }, settings: () => settings,
     chipAssistantId: assistantIds.chipmunk!, clock, eventSink,
-    nudgeStore: db ? new TigerNudgeStore(db) : undefined,
-    history: db ? new TigerHistoryStore(db, () => clock.now(), undefined, research) : { query: async () => [] }, plans,
+    nudgeStore: new LocalNudgeStore(localDb),
+    history: new LocalHistoryStore(localDb, () => clock.now(), research), plans,
     warden: { registry: agentId => agentId === 'workspace' ? pixelTools : undefined,
       classifier: env.BB_ASSISTANT_WARDEN_SCREEN
         ? createWardenClassifier({ llm, assistantId: env.BB_ASSISTANT_WARDEN_SCREEN }) : undefined },
@@ -286,6 +274,9 @@ export function createRealCore(options: RealCoreOptions = {}): CoreAdapter {
     } } : {}),
   });
   activeScreen = core.warden!.screen;
+  // A refused connection is an audit event: Warden reports it, the Audit tab shows it, ade.db keeps it.
+  onEgressDenied((host) => core.bus.emit({ type: 'wolf.alert', agentId: 'wolf', source: 'egress',
+    reason: `Blocked a connection to ${host}. ADE only talks to the services on its egress list.` }));
   standIns.connect(core.bus);
   // Pixel joins ChipCore's registry; Archie and Scout registered during core construction.
   if (google && assistantIds.workspace) {
@@ -374,6 +365,6 @@ export function createRealCore(options: RealCoreOptions = {}): CoreAdapter {
     deleteMemory: (agentId, id) => memory.remove(agentId, id),
     getPulse: () => queries.pulse(),
     getWardenAudit: limit => queries.wardenAudit(limit),
-    dispose: () => { index.stopWatching(); void core.dispose().then(() => eventSink.dispose()).then(() => llm.whenIdle()).then(() => { localDb.close(); return db?.end(); }); },
+    dispose: () => { index.stopWatching(); void core.dispose().then(() => eventSink.dispose()).then(() => llm.whenIdle()).then(() => { localDb.close(); }); },
   };
 }

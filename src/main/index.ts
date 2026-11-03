@@ -13,9 +13,11 @@ import { createOverlayWindow } from './shell/overlayWindow';
 import { installPermissions } from './shell/permissions';
 import { registerShellIpc } from './shell/shellIpc';
 import { watchSettings } from './shell/settingsWatch';
-import { loadRealCoreEnv, usesCliBrain } from './core/realCore';
-import { detectClaudeCli } from './brain/detect';
+import { loadRealCoreEnv } from './core/realCore';
+import { binEnvKey, detectCli } from './brain/detect';
+import { vendorFromEnv } from './brain/vendors';
 import { registerSetup } from './setup/window';
+import { installEgressGuard } from './egress';
 import { createTray } from './shell/tray';
 import { AccountStore } from './account/store';
 import { SupabaseAccountClient } from './account/supabase';
@@ -38,6 +40,9 @@ if (!app.requestSingleInstanceLock()) {
 } else {
   app.on('second-instance', () => focusExistingHub?.());
   app.whenReady().then(async () => {
+    // Every connection ADE itself makes goes to a host on the egress list, or is refused and logged (src/main/egress.ts).
+    const egress = installEgressGuard();
+    egress.onDeny = (host) => console.warn(`[egress] refused a connection to ${host}`);
     const mainDir = fileURLToPath(new URL('.', import.meta.url));
     const rendererDir = join(mainDir, '../renderer');
     const preload = join(mainDir, '../preload/index.cjs');
@@ -52,9 +57,10 @@ if (!app.requestSingleInstanceLock()) {
     const signedIn = accountEnabled() && !!await accountStore.load().catch(() => null);
     if (signedIn) heartbeat.start();
     app.once('before-quit', () => { void heartbeat.stop(); });
-    // A brain is either the Claude Code on this machine (installed and signed in) or a Backboard key. Neither → Setup.
+    // A brain is either a CLI on this machine (Claude Code, Codex or Gemini; installed and signed in) or a Backboard key. Neither → Setup.
     const env = loadRealCoreEnv({ exePath: app.getPath('exe'), envPaths }).env;
-    const cliReady = usesCliBrain(env) && await detectClaudeCli(env.ADE_CLAUDE_BIN).then(s => s.installed && s.signedIn);
+    const vendor = vendorFromEnv(env);
+    const cliReady = !!vendor && await detectCli(vendor, env[binEnvKey(vendor)]).then(s => s.installed && s.signedIn);
     if (!demoMode && ((accountEnabled() && !signedIn) || (!cliReady && !env.BACKBOARD_API_KEY?.trim()))) {
       openSetup();
       return;

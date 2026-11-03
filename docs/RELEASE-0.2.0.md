@@ -6,14 +6,20 @@ Main at `d38d0c8` (Nov 2, 2026): PRs #53 to #62. This file describes what the co
 
 | Part | Where | Notes |
 |---|---|---|
-| The AI's thinking (Chip and every animal) | **Claude Code CLI** on this machine when `ADE_BRAIN=claude-cli` (PR #65); otherwise **Backboard** (cloud) | With the switch: the installed, signed-in `claude` runs every model call; no Backboard key; threads in `ade.db`; full demo path passed 2 of 2 live. Default stays Backboard (Gemini 2.5 Flash) until Setup can install Claude Code and open its sign-in page. Codex and Gemini follow the same contract. |
+| The AI's thinking (Chip and every animal) | **A CLI brain** on this machine when `ADE_BRAIN` is `claude-cli`, `codex-cli` or `gemini-cli` (#65, #69); otherwise **Backboard** (cloud) | The installed, signed-in vendor CLI runs every model call as a separate program; no Backboard key; threads in `ade.db`. Claude Code and Codex passed the full demo path live; Gemini is built on its documented interface, untested here (Google moved personal accounts to Antigravity CLI on June 18, 2026). Backboard stays the fallback. |
 | Archie reading PDF, Word, slides and sheets (`fs_ask_file`) | **Backboard** document indexing | Plain text files are read locally. |
-| Memories, Timeline, Audit, Pulse, Replay, chat history | **Local**: one SQLite file, `%APPDATA%\ADE\ade.db` | Always on. Backboard memory is off; Tiger is not used. Events are kept 90 days. |
+| Memories, Timeline, Audit, Pulse, Replay, chat history, nudges, plans, research | **Local**: one SQLite file, `%APPDATA%\ADE\ade.db` | Always on. No cloud database; the Tiger code is deleted (#71). Events are kept 90 days. |
 | Voices and sounds | ElevenLabs (optional key) | Shipped lines play without a key. |
 | Gmail, Calendar, Drive (Pixel) | Google OAuth | Needs `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`. |
-| Tiger Data | Optional, off by default | A missing or incomplete `TIGER_DATABASE_URL` no longer stops the real core. |
+| Network | Egress allow list (#70) | Every connection ADE makes goes to a named host or is refused and logged as a `wolf.alert`. |
 
 ## What changed
+
+- **Three CLI brains** (#69): one contract, adapters for Claude Code, Codex and Gemini CLI; Setup lists all three with Install, Sign in and Use.
+- **Setup leads with Your AI** (#67): finds, installs and signs in the CLI; Backboard behind "Use Backboard instead".
+- **Local PDFs** (#68): Archie and Pixel read PDFs on this machine with pdf.js; no upload.
+- **Egress allow list** (#70): named hosts only; refusals in the audit log.
+- **Completely local** (#71): nudges, plans, research and `biome_history` on `ade.db`; Tiger deleted; `pg` removed.
 
 - **Claude Code as the brain** (#65): `ADE_BRAIN=claude-cli` runs the Claude Code CLI installed on the machine instead of Backboard. Tools are offered as plain-English actions and come back as a structured decision. Archie is told his allowed folders up front.
 
